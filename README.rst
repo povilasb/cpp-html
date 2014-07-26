@@ -10,7 +10,7 @@ tree queries. Full Unicode support is also available, with Unicode interface
 variants and conversions between different Unicode encodings (which happen
 automatically during parsing/saving).
 
-The distribution contains the following folders:
+The distribution contains the following files and folders:
 
 	contrib/ - various contributions to pugihtml
 
@@ -23,7 +23,10 @@ The distribution contains the following folders:
 
 	src/ - header and source files
 
-	readme.txt - this file.
+        LICENSE
+
+	README - this file.
+
 
 This work is based on pugixml parser, which is:
 Copyright (C) 2006-2010, by Arseny Kapoulkine (arseny [DOT] kapoulkine [AT] gmail [DOT] com)
