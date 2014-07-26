@@ -9,7 +9,7 @@ option(PUGIHTML_ENABLE_TESTS "Enables or disables tests. Disabled by default."
 
 project(${PROJECT_NAME} CXX)
 
-set(PROJECT_LIB "lib${PROJECT_NAME}")
+set(PROJECT_LIB "${PROJECT_NAME}")
 
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}.")
@@ -32,8 +32,10 @@ add_library(pugihtml STATIC ${SRC_FILES})
 
 if (PUGIHTML_ENABLE_TESTS)
 
-	set(TEST_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../test")
+	set(TEST_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test")
 	file(GLOB_RECURSE TEST_SRC_FILES "${TEST_SRC_DIR}/*.cpp")
+
+	include_directories("${SRC_DIR}")
 
 	set(GTEST_DIR "${LIBS_DIR}/gtest")
 	add_subdirectory(${GTEST_DIR})
