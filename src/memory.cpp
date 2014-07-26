@@ -3,7 +3,7 @@
 #include <stddef.h>
 
 namespace pugihtml
-{ 
+{
 
     html_memory_page* html_memory_page::construct(void* memory)
 	{
@@ -20,11 +20,11 @@ namespace pugihtml
 
 		return result;
 	}
-    
+
 	html_allocator::html_allocator(html_memory_page* root): _root(root), _busy_size(root->busy_size)
 	{
 	}
-    
+
     void html_allocator::deallocate_page(html_memory_page* page)
 	{
 		global_deallocate(page->memory);
@@ -50,7 +50,7 @@ namespace pugihtml
 
 		return page;
 	}
-    
+
 	void* html_allocator::allocate_memory(size_t size, html_memory_page*& out_page)
 	{
 		if (_busy_size + size > html_memory_page_size) return allocate_memory_oob(size, out_page);
@@ -103,7 +103,7 @@ namespace pugihtml
 	{
 		// allocate memory for string and header block
 		size_t size = sizeof(html_memory_string_header) + length * sizeof(char_t);
-			
+
 		// round size up to pointer alignment boundary
 		size_t full_size = (size + (sizeof(void*) - 1)) & ~(sizeof(void*) - 1);
 
@@ -140,7 +140,7 @@ namespace pugihtml
 		deallocate_memory(header, full_size, page);
 	}
 
-    
+
 	PUGIHTML_NO_INLINE void* html_allocator::allocate_memory_oob(size_t size, html_memory_page*& out_page)
 	{
 		const size_t large_allocation_threshold = html_memory_page_size / 4;
