@@ -5,7 +5,7 @@
  *
  * This library is distributed under the MIT License. See notice in license.txt
  *
- * This work is based on the pugxml parser, which is: 
+ * This work is based on the pugxml parser, which is:
  * Copyright (C) 2006-2010, by Arseny Kapoulkine (arseny [DOT] kapoulkine [AT] gmail [DOT] com)
  */
 
@@ -20,8 +20,7 @@
 namespace pugihtml
 {
 	// Tree node types
-	enum html_node_type
-	{
+	enum html_node_type {
 		node_null,          // Empty (null) node handle
 		node_document,		// A document tree's absolute root
 		node_element,		// Element tag, i.e. '<node/>'
@@ -30,7 +29,7 @@ namespace pugihtml
 		node_comment,		// Comment tag, i.e. '<!-- text -->'
 		node_pi,			// Processing instruction, i.e. '<?name?>'
 		node_declaration,	// Document declaration, i.e. '<?html version="1.0"?>'
-        node_doctype        // Document type declaration, i.e. '<!DOCTYPE doc>'
+		node_doctype        // Document type declaration, i.e. '<!DOCTYPE doc>'
 	};
 
 	// Parsing options
@@ -57,13 +56,13 @@ namespace pugihtml
 
 	// This flag determines if EOL characters are normalized (converted to #xA) during parsing. This flag is on by default.
 	const unsigned int parse_eol = 0x0020;
-	
+
  	// This flag determines if attribute values are normalized using CDATA normalization rules during parsing. This flag is on by default.
  	const unsigned int parse_wconv_attribute = 0x0040;
 
  	// This flag determines if attribute values are normalized using NMTOKENS normalization rules during parsing. This flag is off by default.
  	const unsigned int parse_wnorm_attribute = 0x0080;
-	
+
     // This flag determines if document declaration (node_declaration) is added to the DOM tree. This flag is off by default.
 	const unsigned int parse_declaration = 0x0100;
 
@@ -95,23 +94,23 @@ namespace pugihtml
 	};
 
 	// Formatting flags
-	
+
 	// Indent the nodes that are written to output stream with as many indentation strings as deep the node is in DOM tree. This flag is on by default.
 	const unsigned int format_indent = 0x01;
-	
+
 	// Write encoding-specific BOM to the output stream. This flag is off by default.
 	const unsigned int format_write_bom = 0x02;
 
 	// Use raw output mode (no indentation and no line breaks are written). This flag is off by default.
 	const unsigned int format_raw = 0x04;
-	
+
 	// Omit default HTML declaration even if there is no declaration in the document. This flag is off by default.
 	const unsigned int format_no_declaration = 0x08;
 
 	// The default set of formatting flags.
     // Nodes are indented depending on their depth in DOM tree, a default declaration is output if document has none.
 	const unsigned int format_default = format_indent;
-		
+
 	// Forward declarations
 	struct html_attribute_struct;
 	struct html_node_struct;
@@ -120,7 +119,7 @@ namespace pugihtml
 	class html_attribute_iterator;
 
 	class html_tree_walker;
-	
+
 	class html_node;
 
 	#ifndef PUGIHTML_NO_XPATH
@@ -178,13 +177,13 @@ namespace pugihtml
 
 	private:
 		html_attribute_struct* _attr;
-	
+
     	typedef html_attribute_struct* html_attribute::*unspecified_bool_type;
 
 	public:
         // Default constructor. Constructs an empty attribute.
 		html_attribute();
-		
+
         // Constructs attribute from internal pointer
 		explicit html_attribute(html_attribute_struct* attr);
 
@@ -275,7 +274,7 @@ namespace pugihtml
 
 		// Borland C++ workaround
 		bool operator!() const;
-	
+
 		// Comparison operators (compares wrapped node pointers)
 		bool operator==(const html_node& r) const;
 		bool operator!=(const html_node& r) const;
@@ -293,7 +292,7 @@ namespace pugihtml
 		// Get node name/value, or "" if node is empty or it has no name/value
 		const char_t* name() const;
 		const char_t* value() const;
-	
+
 		// Get attribute list
 		html_attribute first_attribute() const;
         html_attribute last_attribute() const;
@@ -305,7 +304,7 @@ namespace pugihtml
         // Get next/previous sibling in the children list of the parent node
 		html_node next_sibling() const;
 		html_node previous_sibling() const;
-		
+
         // Get parent node
 		html_node parent() const;
 
@@ -327,7 +326,7 @@ namespace pugihtml
 		// Set node name/value (returns false if node is empty, there is not enough memory, or node can not have name/value)
 		bool set_name(const char_t* rhs);
 		bool set_value(const char_t* rhs);
-		
+
 		// Add attribute with specified name. Returns added attribute, or empty attribute on errors.
 		html_attribute append_attribute(const char_t* name);
 		html_attribute prepend_attribute(const char_t* name);
@@ -370,11 +369,11 @@ namespace pugihtml
 		template <typename Predicate> html_attribute find_attribute(Predicate pred) const
 		{
 			if (!_root) return html_attribute();
-			
+
 			for (html_attribute attrib = first_attribute(); attrib; attrib = attrib.next_attribute())
 				if (pred(attrib))
 					return attrib;
-		
+
 			return html_attribute();
 		}
 
@@ -382,11 +381,11 @@ namespace pugihtml
 		template <typename Predicate> html_node find_child(Predicate pred) const
 		{
 			if (!_root) return html_node();
-	
+
 			for (html_node node = first_child(); node; node = node.next_sibling())
 				if (pred(node))
 					return node;
-        
+
 	        return html_node();
 		}
 
@@ -396,7 +395,7 @@ namespace pugihtml
 			if (!_root) return html_node();
 
 			html_node cur = first_child();
-			
+
 			while (cur._root && cur._root != _root)
 			{
 				if (pred(cur)) return cur;
@@ -428,7 +427,7 @@ namespace pugihtml
 
 		// Recursively traverse subtree with html_tree_walker
 		bool traverse(html_tree_walker& walker);
-	
+
 	#ifndef PUGIHTML_NO_XPATH
 		// Select single node by evaluating XPath query. Returns first node from the resulting node set.
 		xpath_node select_single_node(const char_t* query, xpath_variable_set* variables = 0) const;
@@ -438,7 +437,7 @@ namespace pugihtml
 		xpath_node_set select_nodes(const char_t* query, xpath_variable_set* variables = 0) const;
 		xpath_node_set select_nodes(const xpath_query& query) const;
 	#endif
-		
+
 		// Print subtree using a writer object
 		void print(html_writer& writer, const char_t* indent = PUGIHTML_TEXT("\t"), unsigned int flags = format_default, html_encoding encoding = encoding_auto, unsigned int depth = 0) const;
 
@@ -567,11 +566,11 @@ namespace pugihtml
 
 	private:
 		int _depth;
-	
+
 	protected:
 		// Get current traversal depth
 		int depth() const;
-	
+
 	public:
 		html_tree_walker();
 		virtual ~html_tree_walker();
@@ -638,7 +637,7 @@ namespace pugihtml
 		char_t* _buffer;
 
 		char _memory[192];
-		
+
 		// Non-copyable semantics
 		html_document(const html_document&);
 		const html_document& operator=(const html_document&);
@@ -746,7 +745,7 @@ namespace pugihtml
 		// Non-copyable semantics
 		xpath_variable(const xpath_variable&);
 		xpath_variable& operator=(const xpath_variable&);
-		
+
 	public:
         // Get variable name
 		const char_t* name() const;
@@ -821,21 +820,21 @@ namespace pugihtml
 
 		// Get query expression return type
 		xpath_value_type return_type() const;
-		
+
 		// Evaluate expression as boolean value in the specified context; performs type conversion if necessary.
         // If PUGIHTML_NO_EXCEPTIONS is not defined, throws std::bad_alloc on out of memory errors.
 		bool evaluate_boolean(const xpath_node& n) const;
-		
+
 		// Evaluate expression as double value in the specified context; performs type conversion if necessary.
         // If PUGIHTML_NO_EXCEPTIONS is not defined, throws std::bad_alloc on out of memory errors.
 		double evaluate_number(const xpath_node& n) const;
-		
+
 	#ifndef PUGIHTML_NO_STL
 		// Evaluate expression as string value in the specified context; performs type conversion if necessary.
         // If PUGIHTML_NO_EXCEPTIONS is not defined, throws std::bad_alloc on out of memory errors.
 		string_t evaluate_string(const xpath_node& n) const;
 	#endif
-		
+
 		// Evaluate expression as string value in the specified context; performs type conversion if necessary.
         // At most capacity characters are written to the destination buffer, full result size is returned (includes terminating zero).
         // If PUGIHTML_NO_EXCEPTIONS is not defined, throws std::bad_alloc on out of memory errors.
@@ -856,7 +855,7 @@ namespace pugihtml
     	// Borland C++ workaround
 		bool operator!() const;
 	};
-	
+
 	#ifndef PUGIHTML_NO_EXCEPTIONS
 	// XPath exception class
 	class PUGIHTML_CLASS xpath_exception: public std::exception
@@ -875,20 +874,20 @@ namespace pugihtml
 		const xpath_parse_result& result() const;
 	};
 	#endif
-	
+
 	// XPath node class (either html_node or html_attribute)
 	class PUGIHTML_CLASS xpath_node
 	{
 	private:
 		html_node _node;
 		html_attribute _attribute;
-	
+
     	typedef html_node xpath_node::*unspecified_bool_type;
 
 	public:
 		// Default constructor; constructs empty XPath node
 		xpath_node();
-		
+
 		// Construct XPath node from HTML node/attribute
 		xpath_node(const html_node& node);
 		xpath_node(const html_attribute& attribute, const html_node& parent);
@@ -896,13 +895,13 @@ namespace pugihtml
 		// Get node/attribute, if any
 		html_node node() const;
 		html_attribute attribute() const;
-		
+
 		// Get parent of contained node/attribute
 		html_node parent() const;
 
     	// Safe bool conversion operator
 		operator unspecified_bool_type() const;
-		
+
     	// Borland C++ workaround
     	bool operator!() const;
 
@@ -928,10 +927,10 @@ namespace pugihtml
 			type_sorted,			// Sorted by document order (ascending)
 			type_sorted_reverse		// Sorted by document order (descending)
 		};
-		
+
 		// Constant iterator type
 		typedef const xpath_node* const_iterator;
-	
+
 		// Default constructor. Constructs empty set.
 		xpath_node_set();
 
@@ -940,38 +939,38 @@ namespace pugihtml
 
 		// Destructor
 		~xpath_node_set();
-		
+
 		// Copy constructor/assignment operator
 		xpath_node_set(const xpath_node_set& ns);
 		xpath_node_set& operator=(const xpath_node_set& ns);
 
 		// Get collection type
 		type_t type() const;
-		
+
 		// Get collection size
 		size_t size() const;
 
         // Indexing operator
 		const xpath_node& operator[](size_t index) const;
-		
+
 		// Collection iterators
 		const_iterator begin() const;
 		const_iterator end() const;
 
 		// Sort the collection in ascending/descending order by document order
 		void sort(bool reverse = false);
-		
+
 		// Get first node in the collection by document order
 		xpath_node first() const;
-		
+
 		// Check if collection is empty
 		bool empty() const;
-    
+
 	private:
 		type_t _type;
-		
+
 		xpath_node _storage;
-		
+
 		xpath_node* _begin;
 		xpath_node* _end;
 
@@ -983,7 +982,7 @@ namespace pugihtml
 	// Convert wide string to UTF8
 	std::basic_string<char, std::char_traits<char>, std::allocator<char> > PUGIHTML_FUNCTION as_utf8(const wchar_t* str);
 	std::basic_string<char, std::char_traits<char>, std::allocator<char> > PUGIHTML_FUNCTION as_utf8(const std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >& str);
-	
+
 	// Convert UTF8 to wide string
 	std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > PUGIHTML_FUNCTION as_wide(const char* str);
 	std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> > PUGIHTML_FUNCTION as_wide(const std::basic_string<char, std::char_traits<char>, std::allocator<char> >& str);
