@@ -1,6 +1,7 @@
 This library is distributed under the MIT License:
 
-Copyright (c) 2012 Adgooroo, LLC (kgantchev@adgooroo.com)
+Copyright (c) 2014 Povilas Balciunas (balciunas90 [AT] gmail [DOT] com)
+
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
 files (the "Software"), to deal in the Software without
@@ -21,3 +22,26 @@ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
+
+Copyright (c) 2012 Adgooroo, LLC (kgantchev [AT] adgooroo [DOT] com)
+This work is based on pugihtml 1.0 - an HTML processing library based on pugixml.
+
+This work is based on pugixml parser, which is:
+
+Copyright (C) 2006-2010, by Arseny Kapoulkine
+(arseny [DOT] kapoulkine [AT] gmail [DOT] com)
+
+This library is distributed under the MIT License:
+
+Copyright (c) 2012 Adgooroo, LLC
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
