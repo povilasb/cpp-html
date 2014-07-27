@@ -21,8 +21,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -Werror -pedantic")
 set(LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-set(SRC_FILES ${SRC_DIR}/pugihtml.cpp ${SRC_DIR}/memory.cpp)
-
+file(GLOB_RECURSE SRC_FILES "${SRC_DIR}/*.cpp")
 add_library(pugihtml STATIC ${SRC_FILES})
 
 
