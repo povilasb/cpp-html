@@ -35,6 +35,7 @@ struct html_node_struct {
 	{
 	}
 
+	// Pointer to memory page in which this node resides.
 	uintptr_t header;
 
 	html_node_struct* parent;
@@ -58,6 +59,8 @@ html_node_struct* append_node(html_node_struct* node, html_allocator& alloc,
 
 html_attribute_struct* append_attribute_ll(html_node_struct* node,
 	html_allocator& alloc);
+
+html_node_struct* allocate_node(html_allocator& alloc, html_node_type type);
 
 }
 

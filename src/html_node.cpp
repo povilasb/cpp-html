@@ -7,8 +7,8 @@
 using namespace pugihtml;
 
 
-inline html_node_struct*
-allocate_node(html_allocator& alloc, html_node_type type)
+html_node_struct*
+pugihtml::allocate_node(html_allocator& alloc, html_node_type type)
 {
 	html_memory_page* page;
 	void* memory = alloc.allocate_memory(sizeof(html_node_struct), page);
