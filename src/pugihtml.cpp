@@ -13,6 +13,7 @@
 #include "pugiutil.hpp"
 #include "memory.hpp"
 #include "html_node.hpp"
+#include "html_parser.hpp"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -94,6 +95,74 @@ typedef __int32 int32_t;
 #endif
 
 using namespace pugihtml;
+
+// TODO(povilas): remove these constants when html_parser is removed from
+//	this file.
+
+	// Parsing options
+
+	// Minimal parsing mode (equivalent to turning all other flags off).
+	// Only elements and PCDATA sections are added to the DOM tree, no text
+	// conversions are performed.
+	static const unsigned int parse_minimal = 0x0000;
+
+	// This flag determines if processing instructions (node_pi) are added
+	// to the DOM tree. This flag is off by default.
+	static const unsigned int parse_pi = 0x0001;
+
+	// This flag determines if comments (node_comment) are added to the
+	// DOM tree. This flag is off by default.
+	static const unsigned int parse_comments = 0x0002;
+
+	// This flag determines if CDATA sections (node_cdata) are added to
+	// the DOM tree. This flag is on by default.
+	static const unsigned int parse_cdata = 0x0004;
+
+	// This flag determines if plain character data (node_pcdata) that
+	// consist only of whitespace are added to the DOM tree.
+	// This flag is off by default; turning it on usually results in slower
+	// parsing and more memory consumption.
+	static const unsigned int parse_ws_pcdata = 0x0008;
+
+	// This flag determines if character and entity references are expanded
+	// during parsing. This flag is on by default.
+	static const unsigned int parse_escapes = 0x0010;
+
+	// This flag determines if EOL characters are normalized
+	// (converted to #xA) during parsing. This flag is on by default.
+	static const unsigned int parse_eol = 0x0020;
+
+	// This flag determines if attribute values are normalized using CDATA
+	// normalization rules during parsing. This flag is on by default.
+	static const unsigned int parse_wconv_attribute = 0x0040;
+
+	// This flag determines if attribute values are normalized using
+	// NMTOKENS normalization rules during parsing. This flag is off by default.
+	static const unsigned int parse_wnorm_attribute = 0x0080;
+
+	// This flag determines if document declaration (node_declaration) is
+	// added to the DOM tree. This flag is off by default.
+	static const unsigned int parse_declaration = 0x0100;
+
+	// This flag determines if document type declaration (node_doctype) is
+	// added to the DOM tree. This flag is off by default.
+	static const unsigned int parse_doctype = 0x0200;
+
+	// The default parsing mode.
+	// Elements, PCDATA and CDATA sections are added to the DOM tree,
+	// character/reference entities are expanded, End-of-Line characters
+	// are normalized, attribute values are normalized using CDATA
+	// normalization rules.
+	static const unsigned int parse_default = parse_cdata | parse_escapes
+		| parse_wconv_attribute | parse_eol;
+
+	// The full parsing mode.
+	// Nodes of all types are added to the DOM tree, character/reference
+	// entities are expanded, End-of-Line characters are normalized,
+	// attribute values are normalized using CDATA normalization rules.
+	static const unsigned int parse_full = parse_default | parse_pi
+		| parse_comments | parse_declaration | parse_doctype;
+
 // String utilities
 namespace
 {
@@ -1373,7 +1442,8 @@ namespace
 
 	strconv_pcdata_t get_strconv_pcdata(unsigned int optmask)
 	{
-		STATIC_ASSERT(parse_escapes == 0x10 && parse_eol == 0x20);
+		STATIC_ASSERT(html_parser::parse_escapes == 0x10
+			&& html_parser::parse_eol == 0x20);
 
 		switch ((optmask >> 4) & 3) // get bitmask for flags (eol escapes)
 		{
@@ -1538,7 +1608,10 @@ namespace
 
 	strconv_attribute_t get_strconv_attribute(unsigned int optmask)
 	{
-		STATIC_ASSERT(parse_escapes == 0x10 && parse_eol == 0x20 && parse_wconv_attribute == 0x40 && parse_wnorm_attribute == 0x80);
+		STATIC_ASSERT(html_parser::parse_escapes == 0x10
+			&& html_parser::parse_eol == 0x20
+			&& html_parser::parse_wconv_attribute == 0x40
+			&& html_parser::parse_wnorm_attribute == 0x80);
 
 		switch ((optmask >> 4) & 15) // get bitmask for flags (wconv wnorm eol escapes)
 		{
@@ -1717,7 +1790,8 @@ namespace
 						cursor->value = s; // Save the offset.
 					}
 
-					if (OPTSET(parse_eol) && OPTSET(parse_comments))
+					if (OPTSET(parse_eol)
+						&& OPTSET(parse_comments))
 					{
 						s = strconv_comment(s, endch);
 
