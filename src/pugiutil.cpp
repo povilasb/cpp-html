@@ -9,6 +9,7 @@
 
 using namespace pugihtml;
 
+
 gap::gap(): end(nullptr), size(0)
 {
 }
@@ -53,7 +54,7 @@ gap::flush(char_t* s)
 #define ENDSWITH(c, e) ((c) == (e) || ((c) == 0 && endch == (e)))
 
 char_t*
-strconv_comment(char_t* s, char_t endch)
+pugihtml::strconv_comment(char_t* s, char_t endch)
 {
 	gap g;
 
@@ -83,7 +84,7 @@ strconv_comment(char_t* s, char_t endch)
 
 
 char_t*
-strconv_cdata(char_t* s, char_t endch)
+pugihtml::strconv_cdata(char_t* s, char_t endch)
 {
 	gap g;
 
@@ -162,7 +163,7 @@ struct utf8_writer {
 
 
 char_t*
-strconv_escape(char_t* s, gap& g)
+pugihtml::strconv_escape(char_t* s, gap& g)
 {
 	char_t* stre = s + 1;
 
@@ -322,7 +323,7 @@ const unsigned char chartype_table[256] =
 
 
 bool
-is_chartype(char_t ch, enum chartype_t char_type)
+pugihtml::is_chartype(char_t ch, enum chartype_t char_type)
 {
 #ifdef PUGIHTML_WCHAR_MODE
 	return (static_cast<unsigned int>(ch) < 128
