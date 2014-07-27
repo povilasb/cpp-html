@@ -1,4 +1,5 @@
 #include <cassert>
+#include <stdexcept>
 
 #include "html_parser.hpp"
 #include "html_attribute.hpp"
@@ -968,6 +969,11 @@ html_parse_result
 html_parser::parse(char_t* buffer, size_t length, html_node_struct* root,
 	unsigned int optmsk)
 {
+	if (buffer == nullptr || root == nullptr) {
+		throw std::invalid_argument("buffer and root node cannot be "
+			"null.");
+	}
+
 	html_document_struct* htmldoc = static_cast<html_document_struct*>(root);
 
 	// Store buffer for offset_debug.
