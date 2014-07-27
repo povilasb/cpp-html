@@ -53,6 +53,7 @@ void PUGIHTML_FUNCTION set_memory_management_functions(
 allocation_function PUGIHTML_FUNCTION get_memory_allocation_function();
 deallocation_function PUGIHTML_FUNCTION get_memory_deallocation_function();
 
+
 struct html_allocator;
 
 struct html_memory_page {
@@ -71,10 +72,12 @@ struct html_memory_page {
 	char data[1];
 };
 
+
 struct html_memory_string_header {
 	uint16_t page_offset; // offset from page->data
 	uint16_t full_size; // 0 if string occupies whole page
 };
+
 
 struct html_allocator {
 	html_allocator(html_memory_page* root);

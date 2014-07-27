@@ -51,18 +51,19 @@ namespace pugihtml
 		return page;
 	}
 
-	void* html_allocator::allocate_memory(size_t size, html_memory_page*& out_page)
-	{
-		if (_busy_size + size > html_memory_page_size) return allocate_memory_oob(size, out_page);
-
-		void* buf = _root->data + _busy_size;
-
-		_busy_size += size;
-
-		out_page = _root;
-
-		return buf;
+void*
+html_allocator::allocate_memory(size_t size, html_memory_page*& out_page)
+{
+	if (_busy_size + size > html_memory_page_size) {
+		return allocate_memory_oob(size, out_page);
 	}
+
+	void* buf = _root->data + _busy_size;
+	_busy_size += size;
+	out_page = _root;
+
+	return buf;
+}
 
 	void html_allocator::deallocate_memory(void* ptr, size_t size, html_memory_page* page)
 	{
@@ -141,41 +142,44 @@ namespace pugihtml
 	}
 
 
-	PUGIHTML_NO_INLINE void* html_allocator::allocate_memory_oob(size_t size, html_memory_page*& out_page)
-	{
-		const size_t large_allocation_threshold = html_memory_page_size / 4;
+PUGIHTML_NO_INLINE void*
+html_allocator::allocate_memory_oob(size_t size, html_memory_page*& out_page)
+{
+	const size_t large_allocation_threshold = html_memory_page_size / 4;
 
-		html_memory_page* page = allocate_page(size <= large_allocation_threshold ? html_memory_page_size : size);
-		if (!page) return 0;
-
-		if (size <= large_allocation_threshold)
-		{
-			_root->busy_size = _busy_size;
-
-			// insert page at the end of linked list
-			page->prev = _root;
-			_root->next = page;
-			_root = page;
-
-			_busy_size = size;
-		}
-		else
-		{
-			// insert page before the end of linked list, so that it is deleted as soon as possible
-			// the last page is not deleted even if it's empty (see deallocate_memory)
-			assert(_root->prev);
-
-			page->prev = _root->prev;
-			page->next = _root;
-
-			_root->prev->next = page;
-			_root->prev = page;
-		}
-
-		// allocate inside page
-		page->busy_size = size;
-
-		out_page = page;
-		return page->data;
+	html_memory_page* page = allocate_page(size
+		<= large_allocation_threshold ? html_memory_page_size : size);
+	if (!page) {
+		return 0;
 	}
+
+	if (size <= large_allocation_threshold) {
+		_root->busy_size = _busy_size;
+
+		// insert page at the end of linked list
+		page->prev = _root;
+		_root->next = page;
+		_root = page;
+
+		_busy_size = size;
+	}
+	else {
+		// insert page before the end of linked list, so that it is deleted as soon as possible
+		// the last page is not deleted even if it's empty (see deallocate_memory)
+		assert(_root->prev);
+
+		page->prev = _root->prev;
+		page->next = _root;
+
+		_root->prev->next = page;
+		_root->prev = page;
+	}
+
+	// allocate inside page
+	page->busy_size = size;
+
+	out_page = page;
+	return page->data;
 }
+
+} // pugihtml.
