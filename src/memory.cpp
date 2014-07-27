@@ -5,7 +5,7 @@
 namespace pugihtml
 {
 
-    html_memory_page* html_memory_page::construct(void* memory)
+	html_memory_page* html_memory_page::construct(void* memory)
 	{
 		if (!memory) return 0; //$ redundant, left for performance
 
@@ -25,7 +25,7 @@ namespace pugihtml
 	{
 	}
 
-    void html_allocator::deallocate_page(html_memory_page* page)
+	void html_allocator::deallocate_page(html_memory_page* page)
 	{
 		global_deallocate(page->memory);
 	}
