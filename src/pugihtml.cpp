@@ -4324,42 +4324,6 @@ namespace pugihtml
 		return temp;
 	}
 
-	html_parse_result::html_parse_result(): status(status_internal_error), offset(0), encoding(encoding_auto)
-	{
-	}
-
-	html_parse_result::operator bool() const
-	{
-		return status == status_ok;
-	}
-
-	const char* html_parse_result::description() const
-	{
-		switch (status)
-		{
-		case status_ok: return "No error";
-
-		case status_file_not_found: return "File was not found";
-		case status_io_error: return "Error reading from file/stream";
-		case status_out_of_memory: return "Could not allocate memory";
-		case status_internal_error: return "Internal error occurred";
-
-		case status_unrecognized_tag: return "Could not determine tag type";
-
-		case status_bad_pi: return "Error parsing document declaration/processing instruction";
-		case status_bad_comment: return "Error parsing comment";
-		case status_bad_cdata: return "Error parsing CDATA section";
-		case status_bad_doctype: return "Error parsing document type declaration";
-		case status_bad_pcdata: return "Error parsing PCDATA section";
-		case status_bad_start_element: return "Error parsing start element tag";
-		case status_bad_attribute: return "Error parsing element attribute";
-		case status_bad_end_element: return "Error parsing end element tag";
-		case status_end_element_mismatch: return "Start-end tags mismatch";
-
-		default: return "Unknown error";
-		}
-	}
-
 	html_document::html_document(): _buffer(0)
 	{
 		create();
