@@ -21,35 +21,44 @@ namespace pugihtml
 		return result;
 	}
 
-	html_allocator::html_allocator(html_memory_page* root): _root(root), _busy_size(root->busy_size)
-	{
+html_allocator::html_allocator(html_memory_page* root) : _root(root),
+	_busy_size(root->busy_size)
+{
+}
+
+void
+html_allocator::deallocate_page(html_memory_page* page)
+{
+	global_deallocate(page->memory);
+}
+
+
+html_memory_page*
+html_allocator::allocate_page(size_t data_size)
+{
+	size_t size = offsetof(html_memory_page, data) + data_size;
+
+	// Allocate block with some alignment, leaving memory for worst-case
+	// padding.
+	void* memory = global_allocate(size + html_memory_page_alignment);
+	if (!memory) {
+		return 0;
 	}
 
-	void html_allocator::deallocate_page(html_memory_page* page)
-	{
-		global_deallocate(page->memory);
-	}
+	// Align upwards to page boundary.
+	void* page_memory = reinterpret_cast<void*>(
+		(reinterpret_cast<uintptr_t>(memory)
+		+ (html_memory_page_alignment - 1))
+		& ~(html_memory_page_alignment - 1));
 
+	// Prepare page structure.
+	html_memory_page* page = html_memory_page::construct(page_memory);
 
-	html_memory_page* html_allocator::allocate_page(size_t data_size)
-	{
-		size_t size = offsetof(html_memory_page, data) + data_size;
+	page->memory = memory;
+	page->allocator = _root->allocator;
 
-		// allocate block with some alignment, leaving memory for worst-case padding
-		void* memory = global_allocate(size + html_memory_page_alignment);
-		if (!memory) return 0;
-
-		// align upwards to page boundary
-		void* page_memory = reinterpret_cast<void*>((reinterpret_cast<uintptr_t>(memory) + (html_memory_page_alignment - 1)) & ~(html_memory_page_alignment - 1));
-
-		// prepare page structure
-		html_memory_page* page = html_memory_page::construct(page_memory);
-
-		page->memory = memory;
-		page->allocator = _root->allocator;
-
-		return page;
-	}
+	return page;
+}
 
 void*
 html_allocator::allocate_memory(size_t size, html_memory_page*& out_page)

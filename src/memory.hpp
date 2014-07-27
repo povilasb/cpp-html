@@ -82,12 +82,25 @@ struct html_memory_string_header {
 struct html_allocator {
 	html_allocator(html_memory_page* root);
 
-	html_memory_page* allocate_page(size_t data_size);
+	/**
+	 * Allocates new page with global allocator.
+	 */
+	static html_memory_page* allocate_page(size_t data_size);
 
+	/**
+	 * Frees the specified page with gloabal deallocator.
+	 */
 	static void deallocate_page(html_memory_page* page);
 
 	void* allocate_memory_oob(size_t size, html_memory_page*& out_page);
 
+	/**
+	 * Allocates the specified amount of bytes. Returns the allocated
+	 * memory block beginning. Also returns pointer to the memory page
+	 * where the allocated block resides.
+	 *
+	 * @return pointer to allocated memory on success, 0 on error.
+	 */
 	void* allocate_memory(size_t size, html_memory_page*& out_page);
 
 	void deallocate_memory(void* ptr, size_t size, html_memory_page* page);
