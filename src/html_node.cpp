@@ -18,8 +18,8 @@ allocate_node(html_allocator& alloc, html_node_type type)
 
 
 html_node_struct*
-append_node(html_node_struct* node, html_allocator& alloc,
-	html_node_type type = node_element)
+pugihtml::append_node(html_node_struct* node, html_allocator& alloc,
+	html_node_type type)
 {
 	html_node_struct* child = allocate_node(alloc, type);
 	if (!child) {
@@ -57,7 +57,7 @@ allocate_attribute(html_allocator& alloc)
 
 
 html_attribute_struct*
-append_attribute_ll(html_node_struct* node, html_allocator& alloc)
+pugihtml::append_attribute_ll(html_node_struct* node, html_allocator& alloc)
 {
 	html_attribute_struct* a = allocate_attribute(alloc);
 	if (!a) return 0;
