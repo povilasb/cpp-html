@@ -3,6 +3,8 @@
 
 
 #include "common.hpp"
+#include "memory.hpp"
+#include "pugihtml.hpp"
 
 
 namespace pugihtml
@@ -11,6 +13,7 @@ namespace pugihtml
 /**
  * An HTML document tree node.
  */
+// TODO(povilas): consider if reinterpret_cast is really neccessary here.
 struct html_node_struct {
 	html_node_struct(html_memory_page* page, html_node_type type)
 		: header(reinterpret_cast<uintptr_t>(page) | (type - 1)),
@@ -35,6 +38,12 @@ struct html_node_struct {
 
 	html_attribute_struct* first_attribute;
 };
+
+html_node_struct* append_node(html_node_struct* node, html_allocator& alloc,
+	html_node_type type = node_element);
+
+html_attribute_struct* append_attribute_ll(html_node_struct* node,
+	html_allocator& alloc);
 
 }
 
