@@ -7,6 +7,7 @@
 #include "common.hpp"
 #include "html_node.hpp"
 #include "pugihtml.hpp"
+#include "html.hpp"
 
 
 namespace pugihtml
