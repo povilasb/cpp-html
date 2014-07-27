@@ -5,7 +5,7 @@
  *
  * This library is distributed under the MIT License. See notice in license.txt
  *
- * This work is based on the pugxml parser, which is: 
+ * This work is based on the pugxml parser, which is:
  * Copyright (C) 2006-2010, by Arseny Kapoulkine (arseny [DOT] kapoulkine [AT] gmail [DOT] com)
  */
 
@@ -22,13 +22,13 @@ namespace pugihtml
 	static const uintptr_t html_memory_page_name_allocated_mask = 16;
 	static const uintptr_t html_memory_page_value_allocated_mask = 8;
 	static const uintptr_t html_memory_page_type_mask = 7;
-    
+
     // Memory allocation function interface; returns pointer to allocated memory or NULL on failure
 	typedef void* (*allocation_function)(size_t size);
-	
+
 	// Memory deallocation function interface
     typedef void (*deallocation_function)(void* ptr);
-    
+
     // Memory allocation
 	inline void* default_allocate(size_t size)
 	{
@@ -39,17 +39,17 @@ namespace pugihtml
 	{
 		free(ptr);
 	}
-    
+
     static allocation_function global_allocate = default_allocate;
 	static deallocation_function global_deallocate = default_deallocate;
 
     // Override default memory management functions. All subsequent allocations/deallocations will be performed via supplied functions.
     void PUGIHTML_FUNCTION set_memory_management_functions(allocation_function allocate, deallocation_function deallocate);
-    
+
     // Get current memory management functions
     allocation_function PUGIHTML_FUNCTION get_memory_allocation_function();
     deallocation_function PUGIHTML_FUNCTION get_memory_deallocation_function();
-    
+
 	struct html_allocator;
 
 	struct html_memory_page
