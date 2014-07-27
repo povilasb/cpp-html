@@ -40,8 +40,8 @@ namespace pugihtml
 		free(ptr);
 	}
 
-	allocation_function global_allocate = default_allocate;
-	deallocation_function global_deallocate = default_deallocate;
+	static allocation_function global_allocate = default_allocate;
+	static deallocation_function global_deallocate = default_deallocate;
 
 	// Override default memory management functions. All subsequent allocations/deallocations will be performed via supplied functions.
 	void PUGIHTML_FUNCTION set_memory_management_functions(allocation_function allocate, deallocation_function deallocate);
