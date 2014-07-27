@@ -107,7 +107,8 @@ typedef __int32 int32_t;
 
 namespace pugihtml
 {
-	// Character type used for all internal storage and operations; depends on PUGIHTML_WCHAR_MODE
+	// Character type used for all internal storage and operations;
+	// depends on PUGIHTML_WCHAR_MODE
 	typedef PUGIHTML_CHAR char_t;
 
 #ifndef PUGIHTML_NO_STL
