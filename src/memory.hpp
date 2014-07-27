@@ -17,38 +17,38 @@
 namespace pugihtml
 {
 	static const size_t html_memory_page_size = 32768;
-    static const uintptr_t html_memory_page_alignment = 32;
+	static const uintptr_t html_memory_page_alignment = 32;
 	static const uintptr_t html_memory_page_pointer_mask = ~(html_memory_page_alignment - 1);
 	static const uintptr_t html_memory_page_name_allocated_mask = 16;
 	static const uintptr_t html_memory_page_value_allocated_mask = 8;
 	static const uintptr_t html_memory_page_type_mask = 7;
 
-    // Memory allocation function interface; returns pointer to allocated memory or NULL on failure
+	// Memory allocation function interface; returns pointer to allocated memory or NULL on failure
 	typedef void* (*allocation_function)(size_t size);
 
 	// Memory deallocation function interface
-    typedef void (*deallocation_function)(void* ptr);
+	typedef void (*deallocation_function)(void* ptr);
 
-    // Memory allocation
+	// Memory allocation
 	inline void* default_allocate(size_t size)
 	{
 		return malloc(size);
 	}
-    // Memory deallocation
+	// Memory deallocation
 	inline void default_deallocate(void* ptr)
 	{
 		free(ptr);
 	}
 
-    static allocation_function global_allocate = default_allocate;
+	static allocation_function global_allocate = default_allocate;
 	static deallocation_function global_deallocate = default_deallocate;
 
-    // Override default memory management functions. All subsequent allocations/deallocations will be performed via supplied functions.
-    void PUGIHTML_FUNCTION set_memory_management_functions(allocation_function allocate, deallocation_function deallocate);
+	// Override default memory management functions. All subsequent allocations/deallocations will be performed via supplied functions.
+	void PUGIHTML_FUNCTION set_memory_management_functions(allocation_function allocate, deallocation_function deallocate);
 
-    // Get current memory management functions
-    allocation_function PUGIHTML_FUNCTION get_memory_allocation_function();
-    deallocation_function PUGIHTML_FUNCTION get_memory_deallocation_function();
+	// Get current memory management functions
+	allocation_function PUGIHTML_FUNCTION get_memory_allocation_function();
+	deallocation_function PUGIHTML_FUNCTION get_memory_deallocation_function();
 
 	struct html_allocator;
 
