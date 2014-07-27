@@ -2,11 +2,11 @@
 #define PUGIHTML_HTML_PARSER_HPP 1
 
 #include <csetjmp>
+#include <cstddef>
 
 #include "memory.hpp"
 #include "common.hpp"
 #include "html_node.hpp"
-#include "pugihtml.hpp"
 #include "html.hpp"
 
 
@@ -72,6 +72,71 @@ struct html_parse_result {
 
 struct html_parser {
 public:
+	// Parsing options
+
+	// Minimal parsing mode (equivalent to turning all other flags off).
+	// Only elements and PCDATA sections are added to the DOM tree, no text
+	// conversions are performed.
+	static const unsigned int parse_minimal = 0x0000;
+
+	// This flag determines if processing instructions (node_pi) are added
+	// to the DOM tree. This flag is off by default.
+	static const unsigned int parse_pi = 0x0001;
+
+	// This flag determines if comments (node_comment) are added to the
+	// DOM tree. This flag is off by default.
+	static const unsigned int parse_comments = 0x0002;
+
+	// This flag determines if CDATA sections (node_cdata) are added to
+	// the DOM tree. This flag is on by default.
+	static const unsigned int parse_cdata = 0x0004;
+
+	// This flag determines if plain character data (node_pcdata) that
+	// consist only of whitespace are added to the DOM tree.
+	// This flag is off by default; turning it on usually results in slower
+	// parsing and more memory consumption.
+	static const unsigned int parse_ws_pcdata = 0x0008;
+
+	// This flag determines if character and entity references are expanded
+	// during parsing. This flag is on by default.
+	static const unsigned int parse_escapes = 0x0010;
+
+	// This flag determines if EOL characters are normalized
+	// (converted to #xA) during parsing. This flag is on by default.
+	static const unsigned int parse_eol = 0x0020;
+
+	// This flag determines if attribute values are normalized using CDATA
+	// normalization rules during parsing. This flag is on by default.
+	static const unsigned int parse_wconv_attribute = 0x0040;
+
+	// This flag determines if attribute values are normalized using
+	// NMTOKENS normalization rules during parsing. This flag is off by default.
+	static const unsigned int parse_wnorm_attribute = 0x0080;
+
+	// This flag determines if document declaration (node_declaration) is
+	// added to the DOM tree. This flag is off by default.
+	static const unsigned int parse_declaration = 0x0100;
+
+	// This flag determines if document type declaration (node_doctype) is
+	// added to the DOM tree. This flag is off by default.
+	static const unsigned int parse_doctype = 0x0200;
+
+	// The default parsing mode.
+	// Elements, PCDATA and CDATA sections are added to the DOM tree,
+	// character/reference entities are expanded, End-of-Line characters
+	// are normalized, attribute values are normalized using CDATA
+	// normalization rules.
+	static const unsigned int parse_default = parse_cdata | parse_escapes
+		| parse_wconv_attribute | parse_eol;
+
+	// The full parsing mode.
+	// Nodes of all types are added to the DOM tree, character/reference
+	// entities are expanded, End-of-Line characters are normalized,
+	// attribute values are normalized using CDATA normalization rules.
+	static const unsigned int parse_full = parse_default | parse_pi
+		| parse_comments | parse_declaration | parse_doctype;
+
+
 	html_parser(const html_allocator& alloc);
 
 	/**
@@ -98,8 +163,13 @@ public:
 	void parse(char_t* s, html_node_struct* htmldoc, unsigned int optmsk,
 		char_t endch);
 
+	/**
+	 * @param optmask parsing options defined in pugihtml.hpp. E.g.
+	 *	You can configure to parse and add comment nodes to the
+	 *	DOM tree.
+	 */
 	static html_parse_result parse(char_t* buffer, size_t length,
-		html_node_struct* root, unsigned int optmsk);
+		html_node_struct* root, unsigned int optmask = parse_default);
 
 //private:
 	html_allocator alloc;

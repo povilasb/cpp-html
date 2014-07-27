@@ -512,9 +512,10 @@ struct strconv_attribute_impl {
 strconv_attribute_t
 get_strconv_attribute(unsigned int optmask)
 {
-	STATIC_ASSERT(parse_escapes == 0x10 && parse_eol == 0x20
-		&& parse_wconv_attribute == 0x40
-		&& parse_wnorm_attribute == 0x80);
+	STATIC_ASSERT(html_parser::parse_escapes == 0x10
+		&& html_parser::parse_eol == 0x20
+		&& html_parser::parse_wconv_attribute == 0x40
+		&& html_parser::parse_wnorm_attribute == 0x80);
 
 	switch ((optmask >> 4) & 15) // get bitmask for flags (wconv wnorm eol escapes)
 	{
@@ -579,7 +580,8 @@ struct strconv_pcdata_impl {
 strconv_pcdata_t
 get_strconv_pcdata(unsigned int optmask)
 {
-	STATIC_ASSERT(parse_escapes == 0x10 && parse_eol == 0x20);
+	STATIC_ASSERT(html_parser::parse_escapes == 0x10
+		&& html_parser::parse_eol == 0x20);
 
 	switch ((optmask >> 4) & 3) // get bitmask for flags (eol escapes)
 	{

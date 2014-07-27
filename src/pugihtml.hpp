@@ -23,53 +23,6 @@
 // The PugiHTML namespace
 namespace pugihtml
 {
-	// Parsing options
-
-	// Minimal parsing mode (equivalent to turning all other flags off).
-    // Only elements and PCDATA sections are added to the DOM tree, no text conversions are performed.
-	const unsigned int parse_minimal = 0x0000;
-
-	// This flag determines if processing instructions (node_pi) are added to the DOM tree. This flag is off by default.
-	const unsigned int parse_pi = 0x0001;
-
-	// This flag determines if comments (node_comment) are added to the DOM tree. This flag is off by default.
-	const unsigned int parse_comments = 0x0002;
-
-	// This flag determines if CDATA sections (node_cdata) are added to the DOM tree. This flag is on by default.
-	const unsigned int parse_cdata = 0x0004;
-
-	// This flag determines if plain character data (node_pcdata) that consist only of whitespace are added to the DOM tree.
-    // This flag is off by default; turning it on usually results in slower parsing and more memory consumption.
-	const unsigned int parse_ws_pcdata = 0x0008;
-
-	// This flag determines if character and entity references are expanded during parsing. This flag is on by default.
-	const unsigned int parse_escapes = 0x0010;
-
-	// This flag determines if EOL characters are normalized (converted to #xA) during parsing. This flag is on by default.
-	const unsigned int parse_eol = 0x0020;
-
- 	// This flag determines if attribute values are normalized using CDATA normalization rules during parsing. This flag is on by default.
- 	const unsigned int parse_wconv_attribute = 0x0040;
-
- 	// This flag determines if attribute values are normalized using NMTOKENS normalization rules during parsing. This flag is off by default.
- 	const unsigned int parse_wnorm_attribute = 0x0080;
-
-    // This flag determines if document declaration (node_declaration) is added to the DOM tree. This flag is off by default.
-	const unsigned int parse_declaration = 0x0100;
-
-    // This flag determines if document type declaration (node_doctype) is added to the DOM tree. This flag is off by default.
-	const unsigned int parse_doctype = 0x0200;
-
-	// The default parsing mode.
-    // Elements, PCDATA and CDATA sections are added to the DOM tree, character/reference entities are expanded,
-    // End-of-Line characters are normalized, attribute values are normalized using CDATA normalization rules.
-	const unsigned int parse_default = parse_cdata | parse_escapes | parse_wconv_attribute | parse_eol;
-
-    // The full parsing mode.
-    // Nodes of all types are added to the DOM tree, character/reference entities are expanded,
-    // End-of-Line characters are normalized, attribute values are normalized using CDATA normalization rules.
-    const unsigned int parse_full = parse_default | parse_pi | parse_comments | parse_declaration | parse_doctype;
-
 	// Formatting flags
 
 	// Indent the nodes that are written to output stream with as many indentation strings as deep the node is in DOM tree. This flag is on by default.
@@ -595,27 +548,27 @@ namespace pugihtml
 
 	#ifndef PUGIHTML_NO_STL
 		// Load document from stream.
-		html_parse_result load(std::basic_istream<char, std::char_traits<char> >& stream, unsigned int options = parse_default, html_encoding encoding = encoding_auto);
-		html_parse_result load(std::basic_istream<wchar_t, std::char_traits<wchar_t> >& stream, unsigned int options = parse_default);
+		html_parse_result load(std::basic_istream<char, std::char_traits<char> >& stream, unsigned int options = html_parser::parse_default, html_encoding encoding = encoding_auto);
+		html_parse_result load(std::basic_istream<wchar_t, std::char_traits<wchar_t> >& stream, unsigned int options = html_parser::parse_default);
 	#endif
 
 		// Load document from zero-terminated string. No encoding conversions are applied.
-		html_parse_result load(const char_t* contents, unsigned int options = parse_default);
+		html_parse_result load(const char_t* contents, unsigned int options = html_parser::parse_default);
 
 		// Load document from file
-		html_parse_result load_file(const char* path, unsigned int options = parse_default, html_encoding encoding = encoding_auto);
-		html_parse_result load_file(const wchar_t* path, unsigned int options = parse_default, html_encoding encoding = encoding_auto);
+		html_parse_result load_file(const char* path, unsigned int options = html_parser::parse_default, html_encoding encoding = encoding_auto);
+		html_parse_result load_file(const wchar_t* path, unsigned int options = html_parser::parse_default, html_encoding encoding = encoding_auto);
 
 		// Load document from buffer. Copies/converts the buffer, so it may be deleted or changed after the function returns.
-		html_parse_result load_buffer(const void* contents, size_t size, unsigned int options = parse_default, html_encoding encoding = encoding_auto);
+		html_parse_result load_buffer(const void* contents, size_t size, unsigned int options = html_parser::parse_default, html_encoding encoding = encoding_auto);
 
 		// Load document from buffer, using the buffer for in-place parsing (the buffer is modified and used for storage of document data).
         // You should ensure that buffer data will persist throughout the document's lifetime, and free the buffer memory manually once document is destroyed.
-		html_parse_result load_buffer_inplace(void* contents, size_t size, unsigned int options = parse_default, html_encoding encoding = encoding_auto);
+		html_parse_result load_buffer_inplace(void* contents, size_t size, unsigned int options = html_parser::parse_default, html_encoding encoding = encoding_auto);
 
 		// Load document from buffer, using the buffer for in-place parsing (the buffer is modified and used for storage of document data).
         // You should allocate the buffer with pugihtml allocation function; document will free the buffer when it is no longer needed (you can't use it anymore).
-		html_parse_result load_buffer_inplace_own(void* contents, size_t size, unsigned int options = parse_default, html_encoding encoding = encoding_auto);
+		html_parse_result load_buffer_inplace_own(void* contents, size_t size, unsigned int options = html_parser::parse_default, html_encoding encoding = encoding_auto);
 
 		// Save HTML document to writer (semantics is slightly different from html_node::print, see documentation for details).
 		void save(html_writer& writer, const char_t* indent = PUGIHTML_TEXT("\t"), unsigned int flags = format_default, html_encoding encoding = encoding_auto) const;
