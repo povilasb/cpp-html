@@ -11,8 +11,9 @@
 
 #ifndef PUGI_UTIL_H
 #define PUGI_UTIL_H
-#include <set>
+
 #include "common.hpp"
+
 
 namespace pugihtml
 {
