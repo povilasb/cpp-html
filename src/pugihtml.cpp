@@ -29,7 +29,7 @@
 #	include <istream>
 #	include <ostream>
 #	include <string>
-#   include <algorithm>
+#	include <algorithm>
 #endif
 
 // For placement new
@@ -129,13 +129,13 @@ namespace
 		return lhs[count] == 0;
 	}
 #ifdef PUGIHTML_NO_STL
-    char_t* find_first_of(char_t* first1,char_t* last1,char_t* first2,char_t* last2){
-        for ( ; first1 != last1; ++first1 )
-            for (char_t* it=first2; it!=last2; ++it)
-                if (*it==*first1)          // or: if (comp(*it,*first)) for the pred version
-                    return first1;
-        return last1;
-    }
+	char_t* find_first_of(char_t* first1,char_t* last1,char_t* first2,char_t* last2){
+		for ( ; first1 != last1; ++first1 )
+			for (char_t* it=first2; it!=last2; ++it)
+				if (*it==*first1)		   // or: if (comp(*it,*first)) for the pred version
+					return first1;
+		return last1;
+	}
 #else
 #define find_first_of std::find_first_of
 #endif
@@ -244,6 +244,7 @@ namespace
 // Low-level DOM operations
 namespace
 {
+	// TODO: use from html_node.hpp or html_attribute.hpp.
 	inline html_attribute_struct* allocate_attribute(html_allocator& alloc)
 	{
 		html_memory_page* page;
@@ -252,6 +253,7 @@ namespace
 		return new (memory) html_attribute_struct(page);
 	}
 
+	// TODO: use from html_node.hpp.
 	inline html_node_struct* allocate_node(html_allocator& alloc, html_node_type type)
 	{
 		html_memory_page* page;
@@ -298,7 +300,10 @@ namespace
 		alloc.deallocate_memory(n, sizeof(html_node_struct), reinterpret_cast<html_memory_page*>(header & html_memory_page_pointer_mask));
 	}
 
-	PUGIHTML_NO_INLINE html_node_struct* append_node(html_node_struct* node, html_allocator& alloc, html_node_type type = node_element)
+	// TODO(povilas): use from html_node.hpp
+	PUGIHTML_NO_INLINE html_node_struct*
+	append_node(html_node_struct* node, html_allocator& alloc,
+		html_node_type type = node_element)
 	{
 		html_node_struct* child = allocate_node(alloc, type);
 		if (!child) return 0;
@@ -324,6 +329,7 @@ namespace
 		return child;
 	}
 
+	// TODO(povilas): use from html_node.hpp.
 	PUGIHTML_NO_INLINE html_attribute_struct* append_attribute_ll(html_node_struct* node, html_allocator& alloc)
 	{
 		html_attribute_struct* a = allocate_attribute(alloc);
@@ -397,6 +403,7 @@ namespace
 		}
 	};
 
+	// TODO(povilas): use from pugiutil.hpp
 	struct utf8_writer
 	{
 		typedef uint8_t* value_type;
@@ -705,14 +712,14 @@ namespace
 
 	const unsigned char chartype_table[256] =
 	{
-		55,  0,   0,   0,   0,   0,   0,   0,      0,   12,  12,  0,   0,   63,  0,   0,   // 0-15
-		0,   0,   0,   0,   0,   0,   0,   0,      0,   0,   0,   0,   0,   0,   0,   0,   // 16-31
-		8,   0,   6,   0,   0,   0,   7,   6,      0,   0,   0,   0,   0,   96,  64,  0,   // 32-47
-		64,  64,  64,  64,  64,  64,  64,  64,     64,  64,  192, 0,   1,   0,   48,  0,   // 48-63
-		0,   192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192, // 64-79
-		192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 0,   0,   16,  0,   192, // 80-95
-		0,   192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192, // 96-111
-		192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 0, 0, 0, 0, 0,           // 112-127
+		55,  0,   0,   0,	0,	 0,   0,   0,	   0,	12,  12,  0,   0,	63,  0,   0,   // 0-15
+		0,	 0,   0,   0,	0,	 0,   0,   0,	   0,	0,	 0,   0,   0,	0,	 0,   0,   // 16-31
+		8,	 0,   6,   0,	0,	 0,   7,   6,	   0,	0,	 0,   0,   0,	96,  64,  0,   // 32-47
+		64,  64,  64,  64,	64,  64,  64,  64,	   64,	64,  192, 0,   1,	0,	 48,  0,   // 48-63
+		0,	 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192, // 64-79
+		192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 0,   0,	16,  0,   192, // 80-95
+		0,	 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192, // 96-111
+		192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 0, 0, 0, 0, 0,		   // 112-127
 
 		192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192, // 128+
 		192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192,
@@ -727,7 +734,7 @@ namespace
 	enum chartypex_t
 	{
 		ctx_special_pcdata = 1,   // Any symbol >= 0 and < 32 (except \t, \r, \n), &, <, >
-		ctx_special_attr = 2,     // Any symbol >= 0 and < 32 (except \t), &, <, >, "
+		ctx_special_attr = 2,	  // Any symbol >= 0 and < 32 (except \t), &, <, >, "
 		ctx_start_symbol = 4,	  // Any symbol > 127, a-z, A-Z, _
 		ctx_digit = 8,			  // 0-9
 		ctx_symbol = 16			  // Any symbol > 127, a-z, A-Z, 0-9, _, -, .
@@ -735,17 +742,17 @@ namespace
 
 	const unsigned char chartypex_table[256] =
 	{
-		3,  3,  3,  3,  3,  3,  3,  3,     3,  0,  2,  3,  3,  2,  3,  3,     // 0-15
-		3,  3,  3,  3,  3,  3,  3,  3,     3,  3,  3,  3,  3,  3,  3,  3,     // 16-31
-		0,  0,  2,  0,  0,  0,  3,  0,     0,  0,  0,  0,  0, 16, 16,  0,     // 32-47
-		24, 24, 24, 24, 24, 24, 24, 24,    24, 24, 0,  0,  3,  0,  3,  0,     // 48-63
+		3,	3,	3,	3,	3,	3,	3,	3,	   3,  0,  2,  3,  3,  2,  3,  3,	  // 0-15
+		3,	3,	3,	3,	3,	3,	3,	3,	   3,  3,  3,  3,  3,  3,  3,  3,	  // 16-31
+		0,	0,	2,	0,	0,	0,	3,	0,	   0,  0,  0,  0,  0, 16, 16,  0,	  // 32-47
+		24, 24, 24, 24, 24, 24, 24, 24,    24, 24, 0,  0,  3,  0,  3,  0,	  // 48-63
 
-		0,  20, 20, 20, 20, 20, 20, 20,    20, 20, 20, 20, 20, 20, 20, 20,    // 64-79
-		20, 20, 20, 20, 20, 20, 20, 20,    20, 20, 20, 0,  0,  0,  0,  20,    // 80-95
-		0,  20, 20, 20, 20, 20, 20, 20,    20, 20, 20, 20, 20, 20, 20, 20,    // 96-111
-		20, 20, 20, 20, 20, 20, 20, 20,    20, 20, 20, 0,  0,  0,  0,  0,     // 112-127
+		0,	20, 20, 20, 20, 20, 20, 20,    20, 20, 20, 20, 20, 20, 20, 20,	  // 64-79
+		20, 20, 20, 20, 20, 20, 20, 20,    20, 20, 20, 0,  0,  0,  0,  20,	  // 80-95
+		0,	20, 20, 20, 20, 20, 20, 20,    20, 20, 20, 20, 20, 20, 20, 20,	  // 96-111
+		20, 20, 20, 20, 20, 20, 20, 20,    20, 20, 20, 0,  0,  0,  0,  0,	  // 112-127
 
-		20, 20, 20, 20, 20, 20, 20, 20,    20, 20, 20, 20, 20, 20, 20, 20,    // 128+
+		20, 20, 20, 20, 20, 20, 20, 20,    20, 20, 20, 20, 20, 20, 20, 20,	  // 128+
 		20, 20, 20, 20, 20, 20, 20, 20,    20, 20, 20, 20, 20, 20, 20, 20,
 		20, 20, 20, 20, 20, 20, 20, 20,    20, 20, 20, 20, 20, 20, 20, 20,
 		20, 20, 20, 20, 20, 20, 20, 20,    20, 20, 20, 20, 20, 20, 20, 20,
@@ -855,7 +862,7 @@ namespace
 	inline bool need_endian_swap_utf(html_encoding le, html_encoding re)
 	{
 		return (le == encoding_utf16_be && re == encoding_utf16_le) || (le == encoding_utf16_le && re == encoding_utf16_be) ||
-		       (le == encoding_utf32_be && re == encoding_utf32_le) || (le == encoding_utf32_le && re == encoding_utf32_be);
+			   (le == encoding_utf32_be && re == encoding_utf32_le) || (le == encoding_utf32_le && re == encoding_utf32_be);
 	}
 
 	bool convert_buffer_endian_swap(char_t*& out_buffer, size_t& out_length, const void* contents, size_t size, bool is_mutable)
@@ -1064,30 +1071,30 @@ namespace
 		return sizeof(wchar_t) == 2 ?
 			utf_decoder<utf8_counter>::decode_utf16_block(reinterpret_cast<const uint16_t*>(str), length, 0) :
 			utf_decoder<utf8_counter>::decode_utf32_block(reinterpret_cast<const uint32_t*>(str), length, 0);
-    }
+	}
 
-    void as_utf8_end(char* buffer, size_t size, const wchar_t* str, size_t length)
-    {
+	void as_utf8_end(char* buffer, size_t size, const wchar_t* str, size_t length)
+	{
 		STATIC_ASSERT(sizeof(wchar_t) == 2 || sizeof(wchar_t) == 4);
 
-        // convert to utf8
-        uint8_t* begin = reinterpret_cast<uint8_t*>(buffer);
-        uint8_t* end = sizeof(wchar_t) == 2 ?
-            utf_decoder<utf8_writer>::decode_utf16_block(reinterpret_cast<const uint16_t*>(str), length, begin) :
-            utf_decoder<utf8_writer>::decode_utf32_block(reinterpret_cast<const uint32_t*>(str), length, begin);
+		// convert to utf8
+		uint8_t* begin = reinterpret_cast<uint8_t*>(buffer);
+		uint8_t* end = sizeof(wchar_t) == 2 ?
+			utf_decoder<utf8_writer>::decode_utf16_block(reinterpret_cast<const uint16_t*>(str), length, begin) :
+			utf_decoder<utf8_writer>::decode_utf32_block(reinterpret_cast<const uint32_t*>(str), length, begin);
 
-        assert(begin + size == end);
-        (void)!end;
+		assert(begin + size == end);
+		(void)!end;
 
 		// zero-terminate
 		buffer[size] = 0;
 	}
 
 #ifndef PUGIHTML_NO_STL
-    std::string as_utf8_impl(const wchar_t* str, size_t length)
-    {
+	std::string as_utf8_impl(const wchar_t* str, size_t length)
+	{
 		// first pass: get length in utf8 characters
-        size_t size = as_utf8_begin(str, length);
+		size_t size = as_utf8_begin(str, length);
 
 		// allocate resulting string
 		std::string result;
@@ -1096,8 +1103,8 @@ namespace
 		// second pass: convert to utf8
 		if (size > 0) as_utf8_end(&result[0], size, str, length);
 
-	  	return result;
-    }
+		return result;
+	}
 
 	std::wstring as_wide_impl(const char* str, size_t size)
 	{
@@ -1226,6 +1233,7 @@ namespace
 		}
 	};
 
+	// TODO(povilas): use from pugiutil.hpp.
 	char_t* strconv_escape(char_t* s, gap& g)
 	{
 		char_t* stre = s + 1;
@@ -1362,6 +1370,7 @@ namespace
 	// Utility macro for last character handling
 	#define ENDSWITH(c, e) ((c) == (e) || ((c) == 0 && endch == (e)))
 
+	// TODO(povilas): use from pugiutil.hpp.
 	char_t* strconv_comment(char_t* s, char_t endch)
 	{
 		gap g;
@@ -1390,6 +1399,7 @@ namespace
 		}
 	}
 
+	// TODO(povilas): use from pugiutil.hpp.
 	char_t* strconv_cdata(char_t* s, char_t endch)
 	{
 		gap g;
@@ -1865,25 +1875,25 @@ namespace
 			{
 				s -= 2;
 
-                if (cursor->parent) THROW_ERROR(status_bad_doctype, s);
+				if (cursor->parent) THROW_ERROR(status_bad_doctype, s);
 
-                char_t* mark = s + 9;
+				char_t* mark = s + 9;
 
 				s = parse_doctype_group(s, endch, true);
 
-                if (OPTSET(parse_doctype))
-                {
-                    while (IS_CHARTYPE(*mark, ct_space)) ++mark;
+				if (OPTSET(parse_doctype))
+				{
+					while (IS_CHARTYPE(*mark, ct_space)) ++mark;
 
-                    PUSHNODE(node_doctype);
+					PUSHNODE(node_doctype);
 
-                    cursor->value = mark;
+					cursor->value = mark;
 
-                    assert((s[0] == 0 && endch == '>') || s[-1] == '>');
-                    s[*s == 0 ? 0 : -1] = 0;
+					assert((s[0] == 0 && endch == '>') || s[-1] == '>');
+					s[*s == 0 ? 0 : -1] = 0;
 
-                    POPNODE();
-                }
+					POPNODE();
+				}
 			}
 			else if (*s == 0 && endch == '-') THROW_ERROR(status_bad_comment, s);
 			else if (*s == 0 && endch == '[') THROW_ERROR(status_bad_cdata, s);
@@ -1937,16 +1947,16 @@ namespace
 					if (!ENDSWITH(*s, '>')) THROW_ERROR(status_bad_pi, s);
 					s += (*s == '>');
 
-                    if(cursor->parent)
-                    {
+					if(cursor->parent)
+					{
 						POPNODE(); // Pop.
-                    }
-                    else
-                    {
-                        // We have reached the root node so do not
-                        // attempt to pop anymore nodes
-                        return s;
-                    }
+					}
+					else
+					{
+						// We have reached the root node so do not
+						// attempt to pop anymore nodes
+						return s;
+					}
 				}
 				else if (IS_CHARTYPE(ch, ct_space))
 				{
@@ -1971,16 +1981,16 @@ namespace
 						// store value and step over >
 						cursor->value = value;
 
-                        if(cursor->parent)
-                        {
-						    POPNODE(); // Pop.
-                        }
-                        else
-                        {
-                            // We have reached the root node so do not
-                            // attempt to pop anymore nodes
-                            return s;
-                        }
+						if(cursor->parent)
+						{
+							POPNODE(); // Pop.
+						}
+						else
+						{
+							// We have reached the root node so do not
+							// attempt to pop anymore nodes
+							return s;
+						}
 						ENDSEG();
 
 						s += (*s == '>');
@@ -2010,46 +2020,46 @@ namespace
 
 			char_t ch = 0;
 
-            // Point the cursor to the html document node
+			// Point the cursor to the html document node
 			html_node_struct* cursor = htmldoc;
 
-            // Set the marker
+			// Set the marker
 			char_t* mark = s;
 
-            // It's necessary to keep another mark when we have to roll
-            // back the name and the mark at the same time.
-            char_t* sMark = s;
-            char_t* nameMark = s;
+			// It's necessary to keep another mark when we have to roll
+			// back the name and the mark at the same time.
+			char_t* sMark = s;
+			char_t* nameMark = s;
 
-            // Parse while the current character is not '\0'
+			// Parse while the current character is not '\0'
 			while (*s != 0)
 			{
-                // Check if the current character is the start tag character
+				// Check if the current character is the start tag character
 				if (*s == '<')
 				{
-                    // Move to the next character
+					// Move to the next character
 					++s;
 
-                    // Check if the current character is a start symbol
-                LOC_TAG:
+					// Check if the current character is a start symbol
+				LOC_TAG:
 					if (IS_CHARTYPE(*s, ct_start_symbol)) // '<#...'
 					{
-                        // Append a new node to the tree.
+						// Append a new node to the tree.
 						PUSHNODE(node_element);
 
-                        // Set the current element's name
+						// Set the current element's name
 						cursor->name = s;
 
-                        // Scan while the current character is a symbol belonging
-                        // to the set of symbols acceptable within a tag. In other
-                        // words, scan until the termination symbol is discovered.
+						// Scan while the current character is a symbol belonging
+						// to the set of symbols acceptable within a tag. In other
+						// words, scan until the termination symbol is discovered.
 						SCANWHILE(IS_CHARTYPE(*s, ct_symbol));
 
-                        // Save char in 'ch', terminate & step over.
-                        ENDSEG();
+						// Save char in 'ch', terminate & step over.
+						ENDSEG();
 
-                        // Capitalize the tag name
-                        to_upper(cursor->name);
+						// Capitalize the tag name
+						to_upper(cursor->name);
 
 						if (ch == '>')
 						{
@@ -2058,8 +2068,8 @@ namespace
 						else if (IS_CHARTYPE(ch, ct_space))
 						{
 						LOC_ATTRIBUTES:
-						    while (true)
-						    {
+							while (true)
+							{
 								SKIPWS(); // Eat any whitespace.
 
 								if (IS_CHARTYPE(*s, ct_start_symbol)) // <... #...
@@ -2074,10 +2084,10 @@ namespace
 
 									ENDSEG(); // Save char in 'ch', terminate & step over.
 
-                                    // Capitalize the attribute name
-                                    to_upper(a->name);
+									// Capitalize the attribute name
+									to_upper(a->name);
 
-                                    //$ redundant, left for performance
+									//$ redundant, left for performance
 									CHECK_ERROR(status_bad_attribute, s);
 
 									if (IS_CHARTYPE(ch, ct_space))
@@ -2110,21 +2120,21 @@ namespace
 										}
 										else THROW_ERROR(status_bad_attribute, s);
 									}
-                                    else {//hot fix:try to fix that attribute=value situation;
-                                        ch='"';
-                                        a->value=s;
-                                        char_t* dp=s;
-                                        char_t temp;
-                                        //find the end of attribute,200 length is enough,it must return a position;
-                                        temp=*dp;//backup the former char
-                                        *dp='"';//hack at the end position;
-                                        s=strconv_attribute(s,ch);
-                                        *dp=temp;//restore it;
-                                        s--;// back it because we come to the " but it is > indeed;
-                                        if (IS_CHARTYPE(*s, ct_start_symbol)) THROW_ERROR(status_bad_attribute, s);
+									else {//hot fix:try to fix that attribute=value situation;
+										ch='"';
+										a->value=s;
+										char_t* dp=s;
+										char_t temp;
+										//find the end of attribute,200 length is enough,it must return a position;
+										temp=*dp;//backup the former char
+										*dp='"';//hack at the end position;
+										s=strconv_attribute(s,ch);
+										*dp=temp;//restore it;
+										s--;// back it because we come to the " but it is > indeed;
+										if (IS_CHARTYPE(*s, ct_start_symbol)) THROW_ERROR(status_bad_attribute, s);
 
-                                    }
-                                    //THROW_ERROR(status_bad_attribute, s);
+									}
+									//THROW_ERROR(status_bad_attribute, s);
 								}
 								else if (*s == '/')
 								{
@@ -2133,30 +2143,30 @@ namespace
 									if (*s == '>')
 									{
 										if(cursor->parent)
-                                        {
-						                    POPNODE(); // Pop.
-                                        }
-                                        else
-                                        {
-                                            // We have reached the root node so do not
-                                            // attempt to pop anymore nodes
-                                            break;
-                                        }
+										{
+											POPNODE(); // Pop.
+										}
+										else
+										{
+											// We have reached the root node so do not
+											// attempt to pop anymore nodes
+											break;
+										}
 										s++;
 										break;
 									}
 									else if (*s == 0 && endch == '>')
 									{
 										if(cursor->parent)
-                                        {
-						                    POPNODE(); // Pop.
-                                        }
-                                        else
-                                        {
-                                            // We have reached the root node so do not
-                                            // attempt to pop anymore nodes
-                                            break;
-                                        }
+										{
+											POPNODE(); // Pop.
+										}
+										else
+										{
+											// We have reached the root node so do not
+											// attempt to pop anymore nodes
+											break;
+										}
 										break;
 									}
 									else THROW_ERROR(status_bad_start_element, s);
@@ -2180,16 +2190,16 @@ namespace
 						{
 							if (!ENDSWITH(*s, '>')) THROW_ERROR(status_bad_start_element, s);
 
-                            if(cursor->parent)
-                            {
-							    POPNODE(); // Pop.
-                            }
-                            else
-                            {
-                                // We have reached the root node so do not
-                                // attempt to pop anymore nodes
-                                break;
-                            }
+							if(cursor->parent)
+							{
+								POPNODE(); // Pop.
+							}
+							else
+							{
+								// We have reached the root node so do not
+								// attempt to pop anymore nodes
+								break;
+							}
 
 							s += (*s == '>');
 						}
@@ -2208,84 +2218,84 @@ namespace
 
 						char_t* name = cursor->name;
 						if (!name)
-                        {
-                            // TODO ignore exception
-                            //THROW_ERROR(status_end_element_mismatch, s);
-                        }
-                        else
-                        {
-                            sMark = s;
-                            nameMark = name;
-                            // Read the name while the character is a symbol
-						    while (IS_CHARTYPE(*s, ct_symbol))
-						    {
-                                // Check if we're closing the correct tag name:
-                                // if the cursor tag does not match the current
-                                // closing tag then throw an exception.
-							    if (*s++ != *name++)
-                                {
-                                    // TODO POPNODE or ignore exception
-                                    //THROW_ERROR(status_end_element_mismatch, s);
-
-                                    // Return to the last position where we started
-                                    // reading the expected closing tag name.
-                                    s = sMark;
-                                    name = nameMark;
-                                    break;
-                                }
-						    }
-                            // Check if the end element is valid
-						    if (*name)
-						    {
-							    if (*s == 0 && name[0] == endch && name[1] == 0)
-                                {
-                                    THROW_ERROR(status_bad_end_element, s);
-                                }
-							    else
-                                {
-                                    // TODO POPNODE or ignore exception
-                                    //THROW_ERROR(status_end_element_mismatch, s);
-                                }
-						    }
-                        }
-
-                        // The tag was closed so we have to pop the
-                        // node off the "stack".
-						if(cursor->parent)
-                        {
-							POPNODE(); // Pop.
-                        }
-                        else
-                        {
-                            // We have reached the root node so do not
-                            // attempt to pop anymore nodes
-                            break;
-                        }
-
-						SKIPWS();
-
-                        // If there end of the string is reached.
-						if (*s == 0)
 						{
-                            // Check if the end character specified is the
-                            // same as the closing tag.
-							if (endch != '>')
-                            {
-                                THROW_ERROR(status_bad_end_element, s);
-                            }
+							// TODO ignore exception
+							//THROW_ERROR(status_end_element_mismatch, s);
 						}
 						else
 						{
-                            // Skip the end character becaue the tag
-                            // was closed and the node was popped off
-                            // the "stack".
+							sMark = s;
+							nameMark = name;
+							// Read the name while the character is a symbol
+							while (IS_CHARTYPE(*s, ct_symbol))
+							{
+								// Check if we're closing the correct tag name:
+								// if the cursor tag does not match the current
+								// closing tag then throw an exception.
+								if (*s++ != *name++)
+								{
+									// TODO POPNODE or ignore exception
+									//THROW_ERROR(status_end_element_mismatch, s);
+
+									// Return to the last position where we started
+									// reading the expected closing tag name.
+									s = sMark;
+									name = nameMark;
+									break;
+								}
+							}
+							// Check if the end element is valid
+							if (*name)
+							{
+								if (*s == 0 && name[0] == endch && name[1] == 0)
+								{
+									THROW_ERROR(status_bad_end_element, s);
+								}
+								else
+								{
+									// TODO POPNODE or ignore exception
+									//THROW_ERROR(status_end_element_mismatch, s);
+								}
+							}
+						}
+
+						// The tag was closed so we have to pop the
+						// node off the "stack".
+						if(cursor->parent)
+						{
+							POPNODE(); // Pop.
+						}
+						else
+						{
+							// We have reached the root node so do not
+							// attempt to pop anymore nodes
+							break;
+						}
+
+						SKIPWS();
+
+						// If there end of the string is reached.
+						if (*s == 0)
+						{
+							// Check if the end character specified is the
+							// same as the closing tag.
+							if (endch != '>')
+							{
+								THROW_ERROR(status_bad_end_element, s);
+							}
+						}
+						else
+						{
+							// Skip the end character becaue the tag
+							// was closed and the node was popped off
+							// the "stack".
 							if (*s != '>')
-                            {
-                                // Continue parsing
-                                continue;
-                                // TODO ignore the exception
-                                // THROW_ERROR(status_bad_end_element, s);
-                            }
+							{
+								// Continue parsing
+								continue;
+								// TODO ignore the exception
+								// THROW_ERROR(status_bad_end_element, s);
+							}
 							++s;
 						}
 					}
@@ -2295,22 +2305,22 @@ namespace
 
 						assert(cursor);
 						if ((cursor->header & html_memory_page_type_mask) + 1 == node_declaration)
-                        {
-                            goto LOC_ATTRIBUTES;
-                        }
+						{
+							goto LOC_ATTRIBUTES;
+						}
 					}
 					else if (*s == '!') // '<!...'
 					{
 						s = parse_exclamation(s, cursor, optmsk, endch);
 					}
 					else if (*s == 0 && endch == '?')
-                    {
-                        THROW_ERROR(status_bad_pi, s);
-                    }
+					{
+						THROW_ERROR(status_bad_pi, s);
+					}
 					else
-                    {
-                        THROW_ERROR(status_unrecognized_tag, s);
-                    }
+					{
+						THROW_ERROR(status_unrecognized_tag, s);
+					}
 				}
 				else
 				{
@@ -2351,11 +2361,11 @@ namespace
 
 			// Check that last tag is closed
 			if (cursor != htmldoc)
-            {
-                // TODO POPNODE or ignore exception
-                // THROW_ERROR(status_end_element_mismatch, s);
-                cursor = htmldoc;
-            }
+			{
+				// TODO POPNODE or ignore exception
+				// THROW_ERROR(status_end_element_mismatch, s);
+				cursor = htmldoc;
+			}
 		}
 
 		static html_parse_result parse(char_t* buffer, size_t length, html_node_struct* root, unsigned int optmsk)
@@ -2864,10 +2874,10 @@ namespace
 			{
 				writer.write('>');
 
-                if (node.first_child().type() == node_pcdata)
-                    text_output_escaped(writer, node.first_child().value(), ctx_special_pcdata);
-                else
-                    text_output_cdata(writer, node.first_child().value());
+				if (node.first_child().type() == node_pcdata)
+					text_output_escaped(writer, node.first_child().value(), ctx_special_pcdata);
+				else
+					text_output_cdata(writer, node.first_child().value());
 
 				writer.write('<', '/');
 				writer.write(name);
@@ -2931,13 +2941,13 @@ namespace
 			writer.write('<', '!', 'D', 'O', 'C');
 			writer.write('T', 'Y', 'P', 'E');
 
-            if (node.value()[0])
-            {
-                writer.write(' ');
-                writer.write(node.value());
-            }
+			if (node.value()[0])
+			{
+				writer.write(' ');
+				writer.write(node.value());
+			}
 
-            writer.write('>');
+			writer.write('>');
 			if ((flags & format_raw) == 0) writer.write('\n');
 			break;
 
@@ -2997,7 +3007,7 @@ namespace
 		case node_pcdata:
 		case node_cdata:
 		case node_comment:
-        case node_doctype:
+		case node_doctype:
 			dest.set_value(source.value());
 			break;
 
@@ -3142,16 +3152,16 @@ namespace
 
 		// first pass: get length in utf8 characters
 		size_t length = wcslen(str);
-        size_t size = as_utf8_begin(str, length);
+		size_t size = as_utf8_begin(str, length);
 
 		// allocate resulting string
 		char* result = static_cast<char*>(global_allocate(size + 1));
 		if (!result) return 0;
 
 		// second pass: convert to utf8
-        as_utf8_end(result, size, str, length);
+		as_utf8_end(result, size, str, length);
 
-	  	return result;
+		return result;
 	}
 
 	FILE* open_file_wide(const wchar_t* path, const wchar_t* mode)
@@ -3245,13 +3255,13 @@ namespace pugihtml
 
 	html_attribute::operator html_attribute::unspecified_bool_type() const
 	{
-      	return _attr ? &html_attribute::_attr : 0;
-   	}
+		return _attr ? &html_attribute::_attr : 0;
+	}
 
-   	bool html_attribute::operator!() const
-   	{
-   		return !_attr;
-   	}
+	bool html_attribute::operator!() const
+	{
+		return !_attr;
+	}
 
 	bool html_attribute::operator==(const html_attribute& r) const
 	{
@@ -3283,15 +3293,15 @@ namespace pugihtml
 		return (_attr >= r._attr);
 	}
 
-   	html_attribute html_attribute::next_attribute() const
-   	{
-    	return _attr ? html_attribute(_attr->next_attribute) : html_attribute();
-   	}
+	html_attribute html_attribute::next_attribute() const
+	{
+		return _attr ? html_attribute(_attr->next_attribute) : html_attribute();
+	}
 
-    html_attribute html_attribute::previous_attribute() const
-    {
-    	return _attr && _attr->prev_attribute_c->next_attribute ? html_attribute(_attr->prev_attribute_c) : html_attribute();
-    }
+	html_attribute html_attribute::previous_attribute() const
+	{
+		return _attr && _attr->prev_attribute_c->next_attribute ? html_attribute(_attr->prev_attribute_c) : html_attribute();
+	}
 
 	int html_attribute::as_int() const
 	{
@@ -3363,14 +3373,14 @@ namespace pugihtml
 		return (_attr && _attr->value) ? _attr->value : PUGIHTML_TEXT("");
 	}
 
-    size_t html_attribute::hash_value() const
-    {
-        return static_cast<size_t>(reinterpret_cast<uintptr_t>(_attr) / sizeof(html_attribute_struct));
-    }
+	size_t html_attribute::hash_value() const
+	{
+		return static_cast<size_t>(reinterpret_cast<uintptr_t>(_attr) / sizeof(html_attribute_struct));
+	}
 
 	html_attribute_struct* html_attribute::internal_object() const
 	{
-        return _attr;
+		return _attr;
 	}
 
 	html_attribute& html_attribute::operator=(const char_t* rhs)
@@ -3489,13 +3499,13 @@ namespace pugihtml
 
 	html_node::operator html_node::unspecified_bool_type() const
 	{
-      	return _root ? &html_node::_root : 0;
-   	}
+		return _root ? &html_node::_root : 0;
+	}
 
-   	bool html_node::operator!() const
-   	{
-   		return !_root;
-   	}
+	bool html_node::operator!() const
+	{
+		return !_root;
+	}
 
 	html_node::iterator html_node::begin() const
 	{
@@ -3700,7 +3710,7 @@ namespace pugihtml
 		case node_cdata:
 		case node_pcdata:
 		case node_comment:
-        case node_doctype:
+		case node_doctype:
 			return strcpy_insitu(_root->value, _root->header, html_memory_page_value_allocated_mask, rhs);
 
 		default:
@@ -3727,18 +3737,18 @@ namespace pugihtml
 
 		a.set_name(name);
 
-        html_attribute_struct* head = _root->first_attribute;
+		html_attribute_struct* head = _root->first_attribute;
 
 		if (head)
-        {
-            a._attr->prev_attribute_c = head->prev_attribute_c;
-            head->prev_attribute_c = a._attr;
-        }
-        else
-            a._attr->prev_attribute_c = a._attr;
+		{
+			a._attr->prev_attribute_c = head->prev_attribute_c;
+			head->prev_attribute_c = a._attr;
+		}
+		else
+			a._attr->prev_attribute_c = a._attr;
 
 		a._attr->next_attribute = head;
-        _root->first_attribute = a._attr;
+		_root->first_attribute = a._attr;
 
 		return a;
 	}
@@ -3857,20 +3867,20 @@ namespace pugihtml
 		html_node n(allocate_node(get_allocator(_root), type));
 		if (!n) return html_node();
 
-        n._root->parent = _root;
+		n._root->parent = _root;
 
-        html_node_struct* head = _root->first_child;
+		html_node_struct* head = _root->first_child;
 
 		if (head)
-        {
-            n._root->prev_sibling_c = head->prev_sibling_c;
-            head->prev_sibling_c = n._root;
-        }
-        else
-            n._root->prev_sibling_c = n._root;
+		{
+			n._root->prev_sibling_c = head->prev_sibling_c;
+			head->prev_sibling_c = n._root;
+		}
+		else
+			n._root->prev_sibling_c = n._root;
 
 		n._root->next_sibling = head;
-        _root->first_child = n._root;
+		_root->first_child = n._root;
 
 		if (type == node_declaration) n.set_name(PUGIHTML_TEXT("html"));
 
@@ -3925,41 +3935,41 @@ namespace pugihtml
 		return n;
 	}
 
-    html_node html_node::append_child(const char_t* name)
-    {
-        html_node result = append_child(node_element);
+	html_node html_node::append_child(const char_t* name)
+	{
+		html_node result = append_child(node_element);
 
-        result.set_name(name);
+		result.set_name(name);
 
-        return result;
-    }
+		return result;
+	}
 
-    html_node html_node::prepend_child(const char_t* name)
-    {
-        html_node result = prepend_child(node_element);
+	html_node html_node::prepend_child(const char_t* name)
+	{
+		html_node result = prepend_child(node_element);
 
-        result.set_name(name);
+		result.set_name(name);
 
-        return result;
-    }
+		return result;
+	}
 
-    html_node html_node::insert_child_after(const char_t* name, const html_node& node)
-    {
-        html_node result = insert_child_after(node_element, node);
+	html_node html_node::insert_child_after(const char_t* name, const html_node& node)
+	{
+		html_node result = insert_child_after(node_element, node);
 
-        result.set_name(name);
+		result.set_name(name);
 
-        return result;
-    }
+		return result;
+	}
 
-    html_node html_node::insert_child_before(const char_t* name, const html_node& node)
-    {
-        html_node result = insert_child_before(node_element, node);
+	html_node html_node::insert_child_before(const char_t* name, const html_node& node)
+	{
+		html_node result = insert_child_before(node_element, node);
 
-        result.set_name(name);
+		result.set_name(name);
 
-        return result;
-    }
+		return result;
+	}
 
 	html_node html_node::append_copy(const html_node& proto)
 	{
@@ -4039,7 +4049,7 @@ namespace pugihtml
 		if (n._root->prev_sibling_c->next_sibling) n._root->prev_sibling_c->next_sibling = n._root->next_sibling;
 		else _root->first_child = n._root->next_sibling;
 
-        destroy_node(n._root, get_allocator(_root));
+		destroy_node(n._root, get_allocator(_root));
 
 		return true;
 	}
@@ -4189,14 +4199,14 @@ namespace pugihtml
 		return walker.end(arg_end);
 	}
 
-    size_t html_node::hash_value() const
-    {
-        return static_cast<size_t>(reinterpret_cast<uintptr_t>(_root) / sizeof(html_node_struct));
-    }
+	size_t html_node::hash_value() const
+	{
+		return static_cast<size_t>(reinterpret_cast<uintptr_t>(_root) / sizeof(html_node_struct));
+	}
 
 	html_node_struct* html_node::internal_object() const
 	{
-        return _root;
+		return _root;
 	}
 
 	void html_node::print(html_writer& writer, const char_t* indent, unsigned int flags, html_encoding encoding, unsigned int depth) const
@@ -4389,14 +4399,14 @@ namespace pugihtml
 		return temp;
 	}
 
-    html_parse_result::html_parse_result(): status(status_internal_error), offset(0), encoding(encoding_auto)
-    {
-    }
+	html_parse_result::html_parse_result(): status(status_internal_error), offset(0), encoding(encoding_auto)
+	{
+	}
 
-    html_parse_result::operator bool() const
-    {
-        return status == status_ok;
-    }
+	html_parse_result::operator bool() const
+	{
+		return status == status_ok;
+	}
 
 	const char* html_parse_result::description() const
 	{
@@ -4441,13 +4451,13 @@ namespace pugihtml
 		create();
 	}
 
-    void html_document::reset(const html_document& proto)
-    {
-        reset();
+	void html_document::reset(const html_document& proto)
+	{
+		reset();
 
-        for (html_node cur = proto.first_child(); cur; cur = cur.next_sibling())
-            append_copy(cur);
-    }
+		for (html_node cur = proto.first_child(); cur; cur = cur.next_sibling())
+			append_copy(cur);
+	}
 
 	void html_document::create()
 	{
@@ -4653,56 +4663,56 @@ namespace pugihtml
 		return true;
 	}
 
-    html_node html_document::document_element() const
-    {
+	html_node html_document::document_element() const
+	{
 		for (html_node_struct* i = _root->first_child; i; i = i->next_sibling)
 			if ((i->header & html_memory_page_type_mask) + 1 == node_element)
-                return html_node(i);
+				return html_node(i);
 
-        return html_node();
-    }
+		return html_node();
+	}
 
 #ifndef PUGIHTML_NO_STL
 	std::string PUGIHTML_FUNCTION as_utf8(const wchar_t* str)
 	{
 		assert(str);
 
-        return as_utf8_impl(str, wcslen(str));
+		return as_utf8_impl(str, wcslen(str));
 	}
 
 	std::string PUGIHTML_FUNCTION as_utf8(const std::wstring& str)
 	{
-        return as_utf8_impl(str.c_str(), str.size());
+		return as_utf8_impl(str.c_str(), str.size());
 	}
 
 	std::wstring PUGIHTML_FUNCTION as_wide(const char* str)
 	{
 		assert(str);
 
-        return as_wide_impl(str, strlen(str));
+		return as_wide_impl(str, strlen(str));
 	}
 
 	std::wstring PUGIHTML_FUNCTION as_wide(const std::string& str)
 	{
-        return as_wide_impl(str.c_str(), str.size());
+		return as_wide_impl(str.c_str(), str.size());
 	}
 #endif
 
-    void PUGIHTML_FUNCTION set_memory_management_functions(allocation_function allocate, deallocation_function deallocate)
-    {
-    	global_allocate = allocate;
-    	global_deallocate = deallocate;
-    }
+	void PUGIHTML_FUNCTION set_memory_management_functions(allocation_function allocate, deallocation_function deallocate)
+	{
+		global_allocate = allocate;
+		global_deallocate = deallocate;
+	}
 
-    allocation_function PUGIHTML_FUNCTION get_memory_allocation_function()
-    {
-    	return global_allocate;
-    }
+	allocation_function PUGIHTML_FUNCTION get_memory_allocation_function()
+	{
+		return global_allocate;
+	}
 
-    deallocation_function PUGIHTML_FUNCTION get_memory_deallocation_function()
-    {
-    	return global_deallocate;
-    }
+	deallocation_function PUGIHTML_FUNCTION get_memory_deallocation_function()
+	{
+		return global_deallocate;
+	}
 }
 
 #if !defined(PUGIHTML_NO_STL) && (defined(_MSC_VER) || defined(__ICC))
@@ -5397,15 +5407,15 @@ namespace
 
 	unsigned int node_height(html_node n)
 	{
-	    unsigned int result = 0;
+		unsigned int result = 0;
 
-	    while (n)
-	    {
-	        ++result;
-	        n = n.parent();
-	    }
+		while (n)
+		{
+			++result;
+			n = n.parent();
+		}
 
-	    return result;
+		return result;
 	}
 
 	bool node_is_before(html_node ln, unsigned int lh, html_node rn, unsigned int rh)
@@ -5415,55 +5425,55 @@ namespace
 		for (unsigned int j = lh; j < rh; j++) rn = rn.parent();
 
 		// one node is the ancestor of the other
-	    if (ln == rn) return lh < rh;
+		if (ln == rn) return lh < rh;
 
 		// find common ancestor
-	    while (ln.parent() != rn.parent())
-	    {
-	        ln = ln.parent();
-	        rn = rn.parent();
-	    }
+		while (ln.parent() != rn.parent())
+		{
+			ln = ln.parent();
+			rn = rn.parent();
+		}
 
 		// there is no common ancestor (the shared parent is null), nodes are from different documents
 		if (!ln.parent()) return ln < rn;
 
 		// determine sibling order
-        for (; ln; ln = ln.next_sibling())
-            if (ln == rn)
-                return true;
+		for (; ln; ln = ln.next_sibling())
+			if (ln == rn)
+				return true;
 
-        return false;
-    }
+		return false;
+	}
 
-    bool node_is_ancestor(html_node parent, html_node node)
-    {
-    	while (node && node != parent) node = node.parent();
+	bool node_is_ancestor(html_node parent, html_node node)
+	{
+		while (node && node != parent) node = node.parent();
 
-    	return parent && node == parent;
-    }
+		return parent && node == parent;
+	}
 
-    const void* document_order(const xpath_node& xnode)
-    {
-        html_node_struct* node = xnode.node().internal_object();
+	const void* document_order(const xpath_node& xnode)
+	{
+		html_node_struct* node = xnode.node().internal_object();
 
-        if (node)
-        {
-            if (node->name && (node->header & html_memory_page_name_allocated_mask) == 0) return node->name;
-            if (node->value && (node->header & html_memory_page_value_allocated_mask) == 0) return node->value;
-            return 0;
-        }
+		if (node)
+		{
+			if (node->name && (node->header & html_memory_page_name_allocated_mask) == 0) return node->name;
+			if (node->value && (node->header & html_memory_page_value_allocated_mask) == 0) return node->value;
+			return 0;
+		}
 
-        html_attribute_struct* attr = xnode.attribute().internal_object();
+		html_attribute_struct* attr = xnode.attribute().internal_object();
 
-        if (attr)
-        {
-            if ((attr->header & html_memory_page_name_allocated_mask) == 0) return attr->name;
-            if ((attr->header & html_memory_page_value_allocated_mask) == 0) return attr->value;
-            return 0;
-        }
+		if (attr)
+		{
+			if ((attr->header & html_memory_page_name_allocated_mask) == 0) return attr->name;
+			if ((attr->header & html_memory_page_value_allocated_mask) == 0) return attr->value;
+			return 0;
+		}
 
 		return 0;
-    }
+	}
 
 	struct document_order_comparator
 	{
@@ -5475,7 +5485,7 @@ namespace
 
 			if (lo && ro) return lo < ro;
 
-            // slow comparison
+			// slow comparison
 			html_node ln = lhs.node(), rn = rhs.node();
 
 			// compare attributes
@@ -5485,11 +5495,11 @@ namespace
 				if (lhs.parent() == rhs.parent())
 				{
 					// determine sibling order
-				    for (html_attribute a = lhs.attribute(); a; a = a.next_attribute())
-				        if (a == rhs.attribute())
-				            return true;
+					for (html_attribute a = lhs.attribute(); a; a = a.next_attribute())
+						if (a == rhs.attribute())
+							return true;
 
-				    return false;
+					return false;
 				}
 
 				// compare attribute parents
@@ -6599,7 +6609,7 @@ namespace
 		ast_op_or,						// left or right
 		ast_op_and,						// left and right
 		ast_op_equal,					// left = right
-		ast_op_not_equal, 				// left != right
+		ast_op_not_equal,				// left != right
 		ast_op_less,					// left < right
 		ast_op_greater,					// left > right
 		ast_op_less_or_equal,			// left <= right
@@ -7883,7 +7893,7 @@ namespace
 				xpath_node_set_raw rs = _right->eval_node_set(c, stack);
 
 				// we can optimize merging two sorted sets, but this is a very rare operation, so don't bother
-  		        rs.set_type(xpath_node_set::type_unsorted);
+				rs.set_type(xpath_node_set::type_unsorted);
 
 				rs.append(ls.begin(), ls.end(), stack.result);
 				rs.remove_duplicates();
@@ -8031,8 +8041,8 @@ namespace
 
 	struct xpath_parser
 	{
-	    xpath_allocator* _alloc;
-	    xpath_lexer _lexer;
+		xpath_allocator* _alloc;
+		xpath_lexer _lexer;
 
 		const char_t* _query;
 		xpath_variable_set* _variables;
@@ -8056,13 +8066,13 @@ namespace
 		}
 
 		void throw_error_oom()
-        {
-        #ifdef PUGIHTML_NO_EXCEPTIONS
-            throw_error("Out of memory");
-        #else
-            throw std::bad_alloc();
-        #endif
-        }
+		{
+		#ifdef PUGIHTML_NO_EXCEPTIONS
+			throw_error("Out of memory");
+		#else
+			throw std::bad_alloc();
+		#endif
+		}
 
 		void* alloc_node()
 		{
@@ -8306,13 +8316,13 @@ namespace
 			return nodetest_none;
 		}
 
-	    // PrimaryExpr ::= VariableReference | '(' Expr ')' | Literal | Number | FunctionCall
-	    xpath_ast_node* parse_primary_expression()
-	    {
-	    	switch (_lexer.current())
-	    	{
-	    	case lex_var_ref:
-	    	{
+		// PrimaryExpr ::= VariableReference | '(' Expr ')' | Literal | Number | FunctionCall
+		xpath_ast_node* parse_primary_expression()
+		{
+			switch (_lexer.current())
+			{
+			case lex_var_ref:
+			{
 				xpath_lexer_string name = _lexer.contents();
 
 				if (!_variables)
@@ -8325,7 +8335,7 @@ namespace
 
 				_lexer.next();
 
-	    		return new (alloc_node()) xpath_ast_node(ast_variable, var->type(), var);
+				return new (alloc_node()) xpath_ast_node(ast_variable, var->type(), var);
 			}
 
 			case lex_open_brace:
@@ -8402,23 +8412,23 @@ namespace
 				return parse_function(function, argc, args);
 			}
 
-	    	default:
-	    		throw_error("Unrecognizable primary expression");
+			default:
+				throw_error("Unrecognizable primary expression");
 
-	    		return 0;
-	    	}
-	    }
+				return 0;
+			}
+		}
 
-	    // FilterExpr ::= PrimaryExpr | FilterExpr Predicate
-	    // Predicate ::= '[' PredicateExpr ']'
-	    // PredicateExpr ::= Expr
-	    xpath_ast_node* parse_filter_expression()
-	    {
-	    	xpath_ast_node* n = parse_primary_expression();
+		// FilterExpr ::= PrimaryExpr | FilterExpr Predicate
+		// Predicate ::= '[' PredicateExpr ']'
+		// PredicateExpr ::= Expr
+		xpath_ast_node* parse_filter_expression()
+		{
+			xpath_ast_node* n = parse_primary_expression();
 
-	    	while (_lexer.current() == lex_open_square_brace)
-	    	{
-	    		_lexer.next();
+			while (_lexer.current() == lex_open_square_brace)
+			{
+				_lexer.next();
 
 				xpath_ast_node* expr = parse_expression();
 
@@ -8426,24 +8436,24 @@ namespace
 
 				bool posinv = expr->rettype() != xpath_type_number && expr->is_posinv();
 
-	    		n = new (alloc_node()) xpath_ast_node(posinv ? ast_filter_posinv : ast_filter, xpath_type_node_set, n, expr);
+				n = new (alloc_node()) xpath_ast_node(posinv ? ast_filter_posinv : ast_filter, xpath_type_node_set, n, expr);
 
-	    		if (_lexer.current() != lex_close_square_brace)
-	    			throw_error("Unmatched square brace");
+				if (_lexer.current() != lex_close_square_brace)
+					throw_error("Unmatched square brace");
 
-	    		_lexer.next();
-	    	}
+				_lexer.next();
+			}
 
-	    	return n;
-	    }
+			return n;
+		}
 
-	    // Step ::= AxisSpecifier NodeTest Predicate* | AbbreviatedStep
-	    // AxisSpecifier ::= AxisName '::' | '@'?
-	    // NodeTest ::= NameTest | NodeType '(' ')' | 'processing-instruction' '(' Literal ')'
-	    // NameTest ::= '*' | NCName ':' '*' | QName
-	    // AbbreviatedStep ::= '.' | '..'
-	    xpath_ast_node* parse_step(xpath_ast_node* set)
-	    {
+		// Step ::= AxisSpecifier NodeTest Predicate* | AbbreviatedStep
+		// AxisSpecifier ::= AxisName '::' | '@'?
+		// NodeTest ::= NameTest | NodeType '(' ')' | 'processing-instruction' '(' Literal ')'
+		// NameTest ::= '*' | NCName ':' '*' | QName
+		// AbbreviatedStep ::= '.' | '..'
+		xpath_ast_node* parse_step(xpath_ast_node* set)
+		{
 			if (set && set->rettype() != xpath_type_node_set)
 				throw_error("Step has to be applied to node set");
 
@@ -8573,7 +8583,7 @@ namespace
 				xpath_ast_node* pred = new (alloc_node()) xpath_ast_node(ast_predicate, xpath_type_node_set, expr);
 
 				if (_lexer.current() != lex_close_square_brace)
-	    			throw_error("Unmatched square brace");
+					throw_error("Unmatched square brace");
 				_lexer.next();
 
 				if (last) last->set_next(pred);
@@ -8583,11 +8593,11 @@ namespace
 			}
 
 			return n;
-	    }
+		}
 
-	    // RelativeLocationPath ::= Step | RelativeLocationPath '/' Step | RelativeLocationPath '//' Step
-	    xpath_ast_node* parse_relative_location_path(xpath_ast_node* set)
-	    {
+		// RelativeLocationPath ::= Step | RelativeLocationPath '/' Step | RelativeLocationPath '//' Step
+		xpath_ast_node* parse_relative_location_path(xpath_ast_node* set)
+		{
 			xpath_ast_node* n = parse_step(set);
 
 			while (_lexer.current() == lex_slash || _lexer.current() == lex_double_slash)
@@ -8602,12 +8612,12 @@ namespace
 			}
 
 			return n;
-	    }
+		}
 
-	    // LocationPath ::= RelativeLocationPath | AbsoluteLocationPath
-	    // AbsoluteLocationPath ::= '/' RelativeLocationPath? | '//' RelativeLocationPath
-	    xpath_ast_node* parse_location_path()
-	    {
+		// LocationPath ::= RelativeLocationPath | AbsoluteLocationPath
+		// AbsoluteLocationPath ::= '/' RelativeLocationPath? | '//' RelativeLocationPath
+		xpath_ast_node* parse_location_path()
+		{
 			if (_lexer.current() == lex_slash)
 			{
 				_lexer.next();
@@ -8634,14 +8644,14 @@ namespace
 
 			// else clause moved outside of if because of bogus warning 'control may reach end of non-void function being inlined' in gcc 4.0.1
 			return parse_relative_location_path(0);
-	    }
+		}
 
-	    // PathExpr ::= LocationPath
-	    //				| FilterExpr
-	    //				| FilterExpr '/' RelativeLocationPath
-	    //				| FilterExpr '//' RelativeLocationPath
-	    xpath_ast_node* parse_path_expression()
-	    {
+		// PathExpr ::= LocationPath
+		//				| FilterExpr
+		//				| FilterExpr '/' RelativeLocationPath
+		//				| FilterExpr '//' RelativeLocationPath
+		xpath_ast_node* parse_path_expression()
+		{
 			// Clarification.
 			// PathExpr begins with either LocationPath or FilterExpr.
 			// FilterExpr begins with PrimaryExpr
@@ -8652,26 +8662,26 @@ namespace
 			if (_lexer.current() == lex_var_ref || _lexer.current() == lex_open_brace ||
 				_lexer.current() == lex_quoted_string || _lexer.current() == lex_number ||
 				_lexer.current() == lex_string)
-	    	{
-	    		if (_lexer.current() == lex_string)
-	    		{
-	    			// This is either a function call, or not - if not, we shall proceed with location path
-	    			const char_t* state = _lexer.state();
+			{
+				if (_lexer.current() == lex_string)
+				{
+					// This is either a function call, or not - if not, we shall proceed with location path
+					const char_t* state = _lexer.state();
 
 					while (IS_CHARTYPE(*state, ct_space)) ++state;
 
-	    			if (*state != '(') return parse_location_path();
+					if (*state != '(') return parse_location_path();
 
 					// This looks like a function call; however this still can be a node-test. Check it.
 					if (parse_node_test_type(_lexer.contents()) != nodetest_none) return parse_location_path();
-	    		}
+				}
 
-	    		xpath_ast_node* n = parse_filter_expression();
+				xpath_ast_node* n = parse_filter_expression();
 
-	    		if (_lexer.current() == lex_slash || _lexer.current() == lex_double_slash)
-	    		{
+				if (_lexer.current() == lex_slash || _lexer.current() == lex_double_slash)
+				{
 					lexeme_t l = _lexer.current();
-	    			_lexer.next();
+					_lexer.next();
 
 					if (l == lex_double_slash)
 					{
@@ -8680,171 +8690,171 @@ namespace
 						n = new (alloc_node()) xpath_ast_node(ast_step, n, axis_descendant_or_self, nodetest_type_node, 0);
 					}
 
-	    			// select from location path
-	    			return parse_relative_location_path(n);
-	    		}
+					// select from location path
+					return parse_relative_location_path(n);
+				}
 
-	    		return n;
-	    	}
-	    	else return parse_location_path();
-	    }
+				return n;
+			}
+			else return parse_location_path();
+		}
 
-	    // UnionExpr ::= PathExpr | UnionExpr '|' PathExpr
-	    xpath_ast_node* parse_union_expression()
-	    {
-	    	xpath_ast_node* n = parse_path_expression();
+		// UnionExpr ::= PathExpr | UnionExpr '|' PathExpr
+		xpath_ast_node* parse_union_expression()
+		{
+			xpath_ast_node* n = parse_path_expression();
 
-	    	while (_lexer.current() == lex_union)
-	    	{
-	    		_lexer.next();
+			while (_lexer.current() == lex_union)
+			{
+				_lexer.next();
 
 				xpath_ast_node* expr = parse_union_expression();
 
 				if (n->rettype() != xpath_type_node_set || expr->rettype() != xpath_type_node_set)
 					throw_error("Union operator has to be applied to node sets");
 
-	    		n = new (alloc_node()) xpath_ast_node(ast_op_union, xpath_type_node_set, n, expr);
-	    	}
+				n = new (alloc_node()) xpath_ast_node(ast_op_union, xpath_type_node_set, n, expr);
+			}
 
-	    	return n;
-	    }
+			return n;
+		}
 
-	    // UnaryExpr ::= UnionExpr | '-' UnaryExpr
-	    xpath_ast_node* parse_unary_expression()
-	    {
-	    	if (_lexer.current() == lex_minus)
-	    	{
-	    		_lexer.next();
-
-				xpath_ast_node* expr = parse_unary_expression();
-
-	    		return new (alloc_node()) xpath_ast_node(ast_op_negate, xpath_type_number, expr);
-	    	}
-	    	else return parse_union_expression();
-	    }
-
-	    // MultiplicativeExpr ::= UnaryExpr
-	    //						  | MultiplicativeExpr '*' UnaryExpr
-	    //						  | MultiplicativeExpr 'div' UnaryExpr
-	    //						  | MultiplicativeExpr 'mod' UnaryExpr
-	    xpath_ast_node* parse_multiplicative_expression()
-	    {
-	    	xpath_ast_node* n = parse_unary_expression();
-
-	    	while (_lexer.current() == lex_multiply || (_lexer.current() == lex_string &&
-	    		   (_lexer.contents() == PUGIHTML_TEXT("mod") || _lexer.contents() == PUGIHTML_TEXT("div"))))
-	    	{
-	    		ast_type_t op = _lexer.current() == lex_multiply ? ast_op_multiply :
-	    			_lexer.contents().begin[0] == 'd' ? ast_op_divide : ast_op_mod;
-	    		_lexer.next();
+		// UnaryExpr ::= UnionExpr | '-' UnaryExpr
+		xpath_ast_node* parse_unary_expression()
+		{
+			if (_lexer.current() == lex_minus)
+			{
+				_lexer.next();
 
 				xpath_ast_node* expr = parse_unary_expression();
 
-	    		n = new (alloc_node()) xpath_ast_node(op, xpath_type_number, n, expr);
-	    	}
+				return new (alloc_node()) xpath_ast_node(ast_op_negate, xpath_type_number, expr);
+			}
+			else return parse_union_expression();
+		}
 
-	    	return n;
-	    }
+		// MultiplicativeExpr ::= UnaryExpr
+		//						  | MultiplicativeExpr '*' UnaryExpr
+		//						  | MultiplicativeExpr 'div' UnaryExpr
+		//						  | MultiplicativeExpr 'mod' UnaryExpr
+		xpath_ast_node* parse_multiplicative_expression()
+		{
+			xpath_ast_node* n = parse_unary_expression();
 
-	    // AdditiveExpr ::= MultiplicativeExpr
-	    //					| AdditiveExpr '+' MultiplicativeExpr
-	    //					| AdditiveExpr '-' MultiplicativeExpr
-	    xpath_ast_node* parse_additive_expression()
-	    {
-	    	xpath_ast_node* n = parse_multiplicative_expression();
+			while (_lexer.current() == lex_multiply || (_lexer.current() == lex_string &&
+				   (_lexer.contents() == PUGIHTML_TEXT("mod") || _lexer.contents() == PUGIHTML_TEXT("div"))))
+			{
+				ast_type_t op = _lexer.current() == lex_multiply ? ast_op_multiply :
+					_lexer.contents().begin[0] == 'd' ? ast_op_divide : ast_op_mod;
+				_lexer.next();
 
-	    	while (_lexer.current() == lex_plus || _lexer.current() == lex_minus)
-	    	{
-	    		lexeme_t l = _lexer.current();
+				xpath_ast_node* expr = parse_unary_expression();
 
-	    		_lexer.next();
+				n = new (alloc_node()) xpath_ast_node(op, xpath_type_number, n, expr);
+			}
+
+			return n;
+		}
+
+		// AdditiveExpr ::= MultiplicativeExpr
+		//					| AdditiveExpr '+' MultiplicativeExpr
+		//					| AdditiveExpr '-' MultiplicativeExpr
+		xpath_ast_node* parse_additive_expression()
+		{
+			xpath_ast_node* n = parse_multiplicative_expression();
+
+			while (_lexer.current() == lex_plus || _lexer.current() == lex_minus)
+			{
+				lexeme_t l = _lexer.current();
+
+				_lexer.next();
 
 				xpath_ast_node* expr = parse_multiplicative_expression();
 
-	    		n = new (alloc_node()) xpath_ast_node(l == lex_plus ? ast_op_add : ast_op_subtract, xpath_type_number, n, expr);
-	    	}
+				n = new (alloc_node()) xpath_ast_node(l == lex_plus ? ast_op_add : ast_op_subtract, xpath_type_number, n, expr);
+			}
 
-	    	return n;
-	    }
+			return n;
+		}
 
-	    // RelationalExpr ::= AdditiveExpr
-	    //					  | RelationalExpr '<' AdditiveExpr
-	    //					  | RelationalExpr '>' AdditiveExpr
-	    //					  | RelationalExpr '<=' AdditiveExpr
-	    //					  | RelationalExpr '>=' AdditiveExpr
-	    xpath_ast_node* parse_relational_expression()
-	    {
-	    	xpath_ast_node* n = parse_additive_expression();
+		// RelationalExpr ::= AdditiveExpr
+		//					  | RelationalExpr '<' AdditiveExpr
+		//					  | RelationalExpr '>' AdditiveExpr
+		//					  | RelationalExpr '<=' AdditiveExpr
+		//					  | RelationalExpr '>=' AdditiveExpr
+		xpath_ast_node* parse_relational_expression()
+		{
+			xpath_ast_node* n = parse_additive_expression();
 
-	    	while (_lexer.current() == lex_less || _lexer.current() == lex_less_or_equal ||
-	    		   _lexer.current() == lex_greater || _lexer.current() == lex_greater_or_equal)
-	    	{
-	    		lexeme_t l = _lexer.current();
-	    		_lexer.next();
+			while (_lexer.current() == lex_less || _lexer.current() == lex_less_or_equal ||
+				   _lexer.current() == lex_greater || _lexer.current() == lex_greater_or_equal)
+			{
+				lexeme_t l = _lexer.current();
+				_lexer.next();
 
 				xpath_ast_node* expr = parse_additive_expression();
 
-	    		n = new (alloc_node()) xpath_ast_node(l == lex_less ? ast_op_less : l == lex_greater ? ast_op_greater :
-	    						l == lex_less_or_equal ? ast_op_less_or_equal : ast_op_greater_or_equal, xpath_type_boolean, n, expr);
-	    	}
+				n = new (alloc_node()) xpath_ast_node(l == lex_less ? ast_op_less : l == lex_greater ? ast_op_greater :
+								l == lex_less_or_equal ? ast_op_less_or_equal : ast_op_greater_or_equal, xpath_type_boolean, n, expr);
+			}
 
-	    	return n;
-	    }
+			return n;
+		}
 
-	    // EqualityExpr ::= RelationalExpr
-	    //					| EqualityExpr '=' RelationalExpr
-	    //					| EqualityExpr '!=' RelationalExpr
-	    xpath_ast_node* parse_equality_expression()
-	    {
-	    	xpath_ast_node* n = parse_relational_expression();
+		// EqualityExpr ::= RelationalExpr
+		//					| EqualityExpr '=' RelationalExpr
+		//					| EqualityExpr '!=' RelationalExpr
+		xpath_ast_node* parse_equality_expression()
+		{
+			xpath_ast_node* n = parse_relational_expression();
 
-	    	while (_lexer.current() == lex_equal || _lexer.current() == lex_not_equal)
-	    	{
-	    		lexeme_t l = _lexer.current();
+			while (_lexer.current() == lex_equal || _lexer.current() == lex_not_equal)
+			{
+				lexeme_t l = _lexer.current();
 
-	    		_lexer.next();
+				_lexer.next();
 
 				xpath_ast_node* expr = parse_relational_expression();
 
-	    		n = new (alloc_node()) xpath_ast_node(l == lex_equal ? ast_op_equal : ast_op_not_equal, xpath_type_boolean, n, expr);
-	    	}
+				n = new (alloc_node()) xpath_ast_node(l == lex_equal ? ast_op_equal : ast_op_not_equal, xpath_type_boolean, n, expr);
+			}
 
-	    	return n;
-	    }
+			return n;
+		}
 
-	    // AndExpr ::= EqualityExpr | AndExpr 'and' EqualityExpr
-	    xpath_ast_node* parse_and_expression()
-	    {
-	    	xpath_ast_node* n = parse_equality_expression();
+		// AndExpr ::= EqualityExpr | AndExpr 'and' EqualityExpr
+		xpath_ast_node* parse_and_expression()
+		{
+			xpath_ast_node* n = parse_equality_expression();
 
-	    	while (_lexer.current() == lex_string && _lexer.contents() == PUGIHTML_TEXT("and"))
-	    	{
-	    		_lexer.next();
+			while (_lexer.current() == lex_string && _lexer.contents() == PUGIHTML_TEXT("and"))
+			{
+				_lexer.next();
 
 				xpath_ast_node* expr = parse_equality_expression();
 
-	    		n = new (alloc_node()) xpath_ast_node(ast_op_and, xpath_type_boolean, n, expr);
-	    	}
+				n = new (alloc_node()) xpath_ast_node(ast_op_and, xpath_type_boolean, n, expr);
+			}
 
-	    	return n;
-	    }
+			return n;
+		}
 
-	    // OrExpr ::= AndExpr | OrExpr 'or' AndExpr
-	    xpath_ast_node* parse_or_expression()
-	    {
-	    	xpath_ast_node* n = parse_and_expression();
+		// OrExpr ::= AndExpr | OrExpr 'or' AndExpr
+		xpath_ast_node* parse_or_expression()
+		{
+			xpath_ast_node* n = parse_and_expression();
 
-	    	while (_lexer.current() == lex_string && _lexer.contents() == PUGIHTML_TEXT("or"))
-	    	{
-	    		_lexer.next();
+			while (_lexer.current() == lex_string && _lexer.contents() == PUGIHTML_TEXT("or"))
+			{
+				_lexer.next();
 
 				xpath_ast_node* expr = parse_and_expression();
 
-	    		n = new (alloc_node()) xpath_ast_node(ast_op_or, xpath_type_boolean, n, expr);
-	    	}
+				n = new (alloc_node()) xpath_ast_node(ast_op_or, xpath_type_boolean, n, expr);
+			}
 
-	    	return n;
-	    }
+			return n;
+		}
 
 		// Expr ::= OrExpr
 		xpath_ast_node* parse_expression()
@@ -8883,13 +8893,13 @@ namespace
 		}
 	};
 
-    struct xpath_query_impl
-    {
+	struct xpath_query_impl
+	{
 		static xpath_query_impl* create()
 		{
 			void* memory = global_allocate(sizeof(xpath_query_impl));
 
-            return new (memory) xpath_query_impl();
+			return new (memory) xpath_query_impl();
 		}
 
 		static void destroy(void* ptr)
@@ -8903,15 +8913,15 @@ namespace
 			global_deallocate(ptr);
 		}
 
-        xpath_query_impl(): root(0), alloc(&block)
-        {
-            block.next = 0;
-        }
+		xpath_query_impl(): root(0), alloc(&block)
+		{
+			block.next = 0;
+		}
 
-        xpath_ast_node* root;
-        xpath_allocator alloc;
-        xpath_memory_block block;
-    };
+		xpath_ast_node* root;
+		xpath_allocator alloc;
+		xpath_memory_block block;
+	};
 
 	xpath_string evaluate_string_impl(xpath_query_impl* impl, const xpath_node& n, xpath_stack_data& sd)
 	{
@@ -9117,22 +9127,22 @@ namespace pugihtml
 		return xpath_first(_begin, _end, _type);
 	}
 
-    xpath_parse_result::xpath_parse_result(): error("Internal error"), offset(0)
-    {
-    }
+	xpath_parse_result::xpath_parse_result(): error("Internal error"), offset(0)
+	{
+	}
 
-    xpath_parse_result::operator bool() const
-    {
-        return error == 0;
-    }
+	xpath_parse_result::operator bool() const
+	{
+		return error == 0;
+	}
 	const char* xpath_parse_result::description() const
 	{
 		return error ? error : "No error";
 	}
 
 	xpath_variable::xpath_variable()
-    {
-    }
+	{
+	}
 
 	const char_t* xpath_variable::name() const
 	{
@@ -9328,7 +9338,7 @@ namespace pugihtml
 		{
 		#ifdef PUGIHTML_NO_EXCEPTIONS
 			_result.error = "Out of memory";
-        #else
+		#else
 			throw std::bad_alloc();
 		#endif
 		}
@@ -9340,7 +9350,7 @@ namespace pugihtml
 
 			if (impl->root)
 			{
-                _impl = static_cast<xpath_query_impl*>(impl_holder.release());
+				_impl = static_cast<xpath_query_impl*>(impl_holder.release());
 				_result.error = 0;
 			}
 		}
@@ -9404,13 +9414,13 @@ namespace pugihtml
 		size_t full_size = r.length() + 1;
 
 		if (capacity > 0)
-        {
-            size_t size = (full_size < capacity) ? full_size : capacity;
-            assert(size > 0);
+		{
+			size_t size = (full_size < capacity) ? full_size : capacity;
+			assert(size > 0);
 
-            memcpy(buffer, r.c_str(), (size - 1) * sizeof(char_t));
-            buffer[size - 1] = 0;
-        }
+			memcpy(buffer, r.c_str(), (size - 1) * sizeof(char_t));
+			buffer[size - 1] = 0;
+		}
 
 		return full_size;
 	}
@@ -9419,7 +9429,7 @@ namespace pugihtml
 	{
 		if (!_impl) return xpath_node_set();
 
-        xpath_ast_node* root = static_cast<xpath_query_impl*>(_impl)->root;
+		xpath_ast_node* root = static_cast<xpath_query_impl*>(_impl)->root;
 
 		if (root->rettype() != xpath_type_node_set)
 		{
