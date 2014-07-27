@@ -12,6 +12,8 @@
 #include "pugihtml.hpp"
 #include "pugiutil.hpp"
 #include "memory.hpp"
+#include "html_node.hpp"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -196,30 +198,6 @@ namespace pugihtml
 		html_attribute_struct* prev_attribute_c;	///< Previous attribute (cyclic list)
 		html_attribute_struct* next_attribute;	///< Next attribute
 	};
-
-	/// An HTML document tree node.
-	struct html_node_struct
-	{
-		/// Default ctor
-		/// \param type - node type
-		html_node_struct(html_memory_page* page, html_node_type type): header(reinterpret_cast<uintptr_t>(page) | (type - 1)), parent(0), name(0), value(0), first_child(0), prev_sibling_c(0), next_sibling(0), first_attribute(0)
-		{
-		}
-
-		uintptr_t header;
-
-		html_node_struct*		parent;					///< Pointer to parent
-
-		char_t*					name;					///< Pointer to element name.
-		char_t*					value;					///< Pointer to any associated string data.
-
-		html_node_struct*		first_child;			///< First child
-
-		html_node_struct*		prev_sibling_c;			///< Left brother (cyclic list)
-		html_node_struct*		next_sibling;			///< Right brother
-
-		html_attribute_struct*	first_attribute;		///< First attribute
-	};
 }
 
 namespace
@@ -299,60 +277,6 @@ namespace
 		}
 
 		alloc.deallocate_memory(n, sizeof(html_node_struct), reinterpret_cast<html_memory_page*>(header & html_memory_page_pointer_mask));
-	}
-
-	// TODO(povilas): use from html_node.hpp
-	PUGIHTML_NO_INLINE html_node_struct*
-	append_node(html_node_struct* node, html_allocator& alloc,
-		html_node_type type = node_element)
-	{
-		html_node_struct* child = allocate_node(alloc, type);
-		if (!child) return 0;
-
-		child->parent = node;
-
-		html_node_struct* first_child = node->first_child;
-
-		if (first_child)
-		{
-			html_node_struct* last_child = first_child->prev_sibling_c;
-
-			last_child->next_sibling = child;
-			child->prev_sibling_c = last_child;
-			first_child->prev_sibling_c = child;
-		}
-		else
-		{
-			node->first_child = child;
-			child->prev_sibling_c = child;
-		}
-
-		return child;
-	}
-
-	// TODO(povilas): use from html_node.hpp.
-	PUGIHTML_NO_INLINE html_attribute_struct* append_attribute_ll(html_node_struct* node, html_allocator& alloc)
-	{
-		html_attribute_struct* a = allocate_attribute(alloc);
-		if (!a) return 0;
-
-		html_attribute_struct* first_attribute = node->first_attribute;
-
-		if (first_attribute)
-		{
-			html_attribute_struct* last_attribute = first_attribute->prev_attribute_c;
-
-			last_attribute->next_attribute = a;
-			a->prev_attribute_c = last_attribute;
-			first_attribute->prev_attribute_c = a;
-		}
-		else
-		{
-			node->first_attribute = a;
-			a->prev_attribute_c = a;
-		}
-
-		return a;
 	}
 }
 
