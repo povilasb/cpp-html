@@ -16,7 +16,7 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}.")
 
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -fstack-protector -s")
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -Werror -pedantic")
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -pedantic")
 
 set(LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
