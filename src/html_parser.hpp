@@ -11,8 +11,21 @@
 namespace pugihtml
 {
 
+enum chartype_t {
+	ct_parse_pcdata = 1, // \0, &, \r, <
+	ct_parse_attr = 2, // \0, &, \r, ', "
+	ct_parse_attr_ws = 4, // \0, &, \r, ', ", \n, tab
+	ct_space = 8, // \r, \n, space, tab
+	ct_parse_cdata = 16, // \0, ], >, \r
+	ct_parse_comment = 32, // \0, -, >, \r
+	ct_symbol = 64, // Any symbol > 127, a-z, A-Z, 0-9, _, :, -, .
+	ct_start_symbol = 128 // Any symbol > 127, a-z, A-Z, _, :
+};
+
 struct html_parser {
 public:
+	html_parser(const html_allocator& alloc);
+
 	/**
 	 * DOCTYPE consists of nested sections of the following possible types:
 	 * 1. <!-- ... -->, <? ... ?>, "...", '...'
@@ -36,6 +49,9 @@ public:
 
 	void parse(char_t* s, html_node_struct* htmldoc, unsigned int optmsk,
 		char_t endch);
+
+	static html_parse_result parse(char_t* buffer, size_t length,
+		html_node_struct* root, unsigned int optmsk);
 
 //private:
 	html_allocator alloc;
