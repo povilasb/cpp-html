@@ -985,9 +985,7 @@ html_parser::parse(char_t* buffer, size_t length, html_node_struct* root,
 
 	// perform actual parsing
 	int error = setjmp(parser.error_handler);
-
-	if (error == 0)
-	{
+	if (error == 0) {
 		parser.parse(buffer, htmldoc, optmsk, endch);
 	}
 
@@ -1018,6 +1016,7 @@ html_parse_result::operator bool() const
 {
 	return status == status_ok;
 }
+
 
 const char*
 html_parse_result::description() const
