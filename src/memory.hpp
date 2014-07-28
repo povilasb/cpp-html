@@ -57,6 +57,11 @@ deallocation_function PUGIHTML_FUNCTION get_memory_deallocation_function();
 struct html_allocator;
 
 struct html_memory_page {
+	/**
+	 * Constructs memory page in the specified memory block.
+	 *
+	 * @return same pointer ass passed by memory parameter.
+	 */
 	static html_memory_page* construct(void* memory);
 
 	html_allocator* allocator;
