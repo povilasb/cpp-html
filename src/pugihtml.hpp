@@ -38,7 +38,7 @@ namespace pugihtml
 	const unsigned int format_no_declaration = 0x08;
 
 	// The default set of formatting flags.
-    // Nodes are indented depending on their depth in DOM tree, a default declaration is output if document has none.
+	// Nodes are indented depending on their depth in DOM tree, a default declaration is output if document has none.
 	const unsigned int format_default = format_indent;
 
 	// Forward declarations
@@ -73,7 +73,7 @@ namespace pugihtml
 	class PUGIHTML_CLASS html_writer_file: public html_writer
 	{
 	public:
-        // Construct writer from a FILE* object; void* is used to avoid header dependencies on stdio
+		// Construct writer from a FILE* object; void* is used to avoid header dependencies on stdio
 		html_writer_file(void* file);
 
 		virtual void write(const void* data, size_t size);
@@ -87,7 +87,7 @@ namespace pugihtml
 	class PUGIHTML_CLASS html_writer_stream: public html_writer
 	{
 	public:
-        // Construct writer from an output stream object
+		// Construct writer from an output stream object
 		html_writer_stream(std::basic_ostream<char, std::char_traits<char> >& stream);
 		html_writer_stream(std::basic_ostream<wchar_t, std::char_traits<wchar_t> >& stream);
 
@@ -108,20 +108,20 @@ namespace pugihtml
 	private:
 		html_attribute_struct* _attr;
 
-    	typedef html_attribute_struct* html_attribute::*unspecified_bool_type;
+		typedef html_attribute_struct* html_attribute::*unspecified_bool_type;
 
 	public:
-        // Default constructor. Constructs an empty attribute.
+		// Default constructor. Constructs an empty attribute.
 		html_attribute();
 
-        // Constructs attribute from internal pointer
+		// Constructs attribute from internal pointer
 		explicit html_attribute(html_attribute_struct* attr);
 
-    	// Safe bool conversion operator
-    	operator unspecified_bool_type() const;
+		// Safe bool conversion operator
+		operator unspecified_bool_type() const;
 
-    	// Borland C++ workaround
-    	bool operator!() const;
+		// Borland C++ workaround
+		bool operator!() const;
 
 		// Comparison operators (compares wrapped attribute pointers)
 		bool operator==(const html_attribute& r) const;
@@ -144,14 +144,14 @@ namespace pugihtml
 		double as_double() const;
 		float as_float() const;
 
-        // Get attribute value as bool (returns true if first character is in '1tTyY' set), or false if attribute is empty
+		// Get attribute value as bool (returns true if first character is in '1tTyY' set), or false if attribute is empty
 		bool as_bool() const;
 
-        // Set attribute name/value (returns false if attribute is empty or there is not enough memory)
+		// Set attribute name/value (returns false if attribute is empty or there is not enough memory)
 		bool set_name(const char_t* rhs);
 		bool set_value(const char_t* rhs);
 
-        // Set attribute value with type conversion (numbers are converted to strings, boolean is converted to "true"/"false")
+		// Set attribute value with type conversion (numbers are converted to strings, boolean is converted to "true"/"false")
 		bool set_value(int rhs);
 		bool set_value(unsigned int rhs);
 		bool set_value(double rhs);
@@ -164,12 +164,12 @@ namespace pugihtml
 		html_attribute& operator=(double rhs);
 		html_attribute& operator=(bool rhs);
 
-        // Get next/previous attribute in the attribute list of the parent node
-    	html_attribute next_attribute() const;
-    	html_attribute previous_attribute() const;
+		// Get next/previous attribute in the attribute list of the parent node
+		html_attribute next_attribute() const;
+		html_attribute previous_attribute() const;
 
-        // Get hash value (unique for handles to the same object)
-        size_t hash_value() const;
+		// Get hash value (unique for handles to the same object)
+		size_t hash_value() const;
 
 		// Get internal pointer
 		html_attribute_struct* internal_object() const;
@@ -190,16 +190,16 @@ namespace pugihtml
 	protected:
 		html_node_struct* _root;
 
-    	typedef html_node_struct* html_node::*unspecified_bool_type;
+		typedef html_node_struct* html_node::*unspecified_bool_type;
 
 	public:
 		// Default constructor. Constructs an empty node.
 		html_node();
 
-        // Constructs node from internal pointer
+		// Constructs node from internal pointer
 		explicit html_node(html_node_struct* p);
 
-    	// Safe bool conversion operator
+		// Safe bool conversion operator
 		operator unspecified_bool_type() const;
 
 		// Borland C++ workaround
@@ -225,17 +225,17 @@ namespace pugihtml
 
 		// Get attribute list
 		html_attribute first_attribute() const;
-        html_attribute last_attribute() const;
+		html_attribute last_attribute() const;
 
-        // Get children list
+		// Get children list
 		html_node first_child() const;
-        html_node last_child() const;
+		html_node last_child() const;
 
-        // Get next/previous sibling in the children list of the parent node
+		// Get next/previous sibling in the children list of the parent node
 		html_node next_sibling() const;
 		html_node previous_sibling() const;
 
-        // Get parent node
+		// Get parent node
 		html_node parent() const;
 
 		// Get root of DOM tree this node belongs to
@@ -316,7 +316,7 @@ namespace pugihtml
 				if (pred(node))
 					return node;
 
-	        return html_node();
+			return html_node();
 		}
 
 		// Find node from subtree using predicate. Returns first node from subtree (depth-first), for which predicate returned true.
@@ -392,8 +392,8 @@ namespace pugihtml
 		// Get node offset in parsed file/string (in char_t units) for debugging purposes
 		ptrdiff_t offset_debug() const;
 
-        // Get hash value (unique for handles to the same object)
-        size_t hash_value() const;
+		// Get hash value (unique for handles to the same object)
+		size_t hash_value() const;
 
 		// Get internal pointer
 		html_node_struct* internal_object() const;
@@ -427,13 +427,13 @@ namespace pugihtml
 		typedef std::bidirectional_iterator_tag iterator_category;
 	#endif
 
-        // Default constructor
+		// Default constructor
 		html_node_iterator();
 
-        // Construct an iterator which points to the specified node
+		// Construct an iterator which points to the specified node
 		html_node_iterator(const html_node& node);
 
-        // Iterator operators
+		// Iterator operators
 		bool operator==(const html_node_iterator& rhs) const;
 		bool operator!=(const html_node_iterator& rhs) const;
 
@@ -469,10 +469,10 @@ namespace pugihtml
 		typedef std::bidirectional_iterator_tag iterator_category;
 	#endif
 
-        // Default constructor
+		// Default constructor
 		html_attribute_iterator();
 
-        // Construct an iterator which points to the specified attribute
+		// Construct an iterator which points to the specified attribute
 		html_attribute_iterator(const html_attribute& attr, const html_node& parent);
 
 		// Iterator operators
@@ -540,10 +540,10 @@ namespace pugihtml
 		// Destructor, invalidates all node/attribute handles to this document
 		~html_document();
 
-        // Removes all nodes, leaving the empty document
+		// Removes all nodes, leaving the empty document
 		void reset();
 
-        // Removes all nodes, then copies the entire contents of the specified document
+		// Removes all nodes, then copies the entire contents of the specified document
 		void reset(const html_document& proto);
 
 	#ifndef PUGIHTML_NO_STL
@@ -563,11 +563,11 @@ namespace pugihtml
 		html_parse_result load_buffer(const void* contents, size_t size, unsigned int options = html_parser::parse_default, html_encoding encoding = encoding_auto);
 
 		// Load document from buffer, using the buffer for in-place parsing (the buffer is modified and used for storage of document data).
-        // You should ensure that buffer data will persist throughout the document's lifetime, and free the buffer memory manually once document is destroyed.
+		// You should ensure that buffer data will persist throughout the document's lifetime, and free the buffer memory manually once document is destroyed.
 		html_parse_result load_buffer_inplace(void* contents, size_t size, unsigned int options = html_parser::parse_default, html_encoding encoding = encoding_auto);
 
 		// Load document from buffer, using the buffer for in-place parsing (the buffer is modified and used for storage of document data).
-        // You should allocate the buffer with pugihtml allocation function; document will free the buffer when it is no longer needed (you can't use it anymore).
+		// You should allocate the buffer with pugihtml allocation function; document will free the buffer when it is no longer needed (you can't use it anymore).
 		html_parse_result load_buffer_inplace_own(void* contents, size_t size, unsigned int options = html_parser::parse_default, html_encoding encoding = encoding_auto);
 
 		// Save HTML document to writer (semantics is slightly different from html_node::print, see documentation for details).
@@ -583,22 +583,22 @@ namespace pugihtml
 		bool save_file(const char* path, const char_t* indent = PUGIHTML_TEXT("\t"), unsigned int flags = format_default, html_encoding encoding = encoding_auto) const;
 		bool save_file(const wchar_t* path, const char_t* indent = PUGIHTML_TEXT("\t"), unsigned int flags = format_default, html_encoding encoding = encoding_auto) const;
 
-        // Get document element
-        html_node document_element() const;
+		// Get document element
+		html_node document_element() const;
 	};
 
 #ifndef PUGIHTML_NO_XPATH
 	// XPath query return type
 	enum xpath_value_type
 	{
-		xpath_type_none,      // Unknown type (query failed to compile)
+		xpath_type_none,	  // Unknown type (query failed to compile)
 		xpath_type_node_set,  // Node set (xpath_node_set)
-		xpath_type_number,    // Number
-		xpath_type_string,    // String
-		xpath_type_boolean    // Boolean
+		xpath_type_number,	  // Number
+		xpath_type_string,	  // String
+		xpath_type_boolean	  // Boolean
 	};
 
-    // XPath parsing result
+	// XPath parsing result
 	struct PUGIHTML_CLASS xpath_parse_result
 	{
 		// Error message (0 if no error)
@@ -607,7 +607,7 @@ namespace pugihtml
 		// Last parsed offset (in char_t units from string start)
 		ptrdiff_t offset;
 
-        // Default constructor, initializes object to failed state
+		// Default constructor, initializes object to failed state
 		xpath_parse_result();
 
 		// Cast to bool operator
@@ -633,19 +633,19 @@ namespace pugihtml
 		xpath_variable& operator=(const xpath_variable&);
 
 	public:
-        // Get variable name
+		// Get variable name
 		const char_t* name() const;
 
-        // Get variable type
+		// Get variable type
 		xpath_value_type type() const;
 
-        // Get variable value; no type conversion is performed, default value (false, NaN, empty string, empty node set) is returned on type mismatch error
+		// Get variable value; no type conversion is performed, default value (false, NaN, empty string, empty node set) is returned on type mismatch error
 		bool get_boolean() const;
 		double get_number() const;
 		const char_t* get_string() const;
 		const xpath_node_set& get_node_set() const;
 
-        // Set variable value; no type conversion is performed, false is returned on type mismatch error
+		// Set variable value; no type conversion is performed, false is returned on type mismatch error
 		bool set(bool value);
 		bool set(double value);
 		bool set(const char_t* value);
@@ -665,20 +665,20 @@ namespace pugihtml
 		xpath_variable* find(const char_t* name) const;
 
 	public:
-        // Default constructor/destructor
+		// Default constructor/destructor
 		xpath_variable_set();
 		~xpath_variable_set();
 
-        // Add a new variable or get the existing one, if the types match
+		// Add a new variable or get the existing one, if the types match
 		xpath_variable* add(const char_t* name, xpath_value_type type);
 
-        // Set value of an existing variable; no type conversion is performed, false is returned if there is no such variable or if types mismatch
+		// Set value of an existing variable; no type conversion is performed, false is returned if there is no such variable or if types mismatch
 		bool set(const char_t* name, bool value);
 		bool set(const char_t* name, double value);
 		bool set(const char_t* name, const char_t* value);
 		bool set(const char_t* name, const xpath_node_set& value);
 
-        // Get existing variable by name
+		// Get existing variable by name
 		xpath_variable* get(const char_t* name);
 		const xpath_variable* get(const char_t* name) const;
 	};
@@ -690,15 +690,15 @@ namespace pugihtml
 		void* _impl;
 		xpath_parse_result _result;
 
-    	typedef void* xpath_query::*unspecified_bool_type;
+		typedef void* xpath_query::*unspecified_bool_type;
 
 		// Non-copyable semantics
 		xpath_query(const xpath_query&);
 		xpath_query& operator=(const xpath_query&);
 
 	public:
-        // Construct a compiled object from XPath expression.
-        // If PUGIHTML_NO_EXCEPTIONS is not defined, throws xpath_exception on compilation errors.
+		// Construct a compiled object from XPath expression.
+		// If PUGIHTML_NO_EXCEPTIONS is not defined, throws xpath_exception on compilation errors.
 		explicit xpath_query(const char_t* query, xpath_variable_set* variables = 0);
 
 		// Destructor
@@ -708,28 +708,28 @@ namespace pugihtml
 		xpath_value_type return_type() const;
 
 		// Evaluate expression as boolean value in the specified context; performs type conversion if necessary.
-        // If PUGIHTML_NO_EXCEPTIONS is not defined, throws std::bad_alloc on out of memory errors.
+		// If PUGIHTML_NO_EXCEPTIONS is not defined, throws std::bad_alloc on out of memory errors.
 		bool evaluate_boolean(const xpath_node& n) const;
 
 		// Evaluate expression as double value in the specified context; performs type conversion if necessary.
-        // If PUGIHTML_NO_EXCEPTIONS is not defined, throws std::bad_alloc on out of memory errors.
+		// If PUGIHTML_NO_EXCEPTIONS is not defined, throws std::bad_alloc on out of memory errors.
 		double evaluate_number(const xpath_node& n) const;
 
 	#ifndef PUGIHTML_NO_STL
 		// Evaluate expression as string value in the specified context; performs type conversion if necessary.
-        // If PUGIHTML_NO_EXCEPTIONS is not defined, throws std::bad_alloc on out of memory errors.
+		// If PUGIHTML_NO_EXCEPTIONS is not defined, throws std::bad_alloc on out of memory errors.
 		string_t evaluate_string(const xpath_node& n) const;
 	#endif
 
 		// Evaluate expression as string value in the specified context; performs type conversion if necessary.
-        // At most capacity characters are written to the destination buffer, full result size is returned (includes terminating zero).
-        // If PUGIHTML_NO_EXCEPTIONS is not defined, throws std::bad_alloc on out of memory errors.
-        // If PUGIHTML_NO_EXCEPTIONS is defined, returns empty  set instead.
+		// At most capacity characters are written to the destination buffer, full result size is returned (includes terminating zero).
+		// If PUGIHTML_NO_EXCEPTIONS is not defined, throws std::bad_alloc on out of memory errors.
+		// If PUGIHTML_NO_EXCEPTIONS is defined, returns empty	set instead.
 		size_t evaluate_string(char_t* buffer, size_t capacity, const xpath_node& n) const;
 
 		// Evaluate expression as node set in the specified context.
-        // If PUGIHTML_NO_EXCEPTIONS is not defined, throws xpath_exception on type mismatch and std::bad_alloc on out of memory errors.
-        // If PUGIHTML_NO_EXCEPTIONS is defined, returns empty node set instead.
+		// If PUGIHTML_NO_EXCEPTIONS is not defined, throws xpath_exception on type mismatch and std::bad_alloc on out of memory errors.
+		// If PUGIHTML_NO_EXCEPTIONS is defined, returns empty node set instead.
 		xpath_node_set evaluate_node_set(const xpath_node& n) const;
 
 		// Get parsing result (used to get compilation errors in PUGIHTML_NO_EXCEPTIONS mode)
@@ -738,7 +738,7 @@ namespace pugihtml
 		// Safe bool conversion operator
 		operator unspecified_bool_type() const;
 
-    	// Borland C++ workaround
+		// Borland C++ workaround
 		bool operator!() const;
 	};
 
@@ -756,7 +756,7 @@ namespace pugihtml
 		// Get error message
 		virtual const char* what() const throw();
 
-        // Get parse result
+		// Get parse result
 		const xpath_parse_result& result() const;
 	};
 	#endif
@@ -768,7 +768,7 @@ namespace pugihtml
 		html_node _node;
 		html_attribute _attribute;
 
-    	typedef html_node xpath_node::*unspecified_bool_type;
+		typedef html_node xpath_node::*unspecified_bool_type;
 
 	public:
 		// Default constructor; constructs empty XPath node
@@ -785,11 +785,11 @@ namespace pugihtml
 		// Get parent of contained node/attribute
 		html_node parent() const;
 
-    	// Safe bool conversion operator
+		// Safe bool conversion operator
 		operator unspecified_bool_type() const;
 
-    	// Borland C++ workaround
-    	bool operator!() const;
+		// Borland C++ workaround
+		bool operator!() const;
 
 		// Comparison operators
 		bool operator==(const xpath_node& n) const;
@@ -836,7 +836,7 @@ namespace pugihtml
 		// Get collection size
 		size_t size() const;
 
-        // Indexing operator
+		// Indexing operator
 		const xpath_node& operator[](size_t index) const;
 
 		// Collection iterators
