@@ -1,25 +1,31 @@
+#include <stdexcept>
+
 #include "memory.hpp"
 #include <assert.h>
 #include <stddef.h>
 
+
 namespace pugihtml
 {
 
-	html_memory_page* html_memory_page::construct(void* memory)
-	{
-		if (!memory) return 0; //$ redundant, left for performance
-
-		html_memory_page* result = static_cast<html_memory_page*>(memory);
-
-		result->allocator = 0;
-		result->memory = 0;
-		result->prev = 0;
-		result->next = 0;
-		result->busy_size = 0;
-		result->freed_size = 0;
-
-		return result;
+html_memory_page*
+html_memory_page::construct(void* memory)
+{
+	if (memory == nullptr) {
+		throw std::invalid_argument("Memory pointer cannot be null.");
 	}
+
+	html_memory_page* result = static_cast<html_memory_page*>(memory);
+
+	result->allocator = 0;
+	result->memory = 0;
+	result->prev = 0;
+	result->next = 0;
+	result->busy_size = 0;
+	result->freed_size = 0;
+
+	return result;
+}
 
 html_allocator::html_allocator(html_memory_page* root) : _root(root),
 	_busy_size(root->busy_size)
