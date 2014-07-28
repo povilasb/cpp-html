@@ -85,7 +85,7 @@ struct html_allocator {
 	/**
 	 * Allocates new page with global allocator.
 	 */
-	static html_memory_page* allocate_page(size_t data_size);
+	html_memory_page* allocate_page(size_t data_size);
 
 	/**
 	 * Frees the specified page with gloabal deallocator.
