@@ -528,7 +528,11 @@ namespace pugihtml
 		html_document(const html_document&);
 		const html_document& operator=(const html_document&);
 
+		/**
+		 * Initializes document: allocates memory page, etc.
+		 */
 		void create();
+
 		void destroy();
 
 		html_parse_result load_buffer_impl(void* contents, size_t size, unsigned int options, html_encoding encoding, bool is_mutable, bool own);
