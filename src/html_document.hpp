@@ -9,13 +9,13 @@ namespace pugihtml
 {
 
 struct html_document_struct : public html_node_struct, public html_allocator {
-		html_document_struct(html_memory_page* page):
-			html_node_struct(page, node_document), html_allocator(page),
-			buffer(0)
-		{
-		}
+	html_document_struct(html_memory_page* page):
+		html_node_struct(page, node_document), html_allocator(page),
+		buffer(0)
+	{
+	}
 
-		const char_t* buffer;
+	const char_t* buffer;
 };
 
 } // pugihtml.
