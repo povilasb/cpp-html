@@ -4,14 +4,14 @@
 
 #include <html_parser.hpp>
 #include "memory.hpp"
-#include <html_node.hpp>
+#include <pugihtml.hpp>
 
 
 using namespace std;
 using namespace pugihtml;
 
 
-TEST(html_parser, DISABLED_parse)
+TEST(html_parser, parse)
 {
 	char str_html[] =
 		"<html>"
@@ -21,25 +21,11 @@ TEST(html_parser, DISABLED_parse)
 		"</hmtl>"
 	;
 
-	//void* page_memory = reinterpret_cast<void*>(
-	//(reinterpret_cast<uintptr_t>(_memory)
-	// + (html_memory_page_alignment - 1))
-	//& ~(html_memory_page_alignment - 1));
-
-/*
-	char page_memory[32768];
-	html_memory_page* mem_page = html_memory_page::construct(&page_memory);
-	ASSERT_NE(nullptr, mem_page);
-*/
-
-	html_allocator allocator(nullptr);
-	html_node_struct* node = pugihtml::allocate_node(allocator,
-		node_document);
-	ASSERT_NE(node, nullptr);
-
+	html_document doc;
 	html_parse_result res = html_parser::parse(str_html,
-		sizeof(str_html), node);
+		sizeof(str_html), doc.internal_object());
 
-	cout << node->name << endl;
-	ASSERT_EQ("HTML", node->name);
+	string parsed_str = doc.child("HTML").child("BODY").child("P")
+		.first_child().value();
+	ASSERT_EQ("Hello world", parsed_str);
 }
