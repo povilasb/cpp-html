@@ -5,7 +5,7 @@
  *
  * This library is distributed under the MIT License. See notice in license.txt
  *
- * This work is based on the pugxml parser, which is: 
+ * This work is based on the pugixml parser, which is:
  * Copyright (C) 2006-2010, by Arseny Kapoulkine (arseny [DOT] kapoulkine [AT] gmail [DOT] com)
  */
 
@@ -93,7 +93,7 @@ typedef __int32 int32_t;
 #elif defined(__GNUC__)
 #	define PUGIHTML_NO_INLINE __attribute__((noinline))
 #else
-#	define PUGIHTML_NO_INLINE 
+#	define PUGIHTML_NO_INLINE
 #endif
 
 // Character interface macros
@@ -107,7 +107,8 @@ typedef __int32 int32_t;
 
 namespace pugihtml
 {
-	// Character type used for all internal storage and operations; depends on PUGIHTML_WCHAR_MODE
+	// Character type used for all internal storage and operations;
+	// depends on PUGIHTML_WCHAR_MODE
 	typedef PUGIHTML_CHAR char_t;
 
 #ifndef PUGIHTML_NO_STL

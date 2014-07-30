@@ -5,7 +5,7 @@
  *
  * This library is distributed under the MIT License. See notice in license.txt
  *
- * This work is based on the pugxml parser, which is: 
+ * This work is based on the pugxml parser, which is:
  * Copyright (C) 2006-2010, by Arseny Kapoulkine (arseny [DOT] kapoulkine [AT] gmail [DOT] com)
  */
 

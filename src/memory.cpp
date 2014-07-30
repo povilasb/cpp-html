@@ -1,68 +1,84 @@
+#include <stdexcept>
+
 #include "memory.hpp"
 #include <assert.h>
 #include <stddef.h>
 
+
 namespace pugihtml
-{ 
+{
 
-    html_memory_page* html_memory_page::construct(void* memory)
-	{
-		if (!memory) return 0; //$ redundant, left for performance
-
-		html_memory_page* result = static_cast<html_memory_page*>(memory);
-
-		result->allocator = 0;
-		result->memory = 0;
-		result->prev = 0;
-		result->next = 0;
-		result->busy_size = 0;
-		result->freed_size = 0;
-
-		return result;
-	}
-    
-	html_allocator::html_allocator(html_memory_page* root): _root(root), _busy_size(root->busy_size)
-	{
-	}
-    
-    void html_allocator::deallocate_page(html_memory_page* page)
-	{
-		global_deallocate(page->memory);
+html_memory_page*
+html_memory_page::construct(void* memory)
+{
+	if (memory == nullptr) {
+		throw std::invalid_argument("Memory pointer cannot be null.");
 	}
 
+	html_memory_page* result = static_cast<html_memory_page*>(memory);
 
-	html_memory_page* html_allocator::allocate_page(size_t data_size)
-	{
-		size_t size = offsetof(html_memory_page, data) + data_size;
+	result->allocator = 0;
+	result->memory = 0;
+	result->prev = 0;
+	result->next = 0;
+	result->busy_size = 0;
+	result->freed_size = 0;
 
-		// allocate block with some alignment, leaving memory for worst-case padding
-		void* memory = global_allocate(size + html_memory_page_alignment);
-		if (!memory) return 0;
+	return result;
+}
 
-		// align upwards to page boundary
-		void* page_memory = reinterpret_cast<void*>((reinterpret_cast<uintptr_t>(memory) + (html_memory_page_alignment - 1)) & ~(html_memory_page_alignment - 1));
+html_allocator::html_allocator(html_memory_page* root) : _root(root),
+	_busy_size(root->busy_size)
+{
+}
 
-		// prepare page structure
-		html_memory_page* page = html_memory_page::construct(page_memory);
+void
+html_allocator::deallocate_page(html_memory_page* page)
+{
+	global_deallocate(page->memory);
+}
 
-		page->memory = memory;
-		page->allocator = _root->allocator;
 
-		return page;
+html_memory_page*
+html_allocator::allocate_page(size_t data_size)
+{
+	size_t size = offsetof(html_memory_page, data) + data_size;
+
+	// Allocate block with some alignment, leaving memory for worst-case
+	// padding.
+	void* memory = global_allocate(size + html_memory_page_alignment);
+	if (!memory) {
+		return 0;
 	}
-    
-	void* html_allocator::allocate_memory(size_t size, html_memory_page*& out_page)
-	{
-		if (_busy_size + size > html_memory_page_size) return allocate_memory_oob(size, out_page);
 
-		void* buf = _root->data + _busy_size;
+	// Align upwards to page boundary.
+	void* page_memory = reinterpret_cast<void*>(
+		(reinterpret_cast<uintptr_t>(memory)
+		+ (html_memory_page_alignment - 1))
+		& ~(html_memory_page_alignment - 1));
 
-		_busy_size += size;
+	// Prepare page structure.
+	html_memory_page* page = html_memory_page::construct(page_memory);
 
-		out_page = _root;
+	page->memory = memory;
+	page->allocator = _root->allocator;
 
-		return buf;
+	return page;
+}
+
+void*
+html_allocator::allocate_memory(size_t size, html_memory_page*& out_page)
+{
+	if (_busy_size + size > html_memory_page_size) {
+		return allocate_memory_oob(size, out_page);
 	}
+
+	void* buf = _root->data + _busy_size;
+	_busy_size += size;
+	out_page = _root;
+
+	return buf;
+}
 
 	void html_allocator::deallocate_memory(void* ptr, size_t size, html_memory_page* page)
 	{
@@ -103,7 +119,7 @@ namespace pugihtml
 	{
 		// allocate memory for string and header block
 		size_t size = sizeof(html_memory_string_header) + length * sizeof(char_t);
-			
+
 		// round size up to pointer alignment boundary
 		size_t full_size = (size + (sizeof(void*) - 1)) & ~(sizeof(void*) - 1);
 
@@ -140,42 +156,45 @@ namespace pugihtml
 		deallocate_memory(header, full_size, page);
 	}
 
-    
-	PUGIHTML_NO_INLINE void* html_allocator::allocate_memory_oob(size_t size, html_memory_page*& out_page)
-	{
-		const size_t large_allocation_threshold = html_memory_page_size / 4;
 
-		html_memory_page* page = allocate_page(size <= large_allocation_threshold ? html_memory_page_size : size);
-		if (!page) return 0;
+PUGIHTML_NO_INLINE void*
+html_allocator::allocate_memory_oob(size_t size, html_memory_page*& out_page)
+{
+	const size_t large_allocation_threshold = html_memory_page_size / 4;
 
-		if (size <= large_allocation_threshold)
-		{
-			_root->busy_size = _busy_size;
-
-			// insert page at the end of linked list
-			page->prev = _root;
-			_root->next = page;
-			_root = page;
-
-			_busy_size = size;
-		}
-		else
-		{
-			// insert page before the end of linked list, so that it is deleted as soon as possible
-			// the last page is not deleted even if it's empty (see deallocate_memory)
-			assert(_root->prev);
-
-			page->prev = _root->prev;
-			page->next = _root;
-
-			_root->prev->next = page;
-			_root->prev = page;
-		}
-
-		// allocate inside page
-		page->busy_size = size;
-
-		out_page = page;
-		return page->data;
+	html_memory_page* page = allocate_page(size
+		<= large_allocation_threshold ? html_memory_page_size : size);
+	if (!page) {
+		return 0;
 	}
+
+	if (size <= large_allocation_threshold) {
+		_root->busy_size = _busy_size;
+
+		// insert page at the end of linked list
+		page->prev = _root;
+		_root->next = page;
+		_root = page;
+
+		_busy_size = size;
+	}
+	else {
+		// insert page before the end of linked list, so that it is deleted as soon as possible
+		// the last page is not deleted even if it's empty (see deallocate_memory)
+		assert(_root->prev);
+
+		page->prev = _root->prev;
+		page->next = _root;
+
+		_root->prev->next = page;
+		_root->prev = page;
+	}
+
+	// allocate inside page
+	page->busy_size = size;
+
+	out_page = page;
+	return page->data;
 }
+
+} // pugihtml.
