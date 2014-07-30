@@ -1,6 +1,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <algorithm>
+#include <list>
 
 #include "html_parser.hpp"
 #include "html_attribute.hpp"
@@ -652,7 +653,8 @@ html_parser::parse(char_t* s, html_node_struct* htmldoc, unsigned int optmsk,
 
 				// End of tag
 				if (ch == '>') {
-					auto it = find(html_void_elements.cbegin(),
+					auto it = std::find(
+						html_void_elements.cbegin(),
 						html_void_elements.cend(),
 						cursor->name);
 					if (it != html_void_elements.cend()) {
