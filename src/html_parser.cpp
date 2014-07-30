@@ -1,5 +1,6 @@
 #include <cassert>
 #include <stdexcept>
+#include <algorithm>
 
 #include "html_parser.hpp"
 #include "html_attribute.hpp"
@@ -13,7 +14,7 @@ using namespace pugihtml;
 
 
 // Parser utilities.
-// TODO: replace with inline functions or completely remove some of them.
+// TODO(povilas): replace with inline functions or completely remove some of them.
 #define SKIPWS() { while (is_chartype(*s, ct_space)) ++s; }
 #define OPTSET(OPT)			( optmsk & OPT )
 #define THROW_ERROR(err, m) error_offset = m, longjmp(error_handler, err)
@@ -26,6 +27,11 @@ using namespace pugihtml;
 
 // Utility macro for last character handling
 #define ENDSWITH(c, e) ((c) == (e) || ((c) == 0 && endch == (e)))
+
+
+std::list<pugihtml::string_t> html_void_elements = {"AREA", "BASE", "BR",
+	"COL", "EMBED", "HR", "IMG", "INPUT", "KEYGEN", "LINK", "MENUITEM",
+	"META", "PARAM", "SOURCE", "TRACK", "WBR"};
 
 
 html_parser::html_parser(const html_allocator& alloc) : alloc(alloc),
@@ -617,11 +623,9 @@ html_parser::parse(char_t* s, html_node_struct* htmldoc, unsigned int optmsk,
 	char_t* nameMark = s;
 
 	// Parse while the current character is not '\0'
-	while (*s != 0)
-	{
+	while (*s != 0) {
 		// Check if the current character is the start tag character
-		if (*s == '<')
-		{
+		if (*s == '<') {
 			// Move to the next character
 			++s;
 
@@ -646,12 +650,18 @@ html_parser::parse(char_t* s, html_node_struct* htmldoc, unsigned int optmsk,
 				// Capitalize the tag name
 				to_upper(cursor->name);
 
-				if (ch == '>')
-				{
-					// end of tag
+				// End of tag
+				if (ch == '>') {
+					auto it = find(html_void_elements.cbegin(),
+						html_void_elements.cend(),
+						cursor->name);
+					if (it != html_void_elements.cend()) {
+						if (cursor->parent) {
+							POPNODE();
+						}
+					}
 				}
-				else if (is_chartype(ch, ct_space))
-				{
+				else if (is_chartype(ch, ct_space)) {
 				LOC_ATTRIBUTES:
 					while (true)
 					{
@@ -771,12 +781,11 @@ html_parser::parse(char_t* s, html_node_struct* htmldoc, unsigned int optmsk,
 
 					// !!!
 				}
-				else if (ch == '/') // '<#.../'
-				{
+				// Void HTML element.
+				else if (ch == '/') {
 					if (!ENDSWITH(*s, '>')) THROW_ERROR(status_bad_start_element, s);
 
-					if(cursor->parent)
-					{
+					if(cursor->parent) {
 						POPNODE(); // Pop.
 					}
 					else
