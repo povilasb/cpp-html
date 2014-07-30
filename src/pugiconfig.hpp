@@ -17,7 +17,7 @@
 // #define PUGIHTML_WCHAR_MODE
 
 // Uncomment this to disable XPath
-// #define PUGIHTML_NO_XPATH
+#define PUGIHTML_NO_XPATH
 
 // Uncomment this to disable STL
 // Note: you can't use XPath with PUGIHTML_NO_STL
