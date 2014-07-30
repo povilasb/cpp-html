@@ -1,6 +1,9 @@
 #ifndef PUGIHTML_HTML_WRITER_HPP
 #define PUGIHTML_HTML_WRITER_HPP 1
 
+#include "pugiconfig.hpp"
+#include "common.hpp"
+
 
 namespace pugihtml
 {
