@@ -77,6 +77,16 @@ struct opt_true {
 	enum { value = 1 };
 };
 
+
+bool strcpy_insitu(char_t*& dest, uintptr_t& header, uintptr_t header_mask,
+	const char_t* source);
+
+/**
+ * Get string length.
+ */
+size_t strlength(const char_t* s);
+
+
 //static char_t* attributes[] = {"ABBR", "ACCEPT", "ACCEPT-CHARSET",
 //    "ACCESSKEY", "ACTION", "ALIGN", "ALINK", "ALT", "ARCHIVE",
 //    "AXIS", "BACKGROUND", "BGCOLOR", "BORDER", "CELLPADDING",
