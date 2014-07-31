@@ -3,6 +3,7 @@
 
 #include "pugiconfig.hpp"
 #include "common.hpp"
+#include "html.hpp"
 
 
 namespace pugihtml
@@ -65,6 +66,116 @@ private:
 	std::basic_ostream<wchar_t, std::char_traits<wchar_t> >* wide_stream;
 };
 #endif
+
+
+class html_buffered_writer {
+	html_buffered_writer(const html_buffered_writer&);
+	html_buffered_writer& operator=(const html_buffered_writer&);
+
+public:
+	html_buffered_writer(html_writer& writer, html_encoding user_encoding);
+
+	~html_buffered_writer();
+
+	void flush();
+
+	void flush(const char_t* data, size_t size);
+
+	void write(const char_t* data, size_t length);
+
+	void write(const char_t* data);
+
+	void write(char_t d0);
+
+	void write(char_t d0, char_t d1);
+
+	void write(char_t d0, char_t d1, char_t d2);
+
+	void write(char_t d0, char_t d1, char_t d2, char_t d3);
+
+	void write(char_t d0, char_t d1, char_t d2, char_t d3, char_t d4);
+
+	void write(char_t d0, char_t d1, char_t d2, char_t d3, char_t d4,
+		char_t d5);
+
+	// utf8 maximum expansion: x4 (-> utf32)
+	// utf16 maximum expansion: x2 (-> utf32)
+	// utf32 maximum expansion: x1
+	enum { bufcapacity = 2048 };
+
+	char_t buffer[bufcapacity];
+	char scratch[4 * bufcapacity];
+
+	html_writer& writer;
+	size_t bufsize;
+	html_encoding encoding;
+};
+
+
+struct utf16_writer {
+	typedef uint16_t* value_type;
+
+	static value_type
+	low(value_type result, uint32_t ch)
+	{
+		*result = static_cast<uint16_t>(ch);
+		return result + 1;
+	}
+
+
+	static value_type
+	high(value_type result, uint32_t ch)
+	{
+		uint32_t msh = (uint32_t)(ch - 0x10000) >> 10;
+		uint32_t lsh = (uint32_t)(ch - 0x10000) & 0x3ff;
+
+		result[0] = static_cast<uint16_t>(0xD800 + msh);
+		result[1] = static_cast<uint16_t>(0xDC00 + lsh);
+
+		return result + 2;
+	}
+
+
+	static value_type
+	any(value_type result, uint32_t ch)
+	{
+		return (ch < 0x10000) ? low(result, ch) : high(result, ch);
+	}
+};
+
+
+struct utf32_writer {
+	typedef uint32_t* value_type;
+
+	static value_type
+	low(value_type result, uint32_t ch)
+	{
+		*result = ch;
+
+		return result + 1;
+	}
+
+
+	static value_type
+	high(value_type result, uint32_t ch)
+	{
+		*result = ch;
+		return result + 1;
+	}
+
+
+	static value_type
+	any(value_type result, uint32_t ch)
+	{
+		*result = ch;
+		return result + 1;
+	}
+};
+
+
+html_encoding get_write_encoding(html_encoding encoding);
+html_encoding get_wchar_encoding();
+html_encoding get_write_native_encoding();
 
 } // pugihtml.
 
