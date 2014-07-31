@@ -406,6 +406,9 @@ html_attribute_struct* append_attribute_ll(html_node_struct* node,
 
 html_node_struct* allocate_node(html_allocator& alloc, html_node_type type);
 
+void node_output(html_buffered_writer& writer, const html_node& node,
+	const char_t* indent, unsigned int flags, unsigned int depth);
+
 }
 
 #endif /* PUGIHTML_HTML_NODE_HPP */
