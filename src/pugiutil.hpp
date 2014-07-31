@@ -38,6 +38,30 @@ to_upper(char_t* str)
 }
 
 
+inline uint16_t
+endian_swap(uint16_t value)
+{
+	return static_cast<uint16_t>(((value & 0xff) << 8) | (value >> 8));
+}
+
+
+inline uint32_t
+endian_swap(uint32_t value)
+{
+	return ((value & 0xff) << 24) | ((value & 0xff00) << 8)
+		| ((value & 0xff0000) >> 8) | (value >> 24);
+}
+
+
+template <typename T> inline void
+convert_utf_endian_swap(T* result, const T* data, size_t length)
+{
+	for (size_t i = 0; i < length; ++i) {
+		result[i] = endian_swap(data[i]);
+	}
+}
+
+
 struct gap {
 	char_t* end;
 	size_t size;
@@ -85,6 +109,17 @@ bool strcpy_insitu(char_t*& dest, uintptr_t& header, uintptr_t header_mask,
  * Get string length.
  */
 size_t strlength(const char_t* s);
+
+
+// Compare two strings
+bool strequal(const char_t* src, const char_t* dst);
+
+
+// Compare lhs with [rhs_begin, rhs_end)
+bool strequalrange(const char_t* lhs, const char_t* rhs, size_t count);
+
+
+bool is_little_endian();
 
 
 //static char_t* attributes[] = {"ABBR", "ACCEPT", "ACCEPT-CHARSET",

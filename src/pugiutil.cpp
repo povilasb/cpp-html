@@ -401,7 +401,6 @@ pugihtml::strcpy_insitu(char_t*& dest, uintptr_t& header, uintptr_t header_mask,
 }
 
 
-// Get string length
 size_t
 pugihtml::strlength(const char_t* s)
 {
@@ -412,4 +411,39 @@ pugihtml::strlength(const char_t* s)
 #else
 	return strlen(s);
 #endif
+}
+
+
+// Compare two strings
+bool
+pugihtml::strequal(const char_t* src, const char_t* dst)
+{
+	assert(src && dst);
+
+#ifdef PUGIHTML_WCHAR_MODE
+	return wcscmp(src, dst) == 0;
+#else
+	return strcmp(src, dst) == 0;
+#endif
+}
+
+
+// Compare lhs with [rhs_begin, rhs_end)
+bool
+pugihtml::strequalrange(const char_t* lhs, const char_t* rhs, size_t count)
+{
+	for (size_t i = 0; i < count; ++i)
+		if (lhs[i] != rhs[i])
+			return false;
+
+	return lhs[count] == 0;
+}
+
+
+bool
+pugihtml::is_little_endian()
+{
+	unsigned int ui = 1;
+
+	return *reinterpret_cast<unsigned char*>(&ui) == 1;
 }
