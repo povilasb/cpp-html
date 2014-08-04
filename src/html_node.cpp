@@ -843,7 +843,8 @@ html_node html_node::first_element_by_path(const char_t* path, char_t delimiter)
 	}
 }
 
-bool html_node::traverse(html_tree_walker& walker)
+bool
+html_node::traverse(html_tree_walker& walker)
 {
 	walker._depth = -1;
 
@@ -852,25 +853,21 @@ bool html_node::traverse(html_tree_walker& walker)
 
 	html_node cur = first_child();
 
-	if (cur)
-	{
+	if (cur) {
 		++walker._depth;
 
-		do
-		{
+		do {
 			html_node arg_for_each = cur;
 			if (!walker.for_each(arg_for_each))
 				return false;
 
-			if (cur.first_child())
-			{
+			if (cur.first_child()) {
 				++walker._depth;
 				cur = cur.first_child();
 			}
 			else if (cur.next_sibling())
 				cur = cur.next_sibling();
-			else
-			{
+			else {
 				// Borland C++ workaround
 				while (!cur.next_sibling() && cur != *this && (bool)cur.parent())
 				{

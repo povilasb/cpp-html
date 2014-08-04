@@ -199,8 +199,8 @@ public:
 	}
 
 	// Find node from subtree using predicate. Returns first node from subtree (depth-first), for which predicate returned true.
-	template <typename Predicate> html_node find_node(Predicate pred) const
-	{
+	template <typename Predicate> html_node
+	find_node(Predicate pred) const {
 		if (!_root) return html_node();
 
 		html_node cur = first_child();
@@ -384,15 +384,28 @@ protected:
 
 public:
 	html_tree_walker();
+
 	virtual ~html_tree_walker();
 
-	// Callback that is called when traversal begins
+	/**
+	 * Callback that is called when traversal begins
+	 *
+	 * @return false if should stop iterating the tree.
+	 */
 	virtual bool begin(html_node& node);
 
-	// Callback that is called for each node traversed
+	/**
+	 * Callback that is called for each node traversed
+	 *
+	 * @return false if should stop iterating the tree.
+	 */
 	virtual bool for_each(html_node& node) = 0;
 
-	// Callback that is called when traversal ends
+	/**
+	 * Callback that is called when traversal ends.
+	 *
+	 * @return traversal state: success or failure.
+	 */
 	virtual bool end(html_node& node);
 };
 
