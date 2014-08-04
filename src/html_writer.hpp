@@ -3,7 +3,7 @@
 
 #include "pugiconfig.hpp"
 #include "common.hpp"
-#include "html.hpp"
+#include "encoding.hpp"
 
 
 namespace pugihtml
@@ -172,10 +172,6 @@ struct utf32_writer {
 	}
 };
 
-
-html_encoding get_write_encoding(html_encoding encoding);
-html_encoding get_wchar_encoding();
-html_encoding get_write_native_encoding();
 
 } // pugihtml.
 

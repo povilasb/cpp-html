@@ -5,9 +5,9 @@
 #include <cstring>
 
 #include "html_writer.hpp"
-#include "html.hpp"
 #include "pugiutil.hpp"
 #include "utf_decoder.hpp"
+#include "encoding.hpp"
 
 using namespace pugihtml;
 
@@ -76,7 +76,9 @@ html_buffered_writer::flush()
 
 
 #ifdef PUGIHTML_WCHAR_MODE
-size_t convert_buffer(char* result, const char_t* data, size_t length, html_encoding encoding)
+size_t
+convert_buffer(char* result, const char_t* data, size_t length,
+	html_encoding encoding)
 {
 	// only endian-swapping is required
 	if (need_endian_swap_utf(encoding, get_wchar_encoding()))
@@ -350,56 +352,4 @@ html_buffered_writer::write(char_t d0, char_t d1, char_t d2, char_t d3,
 	buffer[bufsize + 4] = d4;
 	buffer[bufsize + 5] = d5;
 	bufsize += 6;
-}
-
-
-html_encoding
-pugihtml::get_wchar_encoding()
-{
-	STATIC_ASSERT(sizeof(wchar_t) == 2 || sizeof(wchar_t) == 4);
-
-	if (sizeof(wchar_t) == 2)
-		return is_little_endian() ? encoding_utf16_le : encoding_utf16_be;
-	else
-		return is_little_endian() ? encoding_utf32_le : encoding_utf32_be;
-}
-
-
-html_encoding
-pugihtml::get_write_encoding(html_encoding encoding)
-{
-	// replace wchar encoding with utf implementation
-	if (encoding == encoding_wchar) return get_wchar_encoding();
-
-	// replace utf16 encoding with utf16 with specific endianness
-	if (encoding == encoding_utf16) {
-		return is_little_endian() ? encoding_utf16_le
-			: encoding_utf16_be;
-	}
-
-	// replace utf32 encoding with utf32 with specific endianness
-	if (encoding == encoding_utf32) {
-		return is_little_endian() ? encoding_utf32_le
-			: encoding_utf32_be;
-	}
-
-	// only do autodetection if no explicit encoding is requested
-	if (encoding != encoding_auto) {
-		return encoding;
-	}
-
-	// assume utf8 encoding
-	return encoding_utf8;
-}
-
-
-// Output facilities
-html_encoding
-pugihtml::get_write_native_encoding()
-{
-#ifdef PUGIHTML_WCHAR_MODE
-	return get_wchar_encoding();
-#else
-	return encoding_utf8;
-#endif
 }
