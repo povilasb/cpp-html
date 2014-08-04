@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <pugihtml.hpp>
+#include <html_document.hpp>
 
 
 using namespace std;
