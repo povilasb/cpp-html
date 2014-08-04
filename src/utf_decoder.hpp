@@ -1,6 +1,8 @@
 #ifndef PUGIHTML_UTF_DECODER_HPP
 #define PUGIHTML_UTF_DECODER_HPP 1
 
+#include "pugiutil.hpp"
+
 
 namespace pugihtml
 {
@@ -134,6 +136,72 @@ struct utf_decoder {
 		}
 
 		return result;
+	}
+};
+
+
+struct utf8_counter {
+	typedef size_t value_type;
+
+	static value_type low(value_type result, uint32_t ch)
+	{
+		// U+0000..U+007F
+		if (ch < 0x80) return result + 1;
+		// U+0080..U+07FF
+		else if (ch < 0x800) return result + 2;
+		// U+0800..U+FFFF
+		else return result + 3;
+	}
+
+	static value_type high(value_type result, uint32_t)
+	{
+		// U+10000..U+10FFFF
+		return result + 4;
+	}
+};
+
+
+struct utf8_writer {
+	typedef uint8_t* value_type;
+
+	static value_type low(value_type result, uint32_t ch)
+	{
+		// U+0000..U+007F
+		if (ch < 0x80)
+		{
+			*result = static_cast<uint8_t>(ch);
+			return result + 1;
+		}
+		// U+0080..U+07FF
+		else if (ch < 0x800)
+		{
+			result[0] = static_cast<uint8_t>(0xC0 | (ch >> 6));
+			result[1] = static_cast<uint8_t>(0x80 | (ch & 0x3F));
+			return result + 2;
+		}
+		// U+0800..U+FFFF
+		else
+		{
+			result[0] = static_cast<uint8_t>(0xE0 | (ch >> 12));
+			result[1] = static_cast<uint8_t>(0x80 | ((ch >> 6) & 0x3F));
+			result[2] = static_cast<uint8_t>(0x80 | (ch & 0x3F));
+			return result + 3;
+		}
+	}
+
+	static value_type high(value_type result, uint32_t ch)
+	{
+		// U+10000..U+10FFFF
+		result[0] = static_cast<uint8_t>(0xF0 | (ch >> 18));
+		result[1] = static_cast<uint8_t>(0x80 | ((ch >> 12) & 0x3F));
+		result[2] = static_cast<uint8_t>(0x80 | ((ch >> 6) & 0x3F));
+		result[3] = static_cast<uint8_t>(0x80 | (ch & 0x3F));
+		return result + 4;
+	}
+
+	static value_type any(value_type result, uint32_t ch)
+	{
+		return (ch < 0x10000) ? low(result, ch) : high(result, ch);
 	}
 };
 
