@@ -46,6 +46,13 @@ test-release:
 .PHONY: test-release
 
 
+test-debug:
+	BUILD_TYPE=Debug BUILD_DIR=build/debug BUILD_TESTS=ON \
+		$(MAKE) build
+	cd $(BUILD_DIR)/debug ; make run-tests
+.PHONY: test-release
+
+
 test-memleaks:
 	BUILD_TYPE=Release BUILD_DIR=build/release BUILD_TESTS=ON \
 		$(MAKE) build
