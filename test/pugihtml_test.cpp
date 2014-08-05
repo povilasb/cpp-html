@@ -28,7 +28,7 @@ TEST(pugihtml, parse_text)
 }
 
 
-TEST(pugihtml, DISABLED_parse_with_void_element)
+TEST(pugihtml, parse_with_void_element)
 {
 	string str_html =
 		"<html>"
