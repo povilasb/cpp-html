@@ -26,13 +26,8 @@
 namespace pugihtml
 {
 	// Forward declarations
-	struct html_attribute_struct;
-	struct html_node_struct;
-
 	class html_node_iterator;
 	class html_attribute_iterator;
-
-	class html_tree_walker;
 
 	class html_node;
 
@@ -45,8 +40,7 @@ namespace pugihtml
 
 #ifndef PUGIHTML_NO_XPATH
 	// XPath query return type
-	enum xpath_value_type
-	{
+	enum xpath_value_type {
 		xpath_type_none,	  // Unknown type (query failed to compile)
 		xpath_type_node_set,  // Node set (xpath_node_set)
 		xpath_type_number,	  // Number
