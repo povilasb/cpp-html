@@ -1,6 +1,8 @@
 #ifndef PUGIHTML_HTML_DOCUMENT_HPP
 #define PUGIHTML_HTML_DOCUMENT_HPP 1
 
+#include <vector>
+
 #include "memory.hpp"
 #include "html_node.hpp"
 #include "common.hpp"
@@ -94,6 +96,12 @@ public:
 
 	// Get document element
 	html_node document_element() const;
+
+	/**
+	 * Returns an array of all the links in the current document.
+	 * The links collection counts <a href=""> tags and <area> tags.
+	 */
+	std::vector<html_node> links() const;
 };
 
 } // pugihtml.

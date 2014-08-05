@@ -2,6 +2,7 @@
 #include <ios>
 #include <istream>
 #include <cstring>
+#include <vector>
 
 #include "html_document.hpp"
 #include "html_parser.hpp"
@@ -11,6 +12,7 @@
 
 
 using namespace pugihtml;
+using namespace std;
 
 
 html_document::html_document() : _buffer(0)
@@ -688,11 +690,47 @@ bool html_document::save_file(const wchar_t* path, const char_t* indent, unsigne
 	return true;
 }
 
-html_node html_document::document_element() const
+html_node
+html_document::document_element() const
 {
 	for (html_node_struct* i = _root->first_child; i; i = i->next_sibling)
 		if ((i->header & html_memory_page_type_mask) + 1 == node_element)
 			return html_node(i);
 
 	return html_node();
+}
+
+
+class links_walker : public html_tree_walker {
+public:
+	links_walker(vector<html_node>& links) : links_(links)
+	{
+	}
+
+	bool
+	for_each(html_node& node)
+	{
+		string_t node_name(node.name());
+
+		if (node_name == "A" ||
+			node_name == "AREA") {
+			this->links_.push_back(node);
+		}
+
+		return true;
+	}
+
+private:
+	vector<html_node>& links_;
+};
+
+std::vector<html_node>
+html_document::links() const
+{
+	vector<html_node> result;
+
+	links_walker html_walker(result);
+	this->document_element().traverse(html_walker);
+
+	return result;
 }
