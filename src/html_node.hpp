@@ -388,7 +388,8 @@ public:
 	virtual ~html_tree_walker();
 
 	/**
-	 * Callback that is called when traversal begins
+	 * Callback that is called when traversal begins. Always returns true.
+	 * Override to change
 	 *
 	 * @return false if should stop iterating the tree.
 	 */
