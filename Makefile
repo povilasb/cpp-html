@@ -43,7 +43,7 @@ test-release:
 	BUILD_TYPE=Release BUILD_DIR=build/release BUILD_TESTS=ON \
 		$(MAKE) build
 	cd $(BUILD_DIR)/release ; make run-tests
-.PHONY: test
+.PHONY: test-release
 
 
 test-memleaks:
