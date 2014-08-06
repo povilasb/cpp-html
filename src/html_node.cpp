@@ -2,7 +2,7 @@
 #include <cassert>
 
 #include "html_node.hpp"
-#include "html_attribute.hpp"
+#include "attribute.hpp"
 #include "pugiutil.hpp"
 #include "document.hpp"
 #include "common.hpp"
@@ -60,25 +60,25 @@ get_allocator(const html_node_struct* node)
 }
 
 
-inline html_attribute_struct*
+inline attribute_struct*
 allocate_attribute(html_allocator& alloc)
 {
 	html_memory_page* page;
-	void* memory = alloc.allocate_memory(sizeof(html_attribute_struct), page);
+	void* memory = alloc.allocate_memory(sizeof(attribute_struct), page);
 
-	return new (memory) html_attribute_struct(page);
+	return new (memory) attribute_struct(page);
 }
 
 
 inline void
-destroy_attribute(html_attribute_struct* a, html_allocator& alloc)
+destroy_attribute(attribute_struct* a, html_allocator& alloc)
 {
 	uintptr_t header = a->header;
 
 	if (header & html_memory_page_name_allocated_mask) alloc.deallocate_string(a->name);
 	if (header & html_memory_page_value_allocated_mask) alloc.deallocate_string(a->value);
 
-	alloc.deallocate_memory(a, sizeof(html_attribute_struct),
+	alloc.deallocate_memory(a, sizeof(attribute_struct),
 		reinterpret_cast<html_memory_page*>(header
 		& html_memory_page_pointer_mask));
 }
@@ -92,8 +92,8 @@ destroy_node(html_node_struct* n, html_allocator& alloc)
 	if (header & html_memory_page_name_allocated_mask) alloc.deallocate_string(n->name);
 	if (header & html_memory_page_value_allocated_mask) alloc.deallocate_string(n->value);
 
-	for (html_attribute_struct* attr = n->first_attribute; attr; ) {
-		html_attribute_struct* next = attr->next_attribute;
+	for (attribute_struct* attr = n->first_attribute; attr; ) {
+		attribute_struct* next = attr->next_attribute;
 
 		destroy_attribute(attr, alloc);
 
@@ -154,12 +154,12 @@ html_node::iterator html_node::end() const
 	return iterator(0, _root);
 }
 
-html_node::attribute_iterator html_node::attributes_begin() const
+attribute_iterator html_node::attributes_begin() const
 {
 	return attribute_iterator(_root ? _root->first_attribute : 0, _root);
 }
 
-html_node::attribute_iterator html_node::attributes_end() const
+attribute_iterator html_node::attributes_end() const
 {
 	return attribute_iterator(0, _root);
 }
@@ -228,15 +228,16 @@ html_node html_node::child(const char_t* name) const
 	return html_node();
 }
 
-html_attribute html_node::attribute(const char_t* name) const
+attribute
+html_node::get_attribute(const char_t* name) const
 {
-	if (!_root) return html_attribute();
+	if (!_root) return attribute();
 
-	for (html_attribute_struct* i = _root->first_attribute; i; i = i->next_attribute)
+	for (attribute_struct* i = _root->first_attribute; i; i = i->next_attribute)
 		if (i->name && strequal(name, i->name))
-			return html_attribute(i);
+			return attribute(i);
 
-	return html_attribute();
+	return attribute();
 }
 
 html_node html_node::next_sibling(const char_t* name) const
@@ -313,14 +314,14 @@ const char_t* html_node::child_value(const char_t* name) const
 	return child(name).child_value();
 }
 
-html_attribute html_node::first_attribute() const
+attribute html_node::first_attribute() const
 {
-	return _root ? html_attribute(_root->first_attribute) : html_attribute();
+	return _root ? attribute(_root->first_attribute) : attribute();
 }
 
-html_attribute html_node::last_attribute() const
+attribute html_node::last_attribute() const
 {
-	return _root && _root->first_attribute ? html_attribute(_root->first_attribute->prev_attribute_c) : html_attribute();
+	return _root && _root->first_attribute ? attribute(_root->first_attribute->prev_attribute_c) : attribute();
 }
 
 html_node html_node::first_child() const
@@ -363,26 +364,26 @@ bool html_node::set_value(const char_t* rhs)
 	}
 }
 
-html_attribute html_node::append_attribute(const char_t* name)
+attribute html_node::append_attribute(const char_t* name)
 {
-	if (type() != node_element && type() != node_declaration) return html_attribute();
+	if (type() != node_element && type() != node_declaration) return attribute();
 
-	html_attribute a(append_attribute_ll(_root, get_allocator(_root)));
+	attribute a(append_attribute_ll(_root, get_allocator(_root)));
 	a.set_name(name);
 
 	return a;
 }
 
-html_attribute html_node::prepend_attribute(const char_t* name)
+attribute html_node::prepend_attribute(const char_t* name)
 {
-	if (type() != node_element && type() != node_declaration) return html_attribute();
+	if (type() != node_element && type() != node_declaration) return attribute();
 
-	html_attribute a(allocate_attribute(get_allocator(_root)));
-	if (!a) return html_attribute();
+	attribute a(allocate_attribute(get_allocator(_root)));
+	if (!a) return attribute();
 
 	a.set_name(name);
 
-	html_attribute_struct* head = _root->first_attribute;
+	attribute_struct* head = _root->first_attribute;
 
 	if (head)
 	{
@@ -398,19 +399,19 @@ html_attribute html_node::prepend_attribute(const char_t* name)
 	return a;
 }
 
-html_attribute html_node::insert_attribute_before(const char_t* name, const html_attribute& attr)
+attribute html_node::insert_attribute_before(const char_t* name, const attribute& attr)
 {
-	if ((type() != node_element && type() != node_declaration) || attr.empty()) return html_attribute();
+	if ((type() != node_element && type() != node_declaration) || attr.empty()) return attribute();
 
 	// check that attribute belongs to *this
-	html_attribute_struct* cur = attr._attr;
+	attribute_struct* cur = attr._attr;
 
 	while (cur->prev_attribute_c->next_attribute) cur = cur->prev_attribute_c;
 
-	if (cur != _root->first_attribute) return html_attribute();
+	if (cur != _root->first_attribute) return attribute();
 
-	html_attribute a(allocate_attribute(get_allocator(_root)));
-	if (!a) return html_attribute();
+	attribute a(allocate_attribute(get_allocator(_root)));
+	if (!a) return attribute();
 
 	a.set_name(name);
 
@@ -426,19 +427,19 @@ html_attribute html_node::insert_attribute_before(const char_t* name, const html
 	return a;
 }
 
-html_attribute html_node::insert_attribute_after(const char_t* name, const html_attribute& attr)
+attribute html_node::insert_attribute_after(const char_t* name, const attribute& attr)
 {
-	if ((type() != node_element && type() != node_declaration) || attr.empty()) return html_attribute();
+	if ((type() != node_element && type() != node_declaration) || attr.empty()) return attribute();
 
 	// check that attribute belongs to *this
-	html_attribute_struct* cur = attr._attr;
+	attribute_struct* cur = attr._attr;
 
 	while (cur->prev_attribute_c->next_attribute) cur = cur->prev_attribute_c;
 
-	if (cur != _root->first_attribute) return html_attribute();
+	if (cur != _root->first_attribute) return attribute();
 
-	html_attribute a(allocate_attribute(get_allocator(_root)));
-	if (!a) return html_attribute();
+	attribute a(allocate_attribute(get_allocator(_root)));
+	if (!a) return attribute();
 
 	a.set_name(name);
 
@@ -454,41 +455,41 @@ html_attribute html_node::insert_attribute_after(const char_t* name, const html_
 	return a;
 }
 
-html_attribute html_node::append_copy(const html_attribute& proto)
+attribute html_node::append_copy(const attribute& proto)
 {
-	if (!proto) return html_attribute();
+	if (!proto) return attribute();
 
-	html_attribute result = append_attribute(proto.name());
+	attribute result = append_attribute(proto.name());
 	result.set_value(proto.value());
 
 	return result;
 }
 
-html_attribute html_node::prepend_copy(const html_attribute& proto)
+attribute html_node::prepend_copy(const attribute& proto)
 {
-	if (!proto) return html_attribute();
+	if (!proto) return attribute();
 
-	html_attribute result = prepend_attribute(proto.name());
+	attribute result = prepend_attribute(proto.name());
 	result.set_value(proto.value());
 
 	return result;
 }
 
-html_attribute html_node::insert_copy_after(const html_attribute& proto, const html_attribute& attr)
+attribute html_node::insert_copy_after(const attribute& proto, const attribute& attr)
 {
-	if (!proto) return html_attribute();
+	if (!proto) return attribute();
 
-	html_attribute result = insert_attribute_after(proto.name(), attr);
+	attribute result = insert_attribute_after(proto.name(), attr);
 	result.set_value(proto.value());
 
 	return result;
 }
 
-html_attribute html_node::insert_copy_before(const html_attribute& proto, const html_attribute& attr)
+attribute html_node::insert_copy_before(const attribute& proto, const attribute& attr)
 {
-	if (!proto) return html_attribute();
+	if (!proto) return attribute();
 
-	html_attribute result = insert_attribute_before(proto.name(), attr);
+	attribute result = insert_attribute_before(proto.name(), attr);
 	result.set_value(proto.value());
 
 	return result;
@@ -627,7 +628,7 @@ void recursive_copy_skip(html_node& dest, const html_node& source, const html_no
 	{
 		dest.set_name(source.name());
 
-		for (html_attribute a = source.first_attribute(); a; a = a.next_attribute())
+		for (attribute a = source.first_attribute(); a; a = a.next_attribute())
 			dest.append_attribute(a.name()).set_value(a.value());
 
 		for (html_node c = source.first_child(); c; c = c.next_sibling())
@@ -659,7 +660,7 @@ void recursive_copy_skip(html_node& dest, const html_node& source, const html_no
 	{
 		dest.set_name(source.name());
 
-		for (html_attribute a = source.first_attribute(); a; a = a.next_attribute())
+		for (attribute a = source.first_attribute(); a; a = a.next_attribute())
 			dest.append_attribute(a.name()).set_value(a.value());
 
 		break;
@@ -709,15 +710,15 @@ html_node html_node::insert_copy_before(const html_node& proto, const html_node&
 
 bool html_node::remove_attribute(const char_t* name)
 {
-	return remove_attribute(attribute(name));
+	return remove_attribute(this->get_attribute(name));
 }
 
-bool html_node::remove_attribute(const html_attribute& a)
+bool html_node::remove_attribute(const attribute& a)
 {
 	if (!_root || !a._attr) return false;
 
 	// check that attribute belongs to *this
-	html_attribute_struct* attr = a._attr;
+	attribute_struct* attr = a._attr;
 
 	while (attr->prev_attribute_c->next_attribute) attr = attr->prev_attribute_c;
 
@@ -766,7 +767,7 @@ html_node::find_child_by_attribute(const char_t* name, const char_t* attr_name,
 	for (html_node_struct* node = _root->first_child; node;
 		node = node->next_sibling) {
 		if (node->name && strequal(name, node->name)) {
-			for (html_attribute_struct* a = node->first_attribute;
+			for (attribute_struct* a = node->first_attribute;
 				a; a = a->next_attribute)
 				if (strequal(attr_name, a->name) &&
 					strequal(attr_value, a->value)) {
@@ -789,7 +790,7 @@ html_node::find_child_by_attribute(const char_t* attr_name,
 
 	for (html_node_struct* node = _root->first_child; node;
 		node = node->next_sibling) {
-		for (html_attribute_struct* a = node->first_attribute; a;
+		for (attribute_struct* a = node->first_attribute; a;
 			a = a->next_attribute) {
 			if (strequal(attr_name, a->name) &&
 				strequal(attr_value, a->value))
@@ -1128,17 +1129,17 @@ pugihtml::append_node(html_node_struct* node, html_allocator& alloc,
 }
 
 
-html_attribute_struct*
+attribute_struct*
 pugihtml::append_attribute_ll(html_node_struct* node, html_allocator& alloc)
 {
-	html_attribute_struct* a = allocate_attribute(alloc);
+	attribute_struct* a = allocate_attribute(alloc);
 	if (!a) return 0;
 
-	html_attribute_struct* first_attribute = node->first_attribute;
+	attribute_struct* first_attribute = node->first_attribute;
 
 	if (first_attribute)
 	{
-		html_attribute_struct* last_attribute =
+		attribute_struct* last_attribute =
 			first_attribute->prev_attribute_c;
 
 		last_attribute->next_attribute = a;
@@ -1205,7 +1206,7 @@ node_output_attributes(html_buffered_writer& writer, const html_node& node)
 {
 	const char_t* default_name = PUGIHTML_TEXT(":anonymous");
 
-	for (html_attribute a = node.first_attribute(); a; a = a.next_attribute()) {
+	for (attribute a = node.first_attribute(); a; a = a.next_attribute()) {
 		writer.write(' ');
 		writer.write(a.name()[0] ? a.name() : default_name);
 		writer.write('=', '"');

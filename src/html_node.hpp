@@ -5,7 +5,7 @@
 
 #include "common.hpp"
 #include "memory.hpp"
-#include "html_attribute.hpp"
+#include "attribute.hpp"
 #include "html_writer.hpp"
 
 
@@ -52,7 +52,7 @@ struct html_node_struct {
 	html_node_struct* prev_sibling_c;
 	html_node_struct* next_sibling;
 
-	html_attribute_struct* first_attribute;
+	attribute_struct* first_attribute;
 };
 
 
@@ -63,7 +63,7 @@ class html_tree_walker;
  * A light-weight handle for manipulating nodes in DOM tree.
  */
 class PUGIHTML_CLASS html_node {
-	friend class html_attribute_iterator;
+	friend class attribute_iterator;
 	friend class html_node_iterator;
 
 protected:
@@ -108,8 +108,8 @@ public:
 	const char_t* value() const;
 
 	// Get attribute list
-	html_attribute first_attribute() const;
-	html_attribute last_attribute() const;
+	attribute first_attribute() const;
+	attribute last_attribute() const;
 
 	// Get children list
 	html_node first_child() const;
@@ -129,7 +129,7 @@ public:
 
 	// Get child, attribute or next/previous sibling with the specified name
 	html_node child(const char_t* name) const;
-	html_attribute attribute(const char_t* name) const;
+	attribute get_attribute(const char_t* name) const;
 	html_node next_sibling(const char_t* name) const;
 	html_node previous_sibling(const char_t* name) const;
 
@@ -144,16 +144,16 @@ public:
 	bool set_value(const char_t* rhs);
 
 	// Add attribute with specified name. Returns added attribute, or empty attribute on errors.
-	html_attribute append_attribute(const char_t* name);
-	html_attribute prepend_attribute(const char_t* name);
-	html_attribute insert_attribute_after(const char_t* name, const html_attribute& attr);
-	html_attribute insert_attribute_before(const char_t* name, const html_attribute& attr);
+	attribute append_attribute(const char_t* name);
+	attribute prepend_attribute(const char_t* name);
+	attribute insert_attribute_after(const char_t* name, const attribute& attr);
+	attribute insert_attribute_before(const char_t* name, const attribute& attr);
 
 	// Add a copy of the specified attribute. Returns added attribute, or empty attribute on errors.
-	html_attribute append_copy(const html_attribute& proto);
-	html_attribute prepend_copy(const html_attribute& proto);
-	html_attribute insert_copy_after(const html_attribute& proto, const html_attribute& attr);
-	html_attribute insert_copy_before(const html_attribute& proto, const html_attribute& attr);
+	attribute append_copy(const attribute& proto);
+	attribute prepend_copy(const attribute& proto);
+	attribute insert_copy_after(const attribute& proto, const attribute& attr);
+	attribute insert_copy_before(const attribute& proto, const attribute& attr);
 
 	// Add child node with specified type. Returns added node, or empty node on errors.
 	html_node append_child(html_node_type type = node_element);
@@ -174,7 +174,7 @@ public:
 	html_node insert_copy_before(const html_node& proto, const html_node& node);
 
 	// Remove specified attribute
-	bool remove_attribute(const html_attribute& a);
+	bool remove_attribute(const attribute& a);
 	bool remove_attribute(const char_t* name);
 
 	// Remove specified child
@@ -182,15 +182,15 @@ public:
 	bool remove_child(const char_t* name);
 
 	// Find attribute using predicate. Returns first attribute for which predicate returned true.
-	template <typename Predicate> html_attribute find_attribute(Predicate pred) const
+	template <typename Predicate> attribute find_attribute(Predicate pred) const
 	{
-		if (!_root) return html_attribute();
+		if (!_root) return attribute();
 
-		for (html_attribute attrib = first_attribute(); attrib; attrib = attrib.next_attribute())
+		for (attribute attrib = first_attribute(); attrib; attrib = attrib.next_attribute())
 			if (pred(attrib))
 				return attrib;
 
-		return html_attribute();
+		return attribute();
 	}
 
 	// Find child node using predicate. Returns first child for which predicate returned true.
@@ -304,9 +304,6 @@ public:
 	iterator begin() const;
 	iterator end() const;
 
-	// Attribute iterators
-	typedef html_attribute_iterator attribute_iterator;
-
 	attribute_iterator attributes_begin() const;
 	attribute_iterator attributes_end() const;
 
@@ -368,46 +365,46 @@ public:
 	html_node_iterator operator--(int);
 };
 
-// Attribute iterator (a bidirectional iterator over a collection of html_attribute)
-class PUGIHTML_CLASS html_attribute_iterator
+// Attribute iterator (a bidirectional iterator over a collection of attribute)
+class PUGIHTML_CLASS attribute_iterator
 {
 	friend class html_node;
 
 private:
-	html_attribute _wrap;
+	attribute _wrap;
 	html_node _parent;
 
-	html_attribute_iterator(html_attribute_struct* ref, html_node_struct* parent);
+	attribute_iterator(attribute_struct* ref, html_node_struct* parent);
 
 public:
 	// Iterator traits
 	typedef ptrdiff_t difference_type;
-	typedef html_attribute value_type;
-	typedef html_attribute* pointer;
-	typedef html_attribute& reference;
+	typedef attribute value_type;
+	typedef attribute* pointer;
+	typedef attribute& reference;
 
 #ifndef PUGIHTML_NO_STL
 	typedef std::bidirectional_iterator_tag iterator_category;
 #endif
 
 	// Default constructor
-	html_attribute_iterator();
+	attribute_iterator();
 
 	// Construct an iterator which points to the specified attribute
-	html_attribute_iterator(const html_attribute& attr, const html_node& parent);
+	attribute_iterator(const attribute& attr, const html_node& parent);
 
 	// Iterator operators
-	bool operator==(const html_attribute_iterator& rhs) const;
-	bool operator!=(const html_attribute_iterator& rhs) const;
+	bool operator==(const attribute_iterator& rhs) const;
+	bool operator!=(const attribute_iterator& rhs) const;
 
-	html_attribute& operator*();
-	html_attribute* operator->();
+	attribute& operator*();
+	attribute* operator->();
 
-	const html_attribute_iterator& operator++();
-	html_attribute_iterator operator++(int);
+	const attribute_iterator& operator++();
+	attribute_iterator operator++(int);
 
-	const html_attribute_iterator& operator--();
-	html_attribute_iterator operator--(int);
+	const attribute_iterator& operator--();
+	attribute_iterator operator--(int);
 };
 
 
@@ -456,7 +453,7 @@ public:
 html_node_struct* append_node(html_node_struct* node, html_allocator& alloc,
 	html_node_type type = node_element);
 
-html_attribute_struct* append_attribute_ll(html_node_struct* node,
+attribute_struct* append_attribute_ll(html_node_struct* node,
 	html_allocator& alloc);
 
 html_node_struct* allocate_node(html_allocator& alloc, html_node_type type);
