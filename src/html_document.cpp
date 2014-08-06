@@ -740,7 +740,7 @@ html_node
 document::get_element_by_id(const string_t& id)
 {
 	return this->find_node([&](const html_node& node) {
-		html_attribute attr = node.attribute("ID");
+		attribute attr = node.get_attribute("ID");
 		if (attr.value() == id) {
 			return true;
 		}

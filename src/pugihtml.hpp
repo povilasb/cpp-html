@@ -18,7 +18,7 @@
 #include "common.hpp"
 #include "parser.hpp"
 #include "html_node.hpp"
-#include "html_attribute.hpp"
+#include "attribute.hpp"
 #include "html_writer.hpp"
 
 
@@ -27,7 +27,7 @@ namespace pugihtml
 {
 	// Forward declarations
 	class html_node_iterator;
-	class html_attribute_iterator;
+	class attribute_iterator;
 
 	class html_node;
 
@@ -211,12 +211,12 @@ namespace pugihtml
 	};
 	#endif
 
-	// XPath node class (either html_node or html_attribute)
+	// XPath node class (either html_node or attribute)
 	class PUGIHTML_CLASS xpath_node
 	{
 	private:
 		html_node _node;
-		html_attribute _attribute;
+		attribute _attribute;
 
 		typedef html_node xpath_node::*unspecified_bool_type;
 
@@ -226,11 +226,11 @@ namespace pugihtml
 
 		// Construct XPath node from HTML node/attribute
 		xpath_node(const html_node& node);
-		xpath_node(const html_attribute& attribute, const html_node& parent);
+		xpath_node(const attribute& attribute, const html_node& parent);
 
 		// Get node/attribute, if any
 		html_node node() const;
-		html_attribute attribute() const;
+		attribute attribute() const;
 
 		// Get parent of contained node/attribute
 		html_node parent() const;
@@ -326,7 +326,7 @@ namespace std
 {
 	// Workarounds for (non-standard) iterator category detection for older versions (MSVC7/IC8 and earlier)
 	std::bidirectional_iterator_tag PUGIHTML_FUNCTION _Iter_cat(const pugihtml::html_node_iterator&);
-	std::bidirectional_iterator_tag PUGIHTML_FUNCTION _Iter_cat(const pugihtml::html_attribute_iterator&);
+	std::bidirectional_iterator_tag PUGIHTML_FUNCTION _Iter_cat(const pugihtml::attribute_iterator&);
 }
 #endif
 
@@ -335,7 +335,7 @@ namespace std
 {
 	// Workarounds for (non-standard) iterator category detection
 	std::bidirectional_iterator_tag PUGIHTML_FUNCTION __iterator_category(const pugihtml::html_node_iterator&);
-	std::bidirectional_iterator_tag PUGIHTML_FUNCTION __iterator_category(const pugihtml::html_attribute_iterator&);
+	std::bidirectional_iterator_tag PUGIHTML_FUNCTION __iterator_category(const pugihtml::attribute_iterator&);
 }
 #endif
 

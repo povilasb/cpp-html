@@ -4,7 +4,7 @@
 #include <list>
 
 #include "parser.hpp"
-#include "html_attribute.hpp"
+#include "attribute.hpp"
 #include "html_node.hpp"
 #include "document.hpp"
 #include "memory.hpp"
@@ -671,7 +671,7 @@ parser::parse(char_t* s, html_node_struct* htmldoc, unsigned int optmsk,
 
 						if (is_chartype(*s, ct_start_symbol)) // <... #...
 						{
-							html_attribute_struct* a = append_attribute_ll(cursor, alloc); // Make space for this attribute.
+							attribute_struct* a = append_attribute_ll(cursor, alloc); // Make space for this attribute.
 							if (!a) THROW_ERROR(status_out_of_memory, s);
 
 							a->name = s; // Save the offset.

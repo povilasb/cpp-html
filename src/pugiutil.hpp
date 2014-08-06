@@ -230,7 +230,7 @@ std::basic_string<char, std::char_traits<char>, std::allocator<char> > PUGIHTML_
 //};
 //
 ///// HTML5 attributes
-//static const std::set<char_t*, TagSetComparator> html_attributes(attributes, attributes+ARRAYSIZE(attributes));
+//static const std::set<char_t*, TagSetComparator> attributes(attributes, attributes+ARRAYSIZE(attributes));
 //
 ///// HTML5 elements
 //static const std::set<char_t*, TagSetComparator> html_elements(elements, elements+ARRAYSIZE(elements));

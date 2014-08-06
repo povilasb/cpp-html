@@ -1004,7 +1004,7 @@ namespace
 
 								if (IS_CHARTYPE(*s, ct_start_symbol)) // <... #...
 								{
-									html_attribute_struct* a = append_attribute_ll(cursor, alloc); // Make space for this attribute.
+									attribute_struct* a = append_attribute_ll(cursor, alloc); // Make space for this attribute.
 									if (!a) THROW_ERROR(status_out_of_memory, s);
 
 									a->name = s; // Save the offset.
@@ -1343,64 +1343,64 @@ namespace
 
 namespace pugihtml
 {
-	// TODO(povilas): move to html_attribute.
-	html_attribute_iterator::html_attribute_iterator()
+	// TODO(povilas): move to attribute.
+	attribute_iterator::attribute_iterator()
 	{
 	}
 
-	html_attribute_iterator::html_attribute_iterator(const html_attribute& attr, const html_node& parent): _wrap(attr), _parent(parent)
+	attribute_iterator::attribute_iterator(const attribute& attr, const html_node& parent): _wrap(attr), _parent(parent)
 	{
 	}
 
-	html_attribute_iterator::html_attribute_iterator(html_attribute_struct* ref, html_node_struct* parent): _wrap(ref), _parent(parent)
+	attribute_iterator::attribute_iterator(attribute_struct* ref, html_node_struct* parent): _wrap(ref), _parent(parent)
 	{
 	}
 
-	bool html_attribute_iterator::operator==(const html_attribute_iterator& rhs) const
+	bool attribute_iterator::operator==(const attribute_iterator& rhs) const
 	{
 		return _wrap._attr == rhs._wrap._attr && _parent._root == rhs._parent._root;
 	}
 
-	bool html_attribute_iterator::operator!=(const html_attribute_iterator& rhs) const
+	bool attribute_iterator::operator!=(const attribute_iterator& rhs) const
 	{
 		return _wrap._attr != rhs._wrap._attr || _parent._root != rhs._parent._root;
 	}
 
-	html_attribute& html_attribute_iterator::operator*()
+	attribute& attribute_iterator::operator*()
 	{
 		assert(_wrap._attr);
 		return _wrap;
 	}
 
-	html_attribute* html_attribute_iterator::operator->()
+	attribute* attribute_iterator::operator->()
 	{
 		assert(_wrap._attr);
 		return &_wrap;
 	}
 
-	const html_attribute_iterator& html_attribute_iterator::operator++()
+	const attribute_iterator& attribute_iterator::operator++()
 	{
 		assert(_wrap._attr);
 		_wrap._attr = _wrap._attr->next_attribute;
 		return *this;
 	}
 
-	html_attribute_iterator html_attribute_iterator::operator++(int)
+	attribute_iterator attribute_iterator::operator++(int)
 	{
-		html_attribute_iterator temp = *this;
+		attribute_iterator temp = *this;
 		++*this;
 		return temp;
 	}
 
-	const html_attribute_iterator& html_attribute_iterator::operator--()
+	const attribute_iterator& attribute_iterator::operator--()
 	{
 		_wrap = _wrap._attr ? _wrap.previous_attribute() : _parent.last_attribute();
 		return *this;
 	}
 
-	html_attribute_iterator html_attribute_iterator::operator--(int)
+	attribute_iterator attribute_iterator::operator--(int)
 	{
-		html_attribute_iterator temp = *this;
+		attribute_iterator temp = *this;
 		--*this;
 		return temp;
 	}
@@ -1446,7 +1446,7 @@ namespace std
 		return std::bidirectional_iterator_tag();
 	}
 
-	std::bidirectional_iterator_tag _Iter_cat(const html_attribute_iterator&)
+	std::bidirectional_iterator_tag _Iter_cat(const attribute_iterator&)
 	{
 		return std::bidirectional_iterator_tag();
 	}
@@ -1462,7 +1462,7 @@ namespace std
 		return std::bidirectional_iterator_tag();
 	}
 
-	std::bidirectional_iterator_tag __iterator_category(const html_attribute_iterator&)
+	std::bidirectional_iterator_tag __iterator_category(const attribute_iterator&)
 	{
 		return std::bidirectional_iterator_tag();
 	}
@@ -2185,7 +2185,7 @@ namespace
 			return 0;
 		}
 
-		html_attribute_struct* attr = xnode.attribute().internal_object();
+		attribute_struct* attr = xnode.attribute().internal_object();
 
 		if (attr)
 		{
@@ -2217,7 +2217,7 @@ namespace
 				if (lhs.parent() == rhs.parent())
 				{
 					// determine sibling order
-					for (html_attribute a = lhs.attribute(); a; a = a.next_attribute())
+					for (attribute a = lhs.attribute(); a; a = a.next_attribute())
 						if (a == rhs.attribute())
 							return true;
 
@@ -2548,7 +2548,7 @@ namespace
 			prefix_length = pos ? static_cast<size_t>(pos - name) : 0;
 		}
 
-		bool operator()(const html_attribute& a) const
+		bool operator()(const attribute& a) const
 		{
 			const char_t* name = a.name();
 
@@ -2566,7 +2566,7 @@ namespace
 
 		while (p)
 		{
-			html_attribute a = p.find_attribute(pred);
+			attribute a = p.find_attribute(pred);
 
 			if (a) return a.value();
 
@@ -2576,7 +2576,7 @@ namespace
 		return PUGIHTML_TEXT("");
 	}
 
-	const char_t* namespace_uri(const html_attribute& attr, const html_node& parent)
+	const char_t* namespace_uri(const attribute& attr, const html_node& parent)
 	{
 		namespace_uri_predicate pred = attr.name();
 
@@ -2587,7 +2587,7 @@ namespace
 
 		while (p)
 		{
-			html_attribute a = p.find_attribute(pred);
+			attribute a = p.find_attribute(pred);
 
 			if (a) return a.value();
 
@@ -3651,7 +3651,7 @@ namespace
 			}
 		}
 
-		void step_push(xpath_node_set_raw& ns, const html_attribute& a, const html_node& parent, xpath_allocator* alloc)
+		void step_push(xpath_node_set_raw& ns, const attribute& a, const html_node& parent, xpath_allocator* alloc)
 		{
 			if (!a) return;
 
@@ -3739,7 +3739,7 @@ namespace
 			{
 			case axis_attribute:
 			{
-				for (html_attribute a = n.first_attribute(); a; a = a.next_attribute())
+				for (attribute a = n.first_attribute(); a; a = a.next_attribute())
 					step_push(ns, a, n, alloc);
 
 				break;
@@ -3901,7 +3901,7 @@ namespace
 			}
 		}
 
-		template <class T> void step_fill(xpath_node_set_raw& ns, const html_attribute& a, const html_node& p, xpath_allocator* alloc, T v)
+		template <class T> void step_fill(xpath_node_set_raw& ns, const attribute& a, const html_node& p, xpath_allocator* alloc, T v)
 		{
 			const axis_t axis = T::axis;
 
@@ -4138,7 +4138,7 @@ namespace
 
 				for (html_node n = c.n.node(); n; n = n.parent())
 				{
-					html_attribute a = n.attribute(PUGIHTML_TEXT("html:lang"));
+					attribute a = n.attribute(PUGIHTML_TEXT("html:lang"));
 
 					if (a)
 					{
@@ -5686,7 +5686,7 @@ namespace pugihtml
 	{
 	}
 
-	xpath_node::xpath_node(const html_attribute& attribute, const html_node& parent): _node(attribute ? parent : html_node()), _attribute(attribute)
+	xpath_node::xpath_node(const attribute& attribute, const html_node& parent): _node(attribute ? parent : html_node()), _attribute(attribute)
 	{
 	}
 
@@ -5695,7 +5695,7 @@ namespace pugihtml
 		return _attribute ? html_node() : _node;
 	}
 
-	html_attribute xpath_node::attribute() const
+	attribute xpath_node::attribute() const
 	{
 		return _attribute;
 	}
