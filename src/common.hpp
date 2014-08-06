@@ -14,6 +14,9 @@
 #include "pugiconfig.hpp"
 
 #ifndef PUGIHTML_NO_STL
+
+#include <string>
+
 namespace std
 {
 	struct bidirectional_iterator_tag;

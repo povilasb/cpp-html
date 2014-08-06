@@ -28,12 +28,44 @@ namespace pugihtml
 	(void)condition_failed[0]; }
 
 
+// Digital Mars C++ bug workaround for passing char loaded from memory via stack
+#ifdef __DMC__
+#	define DMC_VOLATILE volatile
+#else
+#	define DMC_VOLATILE
+#endif
+
+
 static inline void
 to_upper(char_t* str)
 {
 	while(*str != 0) {
 		TOUPPER(*str);
 		str++;
+	}
+}
+
+
+inline uint16_t
+endian_swap(uint16_t value)
+{
+	return static_cast<uint16_t>(((value & 0xff) << 8) | (value >> 8));
+}
+
+
+inline uint32_t
+endian_swap(uint32_t value)
+{
+	return ((value & 0xff) << 24) | ((value & 0xff00) << 8)
+		| ((value & 0xff0000) >> 8) | (value >> 24);
+}
+
+
+template <typename T> inline void
+convert_utf_endian_swap(T* result, const T* data, size_t length)
+{
+	for (size_t i = 0; i < length; ++i) {
+		result[i] = endian_swap(data[i]);
 	}
 }
 
@@ -76,6 +108,61 @@ struct opt_false {
 struct opt_true {
 	enum { value = 1 };
 };
+
+
+bool strcpy_insitu(char_t*& dest, uintptr_t& header, uintptr_t header_mask,
+	const char_t* source);
+
+/**
+ * Get string length.
+ */
+size_t strlength(const char_t* s);
+
+
+// Compare two strings
+bool strequal(const char_t* src, const char_t* dst);
+
+
+// Compare lhs with [rhs_begin, rhs_end)
+bool strequalrange(const char_t* lhs, const char_t* rhs, size_t count);
+
+
+#if !defined(PUGIHTML_NO_STL) || !defined(PUGIHTML_NO_XPATH)
+// auto_ptr-like buffer holder for exception recovery
+struct buffer_holder {
+	void* data;
+	void (*deleter)(void*);
+
+	buffer_holder(void* data, void (*deleter)(void*)) : data(data),
+		deleter(deleter)
+	{
+	}
+
+	~buffer_holder()
+	{
+		if (data) {
+			deleter(data);
+		}
+	}
+
+	void* release()
+	{
+		void* result = data;
+		data = 0;
+		return result;
+	}
+};
+#endif
+
+
+html_parse_status get_file_size(FILE* file, size_t& out_result);
+
+
+#ifndef PUGIHTML_NO_STL
+// Convert wide string to UTF8
+std::basic_string<char, std::char_traits<char>, std::allocator<char> > PUGIHTML_FUNCTION as_utf8(const wchar_t* str);
+std::basic_string<char, std::char_traits<char>, std::allocator<char> > PUGIHTML_FUNCTION as_utf8(const std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >& str);
+#endif
 
 //static char_t* attributes[] = {"ABBR", "ACCEPT", "ACCEPT-CHARSET",
 //    "ACCESSKEY", "ACTION", "ALIGN", "ALINK", "ALT", "ARCHIVE",

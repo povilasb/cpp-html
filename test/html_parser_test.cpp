@@ -5,6 +5,7 @@
 #include <html_parser.hpp>
 #include "memory.hpp"
 #include <pugihtml.hpp>
+#include <html_document.hpp>
 
 
 using namespace std;

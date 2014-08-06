@@ -5,6 +5,8 @@
 #include "pugiutil.hpp"
 #include "common.hpp"
 #include "html_parser.hpp"
+#include "utf_decoder.hpp"
+#include "encoding.hpp"
 
 
 using namespace pugihtml;
@@ -115,51 +117,6 @@ pugihtml::strconv_cdata(char_t* s, char_t endch)
 		}
 	}
 }
-
-
-struct utf8_writer {
-	typedef uint8_t* value_type;
-
-	static value_type low(value_type result, uint32_t ch)
-	{
-		// U+0000..U+007F
-		if (ch < 0x80)
-		{
-			*result = static_cast<uint8_t>(ch);
-			return result + 1;
-		}
-		// U+0080..U+07FF
-		else if (ch < 0x800)
-		{
-			result[0] = static_cast<uint8_t>(0xC0 | (ch >> 6));
-			result[1] = static_cast<uint8_t>(0x80 | (ch & 0x3F));
-			return result + 2;
-		}
-		// U+0800..U+FFFF
-		else
-		{
-			result[0] = static_cast<uint8_t>(0xE0 | (ch >> 12));
-			result[1] = static_cast<uint8_t>(0x80 | ((ch >> 6) & 0x3F));
-			result[2] = static_cast<uint8_t>(0x80 | (ch & 0x3F));
-			return result + 3;
-		}
-	}
-
-	static value_type high(value_type result, uint32_t ch)
-	{
-		// U+10000..U+10FFFF
-		result[0] = static_cast<uint8_t>(0xF0 | (ch >> 18));
-		result[1] = static_cast<uint8_t>(0x80 | ((ch >> 12) & 0x3F));
-		result[2] = static_cast<uint8_t>(0x80 | ((ch >> 6) & 0x3F));
-		result[3] = static_cast<uint8_t>(0x80 | (ch & 0x3F));
-		return result + 4;
-	}
-
-	static value_type any(value_type result, uint32_t ch)
-	{
-		return (ch < 0x10000) ? low(result, ch) : high(result, ch);
-	}
-};
 
 
 char_t*
@@ -333,3 +290,189 @@ pugihtml::is_chartype(char_t ch, enum chartype_t char_type)
 	return chartype_table[static_cast<unsigned char>(ch)] & (char_type);
 #endif
 }
+
+
+inline bool
+strcpy_insitu_allow(size_t length, uintptr_t allocated, char_t* target)
+{
+	assert(target);
+	size_t target_length = strlength(target);
+
+	// always reuse document buffer memory if possible
+	if (!allocated) return target_length >= length;
+
+	// reuse heap memory if waste is not too great
+	const size_t reuse_threshold = 32;
+
+	return target_length >= length && (target_length < reuse_threshold
+		|| target_length - length < target_length / 2);
+}
+
+bool
+pugihtml::strcpy_insitu(char_t*& dest, uintptr_t& header, uintptr_t header_mask,
+	const char_t* source)
+{
+	size_t source_length = strlength(source);
+
+	if (source_length == 0) {
+		// empty string and null pointer are equivalent, so just deallocate old memory
+		html_allocator* alloc = reinterpret_cast<html_memory_page*>(
+			header & html_memory_page_pointer_mask)->allocator;
+
+		if (header & header_mask) alloc->deallocate_string(dest);
+
+		// mark the string as not allocated
+		dest = 0;
+		header &= ~header_mask;
+
+		return true;
+	}
+	else if (dest && strcpy_insitu_allow(source_length, header
+		& header_mask, dest)) {
+		// we can reuse old buffer, so just copy the new data (including zero terminator)
+		memcpy(dest, source, (source_length + 1) * sizeof(char_t));
+
+		return true;
+	}
+	else {
+		html_allocator* alloc = reinterpret_cast<html_memory_page*>(
+			header & html_memory_page_pointer_mask)->allocator;
+
+		// allocate new buffer
+		char_t* buf = alloc->allocate_string(source_length + 1);
+		if (!buf) return false;
+
+		// copy the string (including zero terminator)
+		memcpy(buf, source, (source_length + 1) * sizeof(char_t));
+
+		// deallocate old buffer (*after* the above to protect
+		// against overlapping memory and/or allocation failures)
+		if (header & header_mask) alloc->deallocate_string(dest);
+
+		// the string is now allocated, so set the flag
+		dest = buf;
+		header |= header_mask;
+
+		return true;
+	}
+}
+
+
+size_t
+pugihtml::strlength(const char_t* s)
+{
+	assert(s);
+
+#ifdef PUGIHTML_WCHAR_MODE
+	return wcslen(s);
+#else
+	return strlen(s);
+#endif
+}
+
+
+// Compare two strings
+bool
+pugihtml::strequal(const char_t* src, const char_t* dst)
+{
+	assert(src && dst);
+
+#ifdef PUGIHTML_WCHAR_MODE
+	return wcscmp(src, dst) == 0;
+#else
+	return strcmp(src, dst) == 0;
+#endif
+}
+
+
+// Compare lhs with [rhs_begin, rhs_end)
+bool
+pugihtml::strequalrange(const char_t* lhs, const char_t* rhs, size_t count)
+{
+	for (size_t i = 0; i < count; ++i)
+		if (lhs[i] != rhs[i])
+			return false;
+
+	return lhs[count] == 0;
+}
+
+
+// we need to get length of entire file to load it in memory; the only
+// (relatively) sane way to do it is via seek/tell trick
+html_parse_status
+pugihtml::get_file_size(FILE* file, size_t& out_result)
+{
+#if defined(_MSC_VER) && _MSC_VER >= 1400
+	// there are 64-bit versions of fseek/ftell, let's use them
+	typedef __int64 length_type;
+
+	_fseeki64(file, 0, SEEK_END);
+	length_type length = _ftelli64(file);
+	_fseeki64(file, 0, SEEK_SET);
+#elif defined(__MINGW32__) && !defined(__NO_MINGW_LFS) && !defined(__STRICT_ANSI__)
+	// there are 64-bit versions of fseek/ftell, let's use them
+	typedef off64_t length_type;
+
+	fseeko64(file, 0, SEEK_END);
+	length_type length = ftello64(file);
+	fseeko64(file, 0, SEEK_SET);
+#else
+	// if this is a 32-bit OS, long is enough; if this is a unix system,
+	// long is 64-bit, which is enough; otherwise we can't do anything anyway.
+	typedef long length_type;
+
+	fseek(file, 0, SEEK_END);
+	length_type length = ftell(file);
+	fseek(file, 0, SEEK_SET);
+#endif
+
+	// check for I/O errors
+	if (length < 0) return status_io_error;
+
+	// check for overflow
+	size_t result = static_cast<size_t>(length);
+
+	if (static_cast<length_type>(result) != length) return status_out_of_memory;
+
+	// finalize
+	out_result = result;
+
+	return status_ok;
+}
+
+
+#ifndef PUGIHTML_NO_STL
+
+std::string
+as_utf8_impl(const wchar_t* str, size_t length)
+{
+	// first pass: get length in utf8 characters
+	size_t size = as_utf8_begin(str, length);
+
+	// allocate resulting string
+	std::string result;
+	result.resize(size);
+
+	// second pass: convert to utf8
+	if (size > 0) as_utf8_end(&result[0], size, str, length);
+
+	return result;
+}
+
+
+std::string PUGIHTML_FUNCTION
+as_utf8(const wchar_t* str)
+{
+	assert(str);
+
+	return as_utf8_impl(str, wcslen(str));
+}
+
+
+std::string PUGIHTML_FUNCTION
+as_utf8(const std::wstring& str)
+{
+	return as_utf8_impl(str.c_str(), str.size());
+}
+
+#endif
