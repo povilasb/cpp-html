@@ -69,7 +69,7 @@ struct html_parse_result {
 };
 
 
-struct html_parser {
+struct parser {
 public:
 	// Parsing options
 
@@ -136,7 +136,7 @@ public:
 		| parse_comments | parse_declaration | parse_doctype;
 
 
-	html_parser(const html_allocator& alloc);
+	parser(const html_allocator& alloc);
 
 	/**
 	 * DOCTYPE consists of nested sections of the following possible types:

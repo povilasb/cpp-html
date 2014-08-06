@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "document.hpp"
-#include "html_parser.hpp"
+#include "parser.hpp"
 #include "pugiutil.hpp"
 #include "utf_decoder.hpp"
 #include "encoding.hpp"
@@ -558,7 +558,7 @@ document::load_buffer_impl(void* contents, size_t size, unsigned int options, ht
 	if (own && buffer != contents && contents) global_deallocate(contents);
 
 	// parse
-	html_parse_result res = html_parser::parse(buffer, length, _root, options);
+	html_parse_result res = parser::parse(buffer, length, _root, options);
 
 	// remember encoding
 	res.encoding = buffer_encoding;

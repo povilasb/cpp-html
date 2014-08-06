@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <list>
 
-#include "html_parser.hpp"
+#include "parser.hpp"
 #include "html_attribute.hpp"
 #include "html_node.hpp"
 #include "document.hpp"
@@ -35,14 +35,14 @@ std::list<pugihtml::string_t> html_void_elements = {"AREA", "BASE", "BR",
 	"META", "PARAM", "SOURCE", "TRACK", "WBR"};
 
 
-html_parser::html_parser(const html_allocator& alloc) : alloc(alloc),
+parser::parser(const html_allocator& alloc) : alloc(alloc),
 	error_offset(0)
 {
 }
 
 
 char_t*
-html_parser::parse_doctype_primitive(char_t* s)
+parser::parse_doctype_primitive(char_t* s)
 {
 	if (*s == '"' || *s == '\'') {
 		// quoted string
@@ -78,7 +78,7 @@ html_parser::parse_doctype_primitive(char_t* s)
 
 
 char_t*
-html_parser::parse_doctype_ignore(char_t* s)
+parser::parse_doctype_ignore(char_t* s)
 {
 	assert(s[0] == '<' && s[1] == '!' && s[2] == '[');
 	s++;
@@ -106,7 +106,7 @@ html_parser::parse_doctype_ignore(char_t* s)
 
 
 char_t*
-html_parser::parse_doctype_group(char_t* s, char_t endch, bool toplevel)
+parser::parse_doctype_group(char_t* s, char_t endch, bool toplevel)
 {
 	assert(s[0] == '<' && s[1] == '!');
 	s++;
@@ -146,7 +146,7 @@ html_parser::parse_doctype_group(char_t* s, char_t endch, bool toplevel)
 
 
 char_t*
-html_parser::parse_exclamation(char_t* s, html_node_struct* cursor,
+parser::parse_exclamation(char_t* s, html_node_struct* cursor,
 	unsigned int optmsk, char_t endch)
 {
 	// TODO(povilas): optmsk unused?
@@ -258,7 +258,7 @@ html_parser::parse_exclamation(char_t* s, html_node_struct* cursor,
 
 
 char_t*
-html_parser::parse_question(char_t* s, html_node_struct*& ref_cursor,
+parser::parse_question(char_t* s, html_node_struct*& ref_cursor,
 	unsigned int optmsk, char_t endch)
 {
 	// TODO(povilas): optmsk unused?
@@ -520,10 +520,10 @@ struct strconv_attribute_impl {
 strconv_attribute_t
 get_strconv_attribute(unsigned int optmask)
 {
-	STATIC_ASSERT(html_parser::parse_escapes == 0x10
-		&& html_parser::parse_eol == 0x20
-		&& html_parser::parse_wconv_attribute == 0x40
-		&& html_parser::parse_wnorm_attribute == 0x80);
+	STATIC_ASSERT(parser::parse_escapes == 0x10
+		&& parser::parse_eol == 0x20
+		&& parser::parse_wconv_attribute == 0x40
+		&& parser::parse_wnorm_attribute == 0x80);
 
 	switch ((optmask >> 4) & 15) // get bitmask for flags (wconv wnorm eol escapes)
 	{
@@ -588,8 +588,8 @@ struct strconv_pcdata_impl {
 strconv_pcdata_t
 get_strconv_pcdata(unsigned int optmask)
 {
-	STATIC_ASSERT(html_parser::parse_escapes == 0x10
-		&& html_parser::parse_eol == 0x20);
+	STATIC_ASSERT(parser::parse_escapes == 0x10
+		&& parser::parse_eol == 0x20);
 
 	switch ((optmask >> 4) & 3) // get bitmask for flags (eol escapes)
 	{
@@ -604,7 +604,7 @@ get_strconv_pcdata(unsigned int optmask)
 
 
 void
-html_parser::parse(char_t* s, html_node_struct* htmldoc, unsigned int optmsk,
+parser::parse(char_t* s, html_node_struct* htmldoc, unsigned int optmsk,
 	char_t endch)
 {
 	strconv_attribute_t strconv_attribute = get_strconv_attribute(optmsk);
@@ -977,7 +977,7 @@ make_parse_result(html_parse_status status, ptrdiff_t offset = 0)
 
 
 html_parse_result
-html_parser::parse(char_t* buffer, size_t length, html_node_struct* root,
+parser::parse(char_t* buffer, size_t length, html_node_struct* root,
 	unsigned int optmsk)
 {
 	if (buffer == nullptr || root == nullptr) {
@@ -996,7 +996,7 @@ html_parser::parse(char_t* buffer, size_t length, html_node_struct* root,
 	}
 
 	// create parser on stack
-	html_parser parser(*htmldoc);
+	parser parser(*htmldoc);
 
 	// save last character and make buffer zero-terminated (speeds up parsing)
 	char_t endch = buffer[length - 1];

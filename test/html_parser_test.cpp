@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include <html_parser.hpp>
+#include <parser.hpp>
 #include "memory.hpp"
 #include <pugihtml.hpp>
 #include <document.hpp>
@@ -12,7 +12,7 @@ using namespace std;
 using namespace pugihtml;
 
 
-TEST(html_parser, parse)
+TEST(parser, parse)
 {
 	char str_html[] =
 		"<html>"
@@ -23,7 +23,7 @@ TEST(html_parser, parse)
 	;
 
 	document doc;
-	html_parse_result res = html_parser::parse(str_html,
+	html_parse_result res = parser::parse(str_html,
 		sizeof(str_html), doc.internal_object());
 
 	string parsed_str = doc.child("HTML").child("BODY").child("P")
@@ -32,7 +32,7 @@ TEST(html_parser, parse)
 }
 
 
-TEST(html_parser, parse_with_void_element_self_closing)
+TEST(parser, parse_with_void_element_self_closing)
 {
 	char str_html[] =
 		"<html>"
@@ -44,7 +44,7 @@ TEST(html_parser, parse_with_void_element_self_closing)
 	;
 
 	document doc;
-	html_parse_result res = html_parser::parse(str_html,
+	html_parse_result res = parser::parse(str_html,
 		sizeof(str_html), doc.internal_object());
 
 	string parsed_str = doc.child("HTML").child("BODY").child("P")
@@ -53,7 +53,7 @@ TEST(html_parser, parse_with_void_element_self_closing)
 }
 
 
-TEST(html_parser, parse_with_void_element)
+TEST(parser, parse_with_void_element)
 {
 	char str_html[] =
 		"<html>"
@@ -65,7 +65,7 @@ TEST(html_parser, parse_with_void_element)
 	;
 
 	document doc;
-	html_parse_result res = html_parser::parse(str_html,
+	html_parse_result res = parser::parse(str_html,
 		sizeof(str_html), doc.internal_object());
 
 	string parsed_str = doc.child("HTML").child("BODY").child("P")

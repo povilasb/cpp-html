@@ -16,7 +16,7 @@
 #include <stddef.h>
 
 #include "common.hpp"
-#include "html_parser.hpp"
+#include "parser.hpp"
 #include "html_node.hpp"
 #include "html_attribute.hpp"
 #include "html_writer.hpp"

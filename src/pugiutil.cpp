@@ -4,7 +4,7 @@
 
 #include "pugiutil.hpp"
 #include "common.hpp"
-#include "html_parser.hpp"
+#include "parser.hpp"
 #include "utf_decoder.hpp"
 #include "encoding.hpp"
 

@@ -13,7 +13,7 @@
 #include "pugiutil.hpp"
 #include "memory.hpp"
 #include "html_node.hpp"
-#include "html_parser.hpp"
+#include "parser.hpp"
 #include "html_writer.hpp"
 #include "utf_decoder.hpp"
 #include "document.hpp"
@@ -90,7 +90,7 @@ typedef __int32 int32_t;
 
 using namespace pugihtml;
 
-// TODO(povilas): remove these constants when html_parser is removed from
+// TODO(povilas): remove these constants when parser is removed from
 //	this file.
 
 	// Parsing options
@@ -390,8 +390,8 @@ namespace
 
 	strconv_pcdata_t get_strconv_pcdata(unsigned int optmask)
 	{
-		STATIC_ASSERT(html_parser::parse_escapes == 0x10
-			&& html_parser::parse_eol == 0x20);
+		STATIC_ASSERT(parser::parse_escapes == 0x10
+			&& parser::parse_eol == 0x20);
 
 		switch ((optmask >> 4) & 3) // get bitmask for flags (eol escapes)
 		{
@@ -556,10 +556,10 @@ namespace
 
 	strconv_attribute_t get_strconv_attribute(unsigned int optmask)
 	{
-		STATIC_ASSERT(html_parser::parse_escapes == 0x10
-			&& html_parser::parse_eol == 0x20
-			&& html_parser::parse_wconv_attribute == 0x40
-			&& html_parser::parse_wnorm_attribute == 0x80);
+		STATIC_ASSERT(parser::parse_escapes == 0x10
+			&& parser::parse_eol == 0x20
+			&& parser::parse_wconv_attribute == 0x40
+			&& parser::parse_wnorm_attribute == 0x80);
 
 		switch ((optmask >> 4) & 15) // get bitmask for flags (wconv wnorm eol escapes)
 		{
@@ -594,7 +594,7 @@ namespace
 	}
 
 	// TODO(povilas): remove.
-	struct html_parser
+	struct parser
 	{
 		html_allocator alloc;
 		char_t* error_offset;
@@ -611,7 +611,7 @@ namespace
 		#define THROW_ERROR(err, m)	error_offset = m, longjmp(error_handler, err)
 		#define CHECK_ERROR(err, m)	{ if (*s == 0) THROW_ERROR(err, m); }
 
-		html_parser(const html_allocator& alloc): alloc(alloc), error_offset(0)
+		parser(const html_allocator& alloc): alloc(alloc), error_offset(0)
 		{
 		}
 
@@ -1309,7 +1309,7 @@ namespace
 			if (length == 0) return make_parse_result(status_ok);
 
 			// create parser on stack
-			html_parser parser(*htmldoc);
+			parser parser(*htmldoc);
 
 			// save last character and make buffer zero-terminated (speeds up parsing)
 			char_t endch = buffer[length - 1];

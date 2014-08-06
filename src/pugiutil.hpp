@@ -13,7 +13,7 @@
 #define PUGI_UTIL_H
 
 #include "common.hpp"
-#include "html_parser.hpp"
+#include "parser.hpp"
 
 
 namespace pugihtml
