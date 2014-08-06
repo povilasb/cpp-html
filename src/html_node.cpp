@@ -750,29 +750,48 @@ bool html_node::remove_child(const html_node& n)
 	return true;
 }
 
-html_node html_node::find_child_by_attribute(const char_t* name, const char_t* attr_name, const char_t* attr_value) const
-{
-	if (!_root) return html_node();
 
-	for (html_node_struct* i = _root->first_child; i; i = i->next_sibling)
-		if (i->name && strequal(name, i->name))
-		{
-			for (html_attribute_struct* a = i->first_attribute; a; a = a->next_attribute)
-				if (strequal(attr_name, a->name) && strequal(attr_value, a->value))
-					return html_node(i);
+html_node
+html_node::find_child_by_attribute(const char_t* name, const char_t* attr_name,
+	const char_t* attr_value) const
+{
+	if (this->empty()) {
+		return html_node();
+	}
+
+	for (html_node_struct* node = _root->first_child; node;
+		node = node->next_sibling) {
+		if (node->name && strequal(name, node->name)) {
+			for (html_attribute_struct* a = node->first_attribute;
+				a; a = a->next_attribute)
+				if (strequal(attr_name, a->name) &&
+					strequal(attr_value, a->value)) {
+					return html_node(node);
+				}
 		}
+	}
 
 	return html_node();
 }
 
-html_node html_node::find_child_by_attribute(const char_t* attr_name, const char_t* attr_value) const
-{
-	if (!_root) return html_node();
 
-	for (html_node_struct* i = _root->first_child; i; i = i->next_sibling)
-		for (html_attribute_struct* a = i->first_attribute; a; a = a->next_attribute)
-			if (strequal(attr_name, a->name) && strequal(attr_value, a->value))
-				return html_node(i);
+html_node
+html_node::find_child_by_attribute(const char_t* attr_name,
+	const char_t* attr_value) const
+{
+	if (this->empty()) {
+		return html_node();
+	}
+
+	for (html_node_struct* node = _root->first_child; node;
+		node = node->next_sibling) {
+		for (html_attribute_struct* a = node->first_attribute; a;
+			a = a->next_attribute) {
+			if (strequal(attr_name, a->name) &&
+				strequal(attr_value, a->value))
+				return html_node(node);
+		}
+	}
 
 	return html_node();
 }

@@ -203,33 +203,68 @@ public:
 		return html_node();
 	}
 
-	// Find node from subtree using predicate. Returns first node from subtree (depth-first), for which predicate returned true.
+	/**
+	 * Find node from subtree using predicate. Returns first node from
+	 * subtree (depth-first), for which predicate returned true.
+	 */
 	template <typename Predicate> html_node
 	find_node(Predicate pred) const {
-		if (!_root) return html_node();
+		if (this->empty()) {
+			return html_node();
+		}
 
 		html_node cur = first_child();
+		while (cur._root && cur._root != _root) {
+			if (pred(cur)) {
+				return cur;
+			}
 
-		while (cur._root && cur._root != _root)
-		{
-			if (pred(cur)) return cur;
+			if (cur.first_child()) {
+				cur = cur.first_child();
+			}
+			else if (cur.next_sibling()) {
+				cur = cur.next_sibling();
+			}
+			else {
+				while (!cur.next_sibling() &&
+					cur._root != this->_root) {
+					cur = cur.parent();
+				}
 
-			if (cur.first_child()) cur = cur.first_child();
-			else if (cur.next_sibling()) cur = cur.next_sibling();
-			else
-			{
-				while (!cur.next_sibling() && cur._root != _root) cur = cur.parent();
-
-				if (cur._root != _root) cur = cur.next_sibling();
+				if (cur._root != this->_root) {
+					cur = cur.next_sibling();
+				}
 			}
 		}
 
 		return html_node();
 	}
 
-	// Find child node by attribute name/value
-	html_node find_child_by_attribute(const char_t* name, const char_t* attr_name, const char_t* attr_value) const;
-	html_node find_child_by_attribute(const char_t* attr_name, const char_t* attr_value) const;
+	/**
+	 * Find child node by attribute name/value. Checks only the specified
+	 * tag nodes.
+	 * Checks only child nodes. Does not traverse deeper levels.
+	 *
+	 * @param tag node tag name to check for attribute.
+	 * @param attr_name attribute name to check value for.
+	 * @param attr_value expected attribute value.
+	 * @return html node with the specified tag name and attribute or
+	 *	empty node if the specified criteria were not satisfied.
+	 */
+	html_node find_child_by_attribute(const char_t* tag,
+		const char_t* attr_name, const char_t* attr_value) const;
+
+	/**
+	 * Find child node by attribute name/value. Checks only child nodes.
+	 * Does not traverse deeper levels.
+	 *
+	 * @param attr_name attribute name to check value for.
+	 * @param attr_value expected attribute value.
+	 * @return html node with the specified tag name and attribute or
+	 *	empty node if the specified criteria were not satisfied.
+	 */
+	html_node find_child_by_attribute(const char_t* attr_name,
+		const char_t* attr_value) const;
 
 #ifndef PUGIHTML_NO_STL
 	// Get the absolute node path from root as a text string.
