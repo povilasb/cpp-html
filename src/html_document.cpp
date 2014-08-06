@@ -708,7 +708,7 @@ public:
 	}
 
 	bool
-	for_each(html_node& node)
+	for_each(html_node& node) override
 	{
 		string_t node_name(node.name());
 
@@ -733,4 +733,18 @@ html_document::links() const
 	this->document_element().traverse(html_walker);
 
 	return result;
+}
+
+
+html_node
+html_document::get_element_by_id(const string_t& id)
+{
+	return this->find_node([&](const html_node& node) {
+		html_attribute attr = node.attribute("ID");
+		if (attr.value() == id) {
+			return true;
+		}
+
+		return false;
+	});
 }

@@ -102,6 +102,12 @@ public:
 	 * The links collection counts <a href=""> tags and <area> tags.
 	 */
 	std::vector<html_node> links() const;
+
+	/**
+	 * Traverses DOM tree and searches for html node with the specified
+	 * id attribute. If no tag is found, empty html node is returned.
+	 */
+	html_node get_element_by_id(const string_t& id);
 };
 
 } // pugihtml.
