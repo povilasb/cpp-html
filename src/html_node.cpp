@@ -189,15 +189,19 @@ bool html_node::operator<=(const html_node& r) const
 	return (_root <= r._root);
 }
 
-bool html_node::operator>=(const html_node& r) const
+bool
+html_node::operator>=(const html_node& r) const
 {
 	return (_root >= r._root);
 }
 
-bool html_node::empty() const
+
+bool
+html_node::empty() const
 {
 	return !_root;
 }
+
 
 const char_t* html_node::name() const
 {

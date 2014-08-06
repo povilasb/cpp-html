@@ -72,7 +72,9 @@ protected:
 	typedef html_node_struct* html_node::*unspecified_bool_type;
 
 public:
-	// Default constructor. Constructs an empty node.
+	/**
+	 * Constructs an empty node.
+	 */
 	html_node();
 
 	// Constructs node from internal pointer
@@ -85,6 +87,7 @@ public:
 	bool operator!() const;
 
 	// Comparison operators (compares wrapped node pointers)
+	// TODO(povilas): consider is this is needed.
 	bool operator==(const html_node& r) const;
 	bool operator!=(const html_node& r) const;
 	bool operator<(const html_node& r) const;
@@ -92,7 +95,9 @@ public:
 	bool operator<=(const html_node& r) const;
 	bool operator>=(const html_node& r) const;
 
-	// Check if node is empty.
+	/**
+	 * Check if node is empty.
+	 */
 	bool empty() const;
 
 	// Get node type
