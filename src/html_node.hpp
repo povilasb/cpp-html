@@ -119,7 +119,9 @@ public:
 	html_node next_sibling() const;
 	html_node previous_sibling() const;
 
-	// Get parent node
+	/**
+	 * @return parent node or empty node if there's no parent.
+	 */
 	html_node parent() const;
 
 	// Get root of DOM tree this node belongs to
@@ -214,7 +216,7 @@ public:
 		}
 
 		html_node cur = first_child();
-		while (cur._root && cur._root != _root) {
+		while (cur._root && cur._root != this->_root) {
 			if (pred(cur)) {
 				return cur;
 			}

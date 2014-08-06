@@ -275,12 +275,16 @@ html_node html_node::previous_sibling() const
 	else return html_node();
 }
 
-html_node html_node::parent() const
+
+html_node
+html_node::parent() const
 {
 	return _root ? html_node(_root->parent) : html_node();
 }
 
-html_node html_node::root() const
+
+html_node
+html_node::root() const
 {
 	if (!_root) return html_node();
 
