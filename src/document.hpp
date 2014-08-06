@@ -12,8 +12,8 @@
 namespace pugihtml
 {
 
-struct html_document_struct : public html_node_struct, public html_allocator {
-	html_document_struct(html_memory_page* page):
+struct document_struct : public html_node_struct, public html_allocator {
+	document_struct(html_memory_page* page):
 		html_node_struct(page, node_document), html_allocator(page),
 		buffer(0)
 	{
@@ -23,15 +23,15 @@ struct html_document_struct : public html_node_struct, public html_allocator {
 };
 
 // Document class (DOM tree root)
-class PUGIHTML_CLASS html_document : public html_node {
+class PUGIHTML_CLASS document : public html_node {
 private:
 	char_t* _buffer;
 
 	char _memory[192];
 
 	// Non-copyable semantics
-	html_document(const html_document&);
-	const html_document& operator=(const html_document&);
+	document(const document&);
+	const document& operator=(const document&);
 
 	/**
 	 * Initializes document: allocates memory page, etc.
@@ -46,16 +46,16 @@ private:
 
 public:
 	// Default constructor, makes empty document
-	html_document();
+	document();
 
 	// Destructor, invalidates all node/attribute handles to this document
-	~html_document();
+	~document();
 
 	// Removes all nodes, leaving the empty document
 	void reset();
 
 	// Removes all nodes, then copies the entire contents of the specified document
-	void reset(const html_document& proto);
+	void reset(const document& proto);
 
 #ifndef PUGIHTML_NO_STL
 	// Load document from stream.

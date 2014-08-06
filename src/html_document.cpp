@@ -4,7 +4,7 @@
 #include <cstring>
 #include <vector>
 
-#include "html_document.hpp"
+#include "document.hpp"
 #include "html_parser.hpp"
 #include "pugiutil.hpp"
 #include "utf_decoder.hpp"
@@ -15,20 +15,20 @@ using namespace pugihtml;
 using namespace std;
 
 
-html_document::html_document() : _buffer(0)
+document::document() : _buffer(0)
 {
 	create();
 }
 
 
-html_document::~html_document()
+document::~document()
 {
 	destroy();
 }
 
 
 void
-html_document::reset()
+document::reset()
 {
 	destroy();
 	create();
@@ -36,7 +36,7 @@ html_document::reset()
 
 
 void
-html_document::reset(const html_document& proto)
+document::reset(const document& proto)
 {
 	reset();
 
@@ -47,10 +47,10 @@ html_document::reset(const html_document& proto)
 
 
 void
-html_document::create()
+document::create()
 {
 	// initialize sentinel page
-	STATIC_ASSERT(offsetof(html_memory_page, data) + sizeof(html_document_struct) + html_memory_page_alignment <= sizeof(_memory));
+	STATIC_ASSERT(offsetof(html_memory_page, data) + sizeof(document_struct) + html_memory_page_alignment <= sizeof(_memory));
 
 	// align upwards to page boundary
 	void* page_memory = reinterpret_cast<void*>((reinterpret_cast<uintptr_t>(_memory) + (html_memory_page_alignment - 1)) & ~(html_memory_page_alignment - 1));
@@ -61,16 +61,16 @@ html_document::create()
 	page->busy_size = html_memory_page_size;
 
 	// allocate new root
-	_root = new (page->data) html_document_struct(page);
+	_root = new (page->data) document_struct(page);
 	_root->prev_sibling_c = _root;
 
 	// setup sentinel page
-	page->allocator = static_cast<html_document_struct*>(_root);
+	page->allocator = static_cast<document_struct*>(_root);
 }
 
 
 void
-html_document::destroy()
+document::destroy()
 {
 	// destroy static storage
 	if (_buffer) {
@@ -115,7 +115,7 @@ make_parse_result(html_parse_status status, ptrdiff_t offset = 0)
 
 #ifndef PUGIHTML_NO_STL
 template <typename T> html_parse_result
-load_stream_impl(html_document& doc, std::basic_istream<T>& stream,
+load_stream_impl(document& doc, std::basic_istream<T>& stream,
 	unsigned int options, html_encoding encoding)
 {
 	// get length of remaining data in stream
@@ -149,7 +149,7 @@ load_stream_impl(html_document& doc, std::basic_istream<T>& stream,
 
 
 html_parse_result
-html_document::load(std::basic_istream<char, std::char_traits<char> >& stream, unsigned int options, html_encoding encoding)
+document::load(std::basic_istream<char, std::char_traits<char> >& stream, unsigned int options, html_encoding encoding)
 {
 	reset();
 
@@ -157,7 +157,7 @@ html_document::load(std::basic_istream<char, std::char_traits<char> >& stream, u
 }
 
 html_parse_result
-html_document::load(std::basic_istream<wchar_t, std::char_traits<wchar_t> >& stream, unsigned int options)
+document::load(std::basic_istream<wchar_t, std::char_traits<wchar_t> >& stream, unsigned int options)
 {
 	reset();
 
@@ -165,7 +165,7 @@ html_document::load(std::basic_istream<wchar_t, std::char_traits<wchar_t> >& str
 }
 #endif
 
-html_parse_result html_document::load(const char_t* contents, unsigned int options)
+html_parse_result document::load(const char_t* contents, unsigned int options)
 {
 	// Force native encoding (skip autodetection)
 #ifdef PUGIHTML_WCHAR_MODE
@@ -179,7 +179,7 @@ html_parse_result html_document::load(const char_t* contents, unsigned int optio
 
 
 html_parse_result
-load_file_impl(html_document& doc, FILE* file, unsigned int options,
+load_file_impl(document& doc, FILE* file, unsigned int options,
 	html_encoding encoding)
 {
 	if (!file) return make_parse_result(status_file_not_found);
@@ -216,7 +216,7 @@ load_file_impl(html_document& doc, FILE* file, unsigned int options,
 	return doc.load_buffer_inplace_own(contents, size, options, encoding);
 }
 
-html_parse_result html_document::load_file(const char* path, unsigned int options, html_encoding encoding)
+html_parse_result document::load_file(const char* path, unsigned int options, html_encoding encoding)
 {
 	reset();
 
@@ -277,7 +277,7 @@ open_file_wide(const wchar_t* path, const wchar_t* mode)
 #endif
 
 html_parse_result
-html_document::load_file(const wchar_t* path, unsigned int options,
+document::load_file(const wchar_t* path, unsigned int options,
 	html_encoding encoding)
 {
 	reset();
@@ -535,7 +535,7 @@ convert_buffer(char_t*& out_buffer, size_t& out_length, html_encoding encoding, 
 
 
 html_parse_result
-html_document::load_buffer_impl(void* contents, size_t size, unsigned int options, html_encoding encoding, bool is_mutable, bool own)
+document::load_buffer_impl(void* contents, size_t size, unsigned int options, html_encoding encoding, bool is_mutable, bool own)
 {
 	reset();
 
@@ -569,17 +569,17 @@ html_document::load_buffer_impl(void* contents, size_t size, unsigned int option
 	return res;
 }
 
-html_parse_result html_document::load_buffer(const void* contents, size_t size, unsigned int options, html_encoding encoding)
+html_parse_result document::load_buffer(const void* contents, size_t size, unsigned int options, html_encoding encoding)
 {
 	return load_buffer_impl(const_cast<void*>(contents), size, options, encoding, false, false);
 }
 
-html_parse_result html_document::load_buffer_inplace(void* contents, size_t size, unsigned int options, html_encoding encoding)
+html_parse_result document::load_buffer_inplace(void* contents, size_t size, unsigned int options, html_encoding encoding)
 {
 	return load_buffer_impl(contents, size, options, encoding, true, false);
 }
 
-html_parse_result html_document::load_buffer_inplace_own(void* contents, size_t size, unsigned int options, html_encoding encoding)
+html_parse_result document::load_buffer_inplace_own(void* contents, size_t size, unsigned int options, html_encoding encoding)
 {
 	return load_buffer_impl(contents, size, options, encoding, true, true);
 }
@@ -631,7 +631,7 @@ has_declaration(const html_node& node)
 
 
 void
-html_document::save(html_writer& writer, const char_t* indent,
+document::save(html_writer& writer, const char_t* indent,
 	unsigned int flags, html_encoding encoding) const
 {
 	if (flags & format_write_bom) write_bom(writer, get_write_encoding(encoding));
@@ -649,14 +649,14 @@ html_document::save(html_writer& writer, const char_t* indent,
 
 
 #ifndef PUGIHTML_NO_STL
-void html_document::save(std::basic_ostream<char, std::char_traits<char> >& stream, const char_t* indent, unsigned int flags, html_encoding encoding) const
+void document::save(std::basic_ostream<char, std::char_traits<char> >& stream, const char_t* indent, unsigned int flags, html_encoding encoding) const
 {
 	html_writer_stream writer(stream);
 
 	save(writer, indent, flags, encoding);
 }
 
-void html_document::save(std::basic_ostream<wchar_t, std::char_traits<wchar_t> >& stream, const char_t* indent, unsigned int flags) const
+void document::save(std::basic_ostream<wchar_t, std::char_traits<wchar_t> >& stream, const char_t* indent, unsigned int flags) const
 {
 	html_writer_stream writer(stream);
 
@@ -664,7 +664,7 @@ void html_document::save(std::basic_ostream<wchar_t, std::char_traits<wchar_t> >
 }
 #endif
 
-bool html_document::save_file(const char* path, const char_t* indent, unsigned int flags, html_encoding encoding) const
+bool document::save_file(const char* path, const char_t* indent, unsigned int flags, html_encoding encoding) const
 {
 	FILE* file = fopen(path, "wb");
 	if (!file) return false;
@@ -677,7 +677,7 @@ bool html_document::save_file(const char* path, const char_t* indent, unsigned i
 	return true;
 }
 
-bool html_document::save_file(const wchar_t* path, const char_t* indent, unsigned int flags, html_encoding encoding) const
+bool document::save_file(const wchar_t* path, const char_t* indent, unsigned int flags, html_encoding encoding) const
 {
 	FILE* file = open_file_wide(path, L"wb");
 	if (!file) return false;
@@ -691,7 +691,7 @@ bool html_document::save_file(const wchar_t* path, const char_t* indent, unsigne
 }
 
 html_node
-html_document::document_element() const
+document::document_element() const
 {
 	for (html_node_struct* i = _root->first_child; i; i = i->next_sibling)
 		if ((i->header & html_memory_page_type_mask) + 1 == node_element)
@@ -725,7 +725,7 @@ private:
 };
 
 std::vector<html_node>
-html_document::links() const
+document::links() const
 {
 	vector<html_node> result;
 
@@ -737,7 +737,7 @@ html_document::links() const
 
 
 html_node
-html_document::get_element_by_id(const string_t& id)
+document::get_element_by_id(const string_t& id)
 {
 	return this->find_node([&](const html_node& node) {
 		html_attribute attr = node.attribute("ID");

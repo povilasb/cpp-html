@@ -16,7 +16,7 @@
 #include "html_parser.hpp"
 #include "html_writer.hpp"
 #include "utf_decoder.hpp"
-#include "html_document.hpp"
+#include "document.hpp"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -185,10 +185,10 @@ namespace
 
 namespace
 {
-	// TODO(povilas): use from html_document.hpp.
-	struct html_document_struct: public html_node_struct, public html_allocator
+	// TODO(povilas): use from document.hpp.
+	struct document_struct: public html_node_struct, public html_allocator
 	{
-		html_document_struct(html_memory_page* page): html_node_struct(page, node_document), html_allocator(page), buffer(0)
+		document_struct(html_memory_page* page): html_node_struct(page, node_document), html_allocator(page), buffer(0)
 		{
 		}
 
@@ -1300,7 +1300,7 @@ namespace
 
 		static html_parse_result parse(char_t* buffer, size_t length, html_node_struct* root, unsigned int optmsk)
 		{
-			html_document_struct* htmldoc = static_cast<html_document_struct*>(root);
+			document_struct* htmldoc = static_cast<document_struct*>(root);
 
 			// store buffer for offset_debug
 			htmldoc->buffer = buffer;

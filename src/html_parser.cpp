@@ -6,7 +6,7 @@
 #include "html_parser.hpp"
 #include "html_attribute.hpp"
 #include "html_node.hpp"
-#include "html_document.hpp"
+#include "document.hpp"
 #include "memory.hpp"
 #include "pugiutil.hpp"
 
@@ -985,7 +985,7 @@ html_parser::parse(char_t* buffer, size_t length, html_node_struct* root,
 			"null.");
 	}
 
-	html_document_struct* htmldoc = static_cast<html_document_struct*>(root);
+	document_struct* htmldoc = static_cast<document_struct*>(root);
 
 	// Store buffer for offset_debug.
 	htmldoc->buffer = buffer;

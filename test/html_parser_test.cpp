@@ -5,7 +5,7 @@
 #include <html_parser.hpp>
 #include "memory.hpp"
 #include <pugihtml.hpp>
-#include <html_document.hpp>
+#include <document.hpp>
 
 
 using namespace std;
@@ -22,7 +22,7 @@ TEST(html_parser, parse)
 		"</hmtl>"
 	;
 
-	html_document doc;
+	document doc;
 	html_parse_result res = html_parser::parse(str_html,
 		sizeof(str_html), doc.internal_object());
 
@@ -43,7 +43,7 @@ TEST(html_parser, parse_with_void_element_self_closing)
 		"</hmtl>"
 	;
 
-	html_document doc;
+	document doc;
 	html_parse_result res = html_parser::parse(str_html,
 		sizeof(str_html), doc.internal_object());
 
@@ -64,7 +64,7 @@ TEST(html_parser, parse_with_void_element)
 		"</hmtl>"
 	;
 
-	html_document doc;
+	document doc;
 	html_parse_result res = html_parser::parse(str_html,
 		sizeof(str_html), doc.internal_object());
 

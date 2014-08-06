@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <pugihtml.hpp>
-#include <html_document.hpp>
+#include <document.hpp>
 
 
 using namespace std;
@@ -20,7 +20,7 @@ TEST(pugihtml, parse_text)
 		"</hmtl>"
 	;
 
-	html::html_document doc;
+	html::document doc;
 	doc.load(str_html.c_str());
 	string str_hello = doc.child("HTML").child("BODY").child("P")
 		.first_child().value();
@@ -39,7 +39,7 @@ TEST(pugihtml, parse_with_void_element)
 		"</hmtl>"
 	;
 
-	html::html_document doc;
+	html::document doc;
 	doc.load(str_html.c_str());
 	string str_hello = doc.child("HTML").child("BODY").child("P")
 		.first_child().value();

@@ -10,7 +10,7 @@
 #include "pugihtml.hpp"
 
 /*
- * These types add support for BOOST_FOREACH macro to html_node and html_document classes (child iteration only).
+ * These types add support for BOOST_FOREACH macro to html_node and document classes (child iteration only).
  * Example usage:
  * BOOST_FOREACH(html_node n, doc) {}
  */
@@ -30,19 +30,19 @@ namespace boost
 		typedef pugi::html_node::iterator type;
 	};
 
-	template<> struct range_mutable_iterator<pugi::html_document>
+	template<> struct range_mutable_iterator<pugi::document>
 	{
-		typedef pugi::html_document::iterator type;
+		typedef pugi::document::iterator type;
 	};
 
-	template<> struct range_const_iterator<pugi::html_document>
+	template<> struct range_const_iterator<pugi::document>
 	{
-		typedef pugi::html_document::iterator type;
+		typedef pugi::document::iterator type;
 	};
 }
 
 /*
- * These types add support for BOOST_FOREACH macro to html_node and html_document classes (child/attribute iteration).
+ * These types add support for BOOST_FOREACH macro to html_node and document classes (child/attribute iteration).
  * Example usage:
  * BOOST_FOREACH(html_node n, children(doc)) {}
  * BOOST_FOREACH(html_node n, attributes(doc)) {}

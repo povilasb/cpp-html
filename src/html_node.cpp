@@ -4,7 +4,7 @@
 #include "html_node.hpp"
 #include "html_attribute.hpp"
 #include "pugiutil.hpp"
-#include "html_document.hpp"
+#include "document.hpp"
 #include "common.hpp"
 
 
@@ -290,7 +290,7 @@ html_node::root() const
 
 	html_memory_page* page = reinterpret_cast<html_memory_page*>(_root->header & html_memory_page_pointer_mask);
 
-	return html_node(static_cast<html_document_struct*>(page->allocator));
+	return html_node(static_cast<document_struct*>(page->allocator));
 }
 
 const char_t* html_node::child_value() const
@@ -958,7 +958,7 @@ ptrdiff_t html_node::offset_debug() const
 
 	if (!r) return -1;
 
-	const char_t* buffer = static_cast<html_document_struct*>(r)->buffer;
+	const char_t* buffer = static_cast<document_struct*>(r)->buffer;
 
 	if (!buffer) return -1;
 
