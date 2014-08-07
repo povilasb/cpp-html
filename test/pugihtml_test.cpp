@@ -4,8 +4,6 @@
 
 #include <pugihtml/document.hpp>
 
-#include "pugihtml.hpp"
-
 
 using namespace std;
 namespace html = pugihtml;
