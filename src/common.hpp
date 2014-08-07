@@ -17,6 +17,7 @@
 
 #include <string>
 
+// TODO(povilas): absolutely remove this.
 namespace std
 {
 	struct bidirectional_iterator_tag;
