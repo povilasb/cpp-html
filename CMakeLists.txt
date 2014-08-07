@@ -23,7 +23,7 @@ set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 file(GLOB_RECURSE SRC_FILES "${SRC_DIR}/*.cpp")
-add_library(pugihtml STATIC ${SRC_FILES})
+add_library("${PROJECT_LIB}" STATIC ${SRC_FILES})
 
 include_directories("${INCLUDE_DIR}")
 include_directories("${SRC_DIR}")
