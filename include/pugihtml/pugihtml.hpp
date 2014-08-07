@@ -8,9 +8,9 @@ namespace pugihtml
 {
 
 #ifdef PUGIHTML_WCHAR_MODE
-typedef wchar_t char_type
+typedef wchar_t char_type;
 #else
-typedef char chart_type
+typedef char char_type;
 #endif
 
 typedef std::basic_string<char_type, std::char_traits<char_type>,
