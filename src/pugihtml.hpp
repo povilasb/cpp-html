@@ -10,8 +10,8 @@
  */
 
 
-#ifndef HEADER_PUGIHTML_HPP
-#define HEADER_PUGIHTML_HPP
+#ifndef PUGIHTML_HPP
+#define PUGIHTML_HPP 1
 
 #include <stddef.h>
 
@@ -322,23 +322,4 @@ namespace pugihtml
 #endif
 }
 
-// TODO(povilas): remove code for backwards compatibility, it only obfuscates code.
-#if !defined(PUGIHTML_NO_STL) && (defined(_MSC_VER) || defined(__ICC))
-namespace std
-{
-	// Workarounds for (non-standard) iterator category detection for older versions (MSVC7/IC8 and earlier)
-	std::bidirectional_iterator_tag PUGIHTML_FUNCTION _Iter_cat(const pugihtml::node_iterator&);
-	std::bidirectional_iterator_tag PUGIHTML_FUNCTION _Iter_cat(const pugihtml::attribute_iterator&);
-}
-#endif
-
-#if !defined(PUGIHTML_NO_STL) && defined(__SUNPRO_CC)
-namespace std
-{
-	// Workarounds for (non-standard) iterator category detection
-	std::bidirectional_iterator_tag PUGIHTML_FUNCTION __iterator_category(const pugihtml::node_iterator&);
-	std::bidirectional_iterator_tag PUGIHTML_FUNCTION __iterator_category(const pugihtml::attribute_iterator&);
-}
-#endif
-
-#endif
+#endif /* PUGIHTML_HPP */
