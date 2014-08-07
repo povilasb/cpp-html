@@ -365,9 +365,13 @@ bool node::set_value(const char_t* rhs)
 	}
 }
 
-attribute node::append_attribute(const char_t* name)
+
+attribute
+node::append_attribute(const string_type& name)
 {
-	if (type() != node_element && type() != node_declaration) return attribute();
+	if (type() != node_element && type() != node_declaration) {
+		return attribute();
+	}
 
 	attribute a(append_attribute_ll(_root, get_allocator(_root)));
 	a.set_name(name);
@@ -375,34 +379,44 @@ attribute node::append_attribute(const char_t* name)
 	return a;
 }
 
-attribute node::prepend_attribute(const char_t* name)
-{
-	if (type() != node_element && type() != node_declaration) return attribute();
 
-	attribute a(allocate_attribute(get_allocator(_root)));
-	if (!a) return attribute();
+attribute
+node::prepend_attribute(const string_type& name)
+{
+	if (type() != node_element && type() != node_declaration) {
+		return attribute();
+	}
+
+	attribute a(allocate_attribute(get_allocator(this->_root)));
+	if (!a) {
+		return attribute();
+	}
 
 	a.set_name(name);
+	attribute_struct* head = this->_root->first_attribute;
 
-	attribute_struct* head = _root->first_attribute;
-
-	if (head)
-	{
+	if (head) {
 		a.attr_->prev_attribute_c = head->prev_attribute_c;
 		head->prev_attribute_c = a.attr_;
 	}
-	else
+	else {
 		a.attr_->prev_attribute_c = a.attr_;
+	}
 
 	a.attr_->next_attribute = head;
-	_root->first_attribute = a.attr_;
+	this->_root->first_attribute = a.attr_;
 
 	return a;
 }
 
-attribute node::insert_attribute_before(const char_t* name, const attribute& attr)
+
+attribute
+node::insert_attribute_before(const string_type& name, const attribute& attr)
 {
-	if ((type() != node_element && type() != node_declaration) || attr.empty()) return attribute();
+	if ((type() != node_element && type() != node_declaration)
+		|| attr.empty()) {
+		return attribute();
+	}
 
 	// check that attribute belongs to *this
 	attribute_struct* cur = attr.attr_;
@@ -428,9 +442,14 @@ attribute node::insert_attribute_before(const char_t* name, const attribute& att
 	return a;
 }
 
-attribute node::insert_attribute_after(const char_t* name, const attribute& attr)
+
+attribute
+node::insert_attribute_after(const string_type& name, const attribute& attr)
 {
-	if ((type() != node_element && type() != node_declaration) || attr.empty()) return attribute();
+	if ((type() != node_element && type() != node_declaration)
+		|| attr.empty()) {
+		return attribute();
+	}
 
 	// check that attribute belongs to *this
 	attribute_struct* cur = attr.attr_;
@@ -476,7 +495,8 @@ attribute node::prepend_copy(const attribute& proto)
 	return result;
 }
 
-attribute node::insert_copy_after(const attribute& proto, const attribute& attr)
+attribute
+node::insert_copy_after(const attribute& proto, const attribute& attr)
 {
 	if (!proto) return attribute();
 
@@ -1224,7 +1244,7 @@ node_output_attributes(html_buffered_writer& writer, const node& node)
 
 	for (attribute a = node.first_attribute(); a; a = a.next_attribute()) {
 		writer.write(' ');
-		writer.write(a.name()[0] ? a.name() : default_name);
+		writer.write(a.name()[0] ? a.name().c_str() : default_name);
 		writer.write('=', '"');
 
 		text_output_escaped(writer, a.value(), ctx_special_attr);

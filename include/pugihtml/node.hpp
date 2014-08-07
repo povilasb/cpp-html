@@ -3,6 +3,8 @@
 
 #include <cstddef>
 
+#include <pugihtml/pugihtml.hpp>
+
 #include "common.hpp"
 #include "memory.hpp"
 #include "attribute.hpp"
@@ -143,11 +145,14 @@ public:
 	bool set_name(const char_t* rhs);
 	bool set_value(const char_t* rhs);
 
-	// Add attribute with specified name. Returns added attribute, or empty attribute on errors.
-	attribute append_attribute(const char_t* name);
-	attribute prepend_attribute(const char_t* name);
-	attribute insert_attribute_after(const char_t* name, const attribute& attr);
-	attribute insert_attribute_before(const char_t* name, const attribute& attr);
+	// Add attribute with specified name. Returns added attribute, or
+	// empty attribute on errors.
+	attribute append_attribute(const string_type& name);
+	attribute prepend_attribute(const string_type& name);
+	attribute insert_attribute_after(const string_type& name,
+		const attribute& attr);
+	attribute insert_attribute_before(const string_type& name,
+		const attribute& attr);
 
 	// Add a copy of the specified attribute. Returns added attribute, or empty attribute on errors.
 	attribute append_copy(const attribute& proto);

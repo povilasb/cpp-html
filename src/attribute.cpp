@@ -1,6 +1,7 @@
 #include <cstdio>
 
 #include <pugihtml/attribute.hpp>
+#include <pugihtml/pugihtml.hpp>
 
 #include "common.hpp"
 #include "pugiutil.hpp"
@@ -171,9 +172,11 @@ attribute::empty() const
 
 
 const
-char_t* attribute::name() const
+string_type& attribute::name() const
 {
-	return (attr_ && attr_->name) ? attr_->name : PUGIHTML_TEXT("");
+	return this->attr_ && this->attr_->name
+		? string_type{this->attr_->name}
+		: string_type();
 }
 
 
@@ -228,11 +231,16 @@ attribute& attribute::operator=(bool rhs)
 	return *this;
 }
 
-bool attribute::set_name(const char_t* rhs)
-{
-	if (!attr_) return false;
 
-	return strcpy_insitu(attr_->name, attr_->header, html_memory_page_name_allocated_mask, rhs);
+bool
+attribute::set_name(const string_type& name)
+{
+	if (this->empty()) {
+		return false;
+	}
+
+	return strcpy_insitu(this->attr_->name, attr_->header,
+		html_memory_page_name_allocated_mask, name.c_str());
 }
 
 bool attribute::set_value(const char_t* rhs)

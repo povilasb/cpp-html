@@ -1,6 +1,8 @@
 #ifndef PUGIHTML_ATTRIBUTE_HPP
 #define PUGIHTML_ATTRIBUTE_HPP 1
 
+#include <pugihtml/pugihtml.hpp>
+
 #include "memory.hpp"
 #include "common.hpp"
 
@@ -83,7 +85,7 @@ public:
 	/**
 	 * @return attribute name or "" if attribute is empty.
 	 */
-	const char_t* name() const;
+	const string_type& name() const;
 
 	/**
 	 * @return attribute value or "" if attribute is empty.
@@ -124,7 +126,7 @@ public:
 	 * Set attribute name (returns false if attribute is empty or there
 	 * is not enough memory).
 	 */
-	bool set_name(const char_t* rhs);
+	bool set_name(const string_type& name);
 
 	/**
 	 * Set attribute value (returns false if attribute is empty or there
