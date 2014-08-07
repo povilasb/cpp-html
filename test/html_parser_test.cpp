@@ -2,10 +2,11 @@
 
 #include <gtest/gtest.h>
 
-#include <parser.hpp>
+#include <pugihtml/document.hpp>
+
+#include "parser.hpp"
 #include "memory.hpp"
-#include <pugihtml.hpp>
-#include <document.hpp>
+#include "pugihtml.hpp"
 
 
 using namespace std;

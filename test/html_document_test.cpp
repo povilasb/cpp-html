@@ -2,8 +2,8 @@
 
 #include <gtest/gtest.h>
 
-#include <document.hpp>
-#include <node.hpp>
+#include <pugihtml/document.hpp>
+#include <pugihtml/node.hpp>
 
 
 using namespace std;

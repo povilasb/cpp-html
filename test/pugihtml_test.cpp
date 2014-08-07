@@ -2,8 +2,9 @@
 
 #include <gtest/gtest.h>
 
-#include <pugihtml.hpp>
-#include <document.hpp>
+#include <pugihtml/document.hpp>
+
+#include "pugihtml.hpp"
 
 
 using namespace std;
