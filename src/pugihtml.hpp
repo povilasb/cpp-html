@@ -321,6 +321,7 @@ namespace pugihtml
 #endif
 }
 
+// TODO(povilas): remove code for backwards compatibility, it only obfuscates code.
 #if !defined(PUGIHTML_NO_STL) && (defined(_MSC_VER) || defined(__ICC))
 namespace std
 {
