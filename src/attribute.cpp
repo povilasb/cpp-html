@@ -9,142 +9,193 @@
 using namespace pugihtml;
 
 
-attribute::attribute(): _attr(0)
+attribute::attribute(): attr_(0)
 {
 }
 
-attribute::attribute(attribute_struct* attr): _attr(attr)
+
+attribute::attribute(attribute_struct* attr): attr_(attr)
 {
 }
+
 
 attribute::operator attribute::unspecified_bool_type() const
 {
-	return _attr ? &attribute::_attr : 0;
+	return attr_ ? &attribute::attr_ : 0;
 }
 
-bool attribute::operator!() const
+
+bool
+attribute::operator!() const
 {
-	return !_attr;
+	return this->empty();
 }
 
-bool attribute::operator==(const attribute& r) const
+
+bool
+attribute::operator==(const attribute& r) const
 {
-	return (_attr == r._attr);
+	return (this->attr_ == r.attr_);
 }
 
-bool attribute::operator!=(const attribute& r) const
+
+bool
+attribute::operator!=(const attribute& r) const
 {
-	return (_attr != r._attr);
+	return (attr_ != r.attr_);
 }
 
-bool attribute::operator<(const attribute& r) const
+
+bool
+attribute::operator<(const attribute& r) const
 {
-	return (_attr < r._attr);
+	return (attr_ < r.attr_);
 }
 
-bool attribute::operator>(const attribute& r) const
+
+bool
+attribute::operator>(const attribute& r) const
 {
-	return (_attr > r._attr);
+	return (this->attr_ > r.attr_);
 }
 
-bool attribute::operator<=(const attribute& r) const
+
+bool
+attribute::operator<=(const attribute& r) const
 {
-	return (_attr <= r._attr);
+	return (this->attr_ <= r.attr_);
 }
 
-bool attribute::operator>=(const attribute& r) const
+
+bool
+attribute::operator>=(const attribute& r) const
 {
-	return (_attr >= r._attr);
+	return (attr_ >= r.attr_);
 }
 
-attribute attribute::next_attribute() const
+
+attribute
+attribute::next_attribute() const
 {
-	return _attr ? attribute(_attr->next_attribute) : attribute();
+	return this->attr_ ? attribute(attr_->next_attribute) : attribute();
 }
 
-attribute attribute::previous_attribute() const
+
+attribute
+attribute::previous_attribute() const
 {
-	return _attr && _attr->prev_attribute_c->next_attribute ? attribute(_attr->prev_attribute_c) : attribute();
+	return this->attr_ && this->attr_->prev_attribute_c->next_attribute ?
+		attribute(this->attr_->prev_attribute_c) : attribute();
 }
 
-int attribute::as_int() const
+
+int
+attribute::as_int() const
 {
-	if (!_attr || !_attr->value) return 0;
+	if (!attr_ || !attr_->value) return 0;
 
 #ifdef PUGIHTML_WCHAR_MODE
-	return (int)wcstol(_attr->value, 0, 10);
+	return (int)wcstol(attr_->value, 0, 10);
 #else
-	return (int)strtol(_attr->value, 0, 10);
+	return (int)strtol(attr_->value, 0, 10);
 #endif
 }
 
-unsigned int attribute::as_uint() const
+
+unsigned int
+attribute::as_uint() const
 {
-	if (!_attr || !_attr->value) return 0;
+	if (!this->attr_ || !this->attr_->value) {
+		return 0;
+	}
 
 #ifdef PUGIHTML_WCHAR_MODE
-	return (unsigned int)wcstoul(_attr->value, 0, 10);
+	return (unsigned int)wcstoul(attr_->value, 0, 10);
 #else
-	return (unsigned int)strtoul(_attr->value, 0, 10);
+	return (unsigned int)strtoul(attr_->value, 0, 10);
 #endif
 }
 
-double attribute::as_double() const
+
+double
+attribute::as_double() const
 {
-	if (!_attr || !_attr->value) return 0;
+	if (!this->attr_ || !this->attr_->value) {
+		return 0;
+	}
 
 #ifdef PUGIHTML_WCHAR_MODE
-	return wcstod(_attr->value, 0);
+	return wcstod(attr_->value, 0);
 #else
-	return strtod(_attr->value, 0);
+	return strtod(attr_->value, 0);
 #endif
 }
 
-float attribute::as_float() const
+
+float
+attribute::as_float() const
 {
-	if (!_attr || !_attr->value) return 0;
+	if (!this->attr_ || !this->attr_->value) {
+		return 0;
+	}
 
 #ifdef PUGIHTML_WCHAR_MODE
-	return (float)wcstod(_attr->value, 0);
+	return (float)wcstod(attr_->value, 0);
 #else
-	return (float)strtod(_attr->value, 0);
+	return (float)strtod(attr_->value, 0);
 #endif
 }
 
-bool attribute::as_bool() const
+
+bool
+attribute::as_bool() const
 {
-	if (!_attr || !_attr->value) return false;
+	if (!this->attr_ || !this->attr_->value) {
+		return false;
+	}
 
 	// only look at first char
-	char_t first = *_attr->value;
+	char_t first = *attr_->value;
 
 	// 1*, t* (true), T* (True), y* (yes), Y* (YES)
-	return (first == '1' || first == 't' || first == 'T' || first == 'y' || first == 'Y');
+	return (first == '1' || first == 't' || first == 'T' || first == 'y'
+		|| first == 'Y');
 }
 
-bool attribute::empty() const
+
+bool
+attribute::empty() const
 {
-	return !_attr;
+	return !attr_;
 }
 
-const char_t* attribute::name() const
+
+const
+char_t* attribute::name() const
 {
-	return (_attr && _attr->name) ? _attr->name : PUGIHTML_TEXT("");
+	return (attr_ && attr_->name) ? attr_->name : PUGIHTML_TEXT("");
 }
 
-const char_t* attribute::value() const
+
+const char_t*
+attribute::value() const
 {
-	return (_attr && _attr->value) ? _attr->value : PUGIHTML_TEXT("");
+	return (attr_ && attr_->value) ? attr_->value : PUGIHTML_TEXT("");
 }
 
-size_t attribute::hash_value() const
+
+size_t
+attribute::hash_value() const
 {
-	return static_cast<size_t>(reinterpret_cast<uintptr_t>(_attr) / sizeof(attribute_struct));
+	return static_cast<size_t>(reinterpret_cast<uintptr_t>(attr_)
+		/ sizeof(attribute_struct));
 }
 
-attribute_struct* attribute::internal_object() const
+
+attribute_struct*
+attribute::internal_object() const
 {
-	return _attr;
+	return attr_;
 }
 
 attribute& attribute::operator=(const char_t* rhs)
@@ -179,16 +230,16 @@ attribute& attribute::operator=(bool rhs)
 
 bool attribute::set_name(const char_t* rhs)
 {
-	if (!_attr) return false;
+	if (!attr_) return false;
 
-	return strcpy_insitu(_attr->name, _attr->header, html_memory_page_name_allocated_mask, rhs);
+	return strcpy_insitu(attr_->name, attr_->header, html_memory_page_name_allocated_mask, rhs);
 }
 
 bool attribute::set_value(const char_t* rhs)
 {
-	if (!_attr) return false;
+	if (!attr_) return false;
 
-	return strcpy_insitu(_attr->value, _attr->header, html_memory_page_value_allocated_mask, rhs);
+	return strcpy_insitu(attr_->value, attr_->header, html_memory_page_value_allocated_mask, rhs);
 }
 
 bool attribute::set_value(int rhs)
@@ -237,21 +288,8 @@ bool attribute::set_value(double rhs)
 }
 
 
-bool attribute::set_value(bool rhs)
+bool
+attribute::set_value(bool rhs)
 {
 	return set_value(rhs ? PUGIHTML_TEXT("true") : PUGIHTML_TEXT("false"));
 }
-
-#ifdef __BORLANDC__
-bool
-operator&&(const attribute& lhs, bool rhs)
-{
-	return (bool)lhs && rhs;
-}
-
-bool
-operator||(const attribute& lhs, bool rhs)
-{
-	return (bool)lhs || rhs;
-}
-#endif

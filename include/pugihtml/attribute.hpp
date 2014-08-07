@@ -35,29 +35,34 @@ class attribute_iterator;
 /**
  * A light-weight handle for manipulating attributes in DOM tree.
  */
-class PUGIHTML_CLASS attribute {
+class attribute {
 	friend class attribute_iterator;
 	friend class node;
 
 private:
-	attribute_struct* _attr;
+	attribute_struct* attr_;
 
 	typedef attribute_struct* attribute::*unspecified_bool_type;
 
 public:
-	// Default constructor. Constructs an empty attribute.
+	/**
+	 * Constructs an empty attribute.
+	 */
 	attribute();
 
-	// Constructs attribute from internal pointer
+	/**
+	 * Constructs attribute from internal pointer.
+	 */
 	explicit attribute(attribute_struct* attr);
 
-	// Safe bool conversion operator
+	/**
+	 * Safe bool conversion operator.
+	 */
 	operator unspecified_bool_type() const;
 
-	// Borland C++ workaround
-	bool operator!() const;
-
-	// Comparison operators (compares wrapped attribute pointers)
+	/**
+	 * Comparison operators (compares wrapped attribute pointers).
+	 */
 	bool operator==(const attribute& r) const;
 	bool operator!=(const attribute& r) const;
 	bool operator<(const attribute& r) const;
@@ -65,55 +70,102 @@ public:
 	bool operator<=(const attribute& r) const;
 	bool operator>=(const attribute& r) const;
 
-	// Check if attribute is empty
+	/**
+	 * Alias for empty().
+	 */
+	bool operator!() const;
+
+	/**
+	 *  Check if attribute is empty.
+	 */
 	bool empty() const;
 
-	// Get attribute name/value, or "" if attribute is empty
+	/**
+	 * @return attribute name or "" if attribute is empty.
+	 */
 	const char_t* name() const;
+
+	/**
+	 * @return attribute value or "" if attribute is empty.
+	 */
 	const char_t* value() const;
 
-	// Get attribute value as a number, or 0 if conversion did not succeed or attribute is empty
+	/**
+	 * Get attribute value as integer number, or 0 if conversion did not
+	 * succeed or attribute is empty.
+	 */
 	int as_int() const;
+
+	/**
+	 * Get attribute value as unsigned integer number, or 0 if conversion
+	 * did not succeed or attribute is empty.
+	 */
 	unsigned int as_uint() const;
+
+	/**
+	 * Get attribute value as double type number, or 0 if conversion
+	 * did not succeed or attribute is empty.
+	 */
 	double as_double() const;
+
+	/**
+	 * Get attribute value as float number, or 0 if conversion
+	 * did not succeed or attribute is empty.
+	 */
 	float as_float() const;
 
-	// Get attribute value as bool (returns true if first character is in '1tTyY' set), or false if attribute is empty
+	/**
+	 * Get attribute value as bool (returns true if first character is in
+	 * '1tTyY' set), or false if attribute is empty.
+	 */
 	bool as_bool() const;
 
-	// Set attribute name/value (returns false if attribute is empty or there is not enough memory)
+	/**
+	 * Set attribute name (returns false if attribute is empty or there
+	 * is not enough memory).
+	 */
 	bool set_name(const char_t* rhs);
+
+	/**
+	 * Set attribute value (returns false if attribute is empty or there
+	 * is not enough memory).
+	 */
 	bool set_value(const char_t* rhs);
 
-	// Set attribute value with type conversion (numbers are converted to strings, boolean is converted to "true"/"false")
+	/**
+	 * Set attribute value with type conversion (numbers are converted to
+	 * strings, boolean is converted to "true"/"false").
+	 */
 	bool set_value(int rhs);
 	bool set_value(unsigned int rhs);
 	bool set_value(double rhs);
 	bool set_value(bool rhs);
 
-	// Set attribute value (equivalent to set_value without error checking)
+	/**
+	 * Set attribute value (equivalent to set_value without error checking).
+	 */
 	attribute& operator=(const char_t* rhs);
 	attribute& operator=(int rhs);
 	attribute& operator=(unsigned int rhs);
 	attribute& operator=(double rhs);
 	attribute& operator=(bool rhs);
 
-	// Get next/previous attribute in the attribute list of the parent node
+	/**
+	 * Get next/previous attribute in the attribute list of the parent node.
+	 */
 	attribute next_attribute() const;
 	attribute previous_attribute() const;
 
-	// Get hash value (unique for handles to the same object)
+	/**
+	 * Get hash value (unique for handles to the same object).
+	 */
 	size_t hash_value() const;
 
-	// Get internal pointer
+	/**
+	 * Get internal pointer.
+	 */
 	attribute_struct* internal_object() const;
 };
-
-#ifdef __BORLANDC__
-	// Borland C++ workaround
-	bool PUGIHTML_FUNCTION operator&&(const attribute& lhs, bool rhs);
-	bool PUGIHTML_FUNCTION operator||(const attribute& lhs, bool rhs);
-#endif
 
 } // pugihtml.
 

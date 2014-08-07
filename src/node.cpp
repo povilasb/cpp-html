@@ -388,14 +388,14 @@ attribute node::prepend_attribute(const char_t* name)
 
 	if (head)
 	{
-		a._attr->prev_attribute_c = head->prev_attribute_c;
-		head->prev_attribute_c = a._attr;
+		a.attr_->prev_attribute_c = head->prev_attribute_c;
+		head->prev_attribute_c = a.attr_;
 	}
 	else
-		a._attr->prev_attribute_c = a._attr;
+		a.attr_->prev_attribute_c = a.attr_;
 
-	a._attr->next_attribute = head;
-	_root->first_attribute = a._attr;
+	a.attr_->next_attribute = head;
+	_root->first_attribute = a.attr_;
 
 	return a;
 }
@@ -405,7 +405,7 @@ attribute node::insert_attribute_before(const char_t* name, const attribute& att
 	if ((type() != node_element && type() != node_declaration) || attr.empty()) return attribute();
 
 	// check that attribute belongs to *this
-	attribute_struct* cur = attr._attr;
+	attribute_struct* cur = attr.attr_;
 
 	while (cur->prev_attribute_c->next_attribute) cur = cur->prev_attribute_c;
 
@@ -416,14 +416,14 @@ attribute node::insert_attribute_before(const char_t* name, const attribute& att
 
 	a.set_name(name);
 
-	if (attr._attr->prev_attribute_c->next_attribute)
-		attr._attr->prev_attribute_c->next_attribute = a._attr;
+	if (attr.attr_->prev_attribute_c->next_attribute)
+		attr.attr_->prev_attribute_c->next_attribute = a.attr_;
 	else
-		_root->first_attribute = a._attr;
+		_root->first_attribute = a.attr_;
 
-	a._attr->prev_attribute_c = attr._attr->prev_attribute_c;
-	a._attr->next_attribute = attr._attr;
-	attr._attr->prev_attribute_c = a._attr;
+	a.attr_->prev_attribute_c = attr.attr_->prev_attribute_c;
+	a.attr_->next_attribute = attr.attr_;
+	attr.attr_->prev_attribute_c = a.attr_;
 
 	return a;
 }
@@ -433,7 +433,7 @@ attribute node::insert_attribute_after(const char_t* name, const attribute& attr
 	if ((type() != node_element && type() != node_declaration) || attr.empty()) return attribute();
 
 	// check that attribute belongs to *this
-	attribute_struct* cur = attr._attr;
+	attribute_struct* cur = attr.attr_;
 
 	while (cur->prev_attribute_c->next_attribute) cur = cur->prev_attribute_c;
 
@@ -444,14 +444,14 @@ attribute node::insert_attribute_after(const char_t* name, const attribute& attr
 
 	a.set_name(name);
 
-	if (attr._attr->next_attribute)
-		attr._attr->next_attribute->prev_attribute_c = a._attr;
+	if (attr.attr_->next_attribute)
+		attr.attr_->next_attribute->prev_attribute_c = a.attr_;
 	else
-		_root->first_attribute->prev_attribute_c = a._attr;
+		_root->first_attribute->prev_attribute_c = a.attr_;
 
-	a._attr->next_attribute = attr._attr->next_attribute;
-	a._attr->prev_attribute_c = attr._attr;
-	attr._attr->next_attribute = a._attr;
+	a.attr_->next_attribute = attr.attr_->next_attribute;
+	a.attr_->prev_attribute_c = attr.attr_;
+	attr.attr_->next_attribute = a.attr_;
 
 	return a;
 }
@@ -731,22 +731,22 @@ node::remove_attribute(const char_t* name)
 
 bool node::remove_attribute(const attribute& a)
 {
-	if (!_root || !a._attr) return false;
+	if (!_root || !a.attr_) return false;
 
 	// check that attribute belongs to *this
-	attribute_struct* attr = a._attr;
+	attribute_struct* attr = a.attr_;
 
 	while (attr->prev_attribute_c->next_attribute) attr = attr->prev_attribute_c;
 
 	if (attr != _root->first_attribute) return false;
 
-	if (a._attr->next_attribute) a._attr->next_attribute->prev_attribute_c = a._attr->prev_attribute_c;
-	else if (_root->first_attribute) _root->first_attribute->prev_attribute_c = a._attr->prev_attribute_c;
+	if (a.attr_->next_attribute) a.attr_->next_attribute->prev_attribute_c = a.attr_->prev_attribute_c;
+	else if (_root->first_attribute) _root->first_attribute->prev_attribute_c = a.attr_->prev_attribute_c;
 
-	if (a._attr->prev_attribute_c->next_attribute) a._attr->prev_attribute_c->next_attribute = a._attr->next_attribute;
-	else _root->first_attribute = a._attr->next_attribute;
+	if (a.attr_->prev_attribute_c->next_attribute) a.attr_->prev_attribute_c->next_attribute = a.attr_->next_attribute;
+	else _root->first_attribute = a.attr_->next_attribute;
 
-	destroy_attribute(a._attr, get_allocator(_root));
+	destroy_attribute(a.attr_, get_allocator(_root));
 
 	return true;
 }

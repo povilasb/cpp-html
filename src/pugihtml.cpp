@@ -1359,30 +1359,30 @@ namespace pugihtml
 
 	bool attribute_iterator::operator==(const attribute_iterator& rhs) const
 	{
-		return _wrap._attr == rhs._wrap._attr && _parent._root == rhs._parent._root;
+		return _wrap.attr_ == rhs._wrap.attr_ && _parent._root == rhs._parent._root;
 	}
 
 	bool attribute_iterator::operator!=(const attribute_iterator& rhs) const
 	{
-		return _wrap._attr != rhs._wrap._attr || _parent._root != rhs._parent._root;
+		return _wrap.attr_ != rhs._wrap.attr_ || _parent._root != rhs._parent._root;
 	}
 
 	attribute& attribute_iterator::operator*()
 	{
-		assert(_wrap._attr);
+		assert(_wrap.attr_);
 		return _wrap;
 	}
 
 	attribute* attribute_iterator::operator->()
 	{
-		assert(_wrap._attr);
+		assert(_wrap.attr_);
 		return &_wrap;
 	}
 
 	const attribute_iterator& attribute_iterator::operator++()
 	{
-		assert(_wrap._attr);
-		_wrap._attr = _wrap._attr->next_attribute;
+		assert(_wrap.attr_);
+		_wrap.attr_ = _wrap.attr_->next_attribute;
 		return *this;
 	}
 
@@ -1395,7 +1395,7 @@ namespace pugihtml
 
 	const attribute_iterator& attribute_iterator::operator--()
 	{
-		_wrap = _wrap._attr ? _wrap.previous_attribute() : _parent.last_attribute();
+		_wrap = _wrap.attr_ ? _wrap.previous_attribute() : _parent.last_attribute();
 		return *this;
 	}
 
