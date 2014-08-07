@@ -12,7 +12,7 @@
 #include <pugihtml/document.hpp>
 #include <pugihtml/node.hpp>
 
-#include "pugihtml.hpp"
+#include "xpath.hpp"
 #include "pugiutil.hpp"
 #include "memory.hpp"
 #include "parser.hpp"

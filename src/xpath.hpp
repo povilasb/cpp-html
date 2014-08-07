@@ -10,8 +10,8 @@
  */
 
 
-#ifndef PUGIHTML_HPP
-#define PUGIHTML_HPP 1
+#ifndef PUGIHTML_XPATH_HPP
+#define PUGIHTML_XPATH_HPP 1
 
 #include <stddef.h>
 
@@ -322,4 +322,4 @@ namespace pugihtml
 #endif
 }
 
-#endif /* PUGIHTML_HPP */
+#endif /* PUGIHTML_XPATH_HPP */
