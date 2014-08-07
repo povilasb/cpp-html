@@ -13,7 +13,7 @@ namespace pugihtml
 {
 
 // Tree node types
-enum html_node_type {
+enum node_type {
 	node_null, // Empty (null) node handle
 	node_document, // A document tree's absolute root
 	node_element, // Element tag, i.e. '<node/>'
@@ -29,8 +29,8 @@ enum html_node_type {
  * An HTML document tree node.
  */
 // TODO(povilas): consider if reinterpret_cast is really neccessary here.
-struct html_node_struct {
-	html_node_struct(html_memory_page* page, html_node_type type)
+struct node_struct {
+	node_struct(html_memory_page* page, node_type type)
 		: header(reinterpret_cast<uintptr_t>(page) | (type - 1)),
 		parent(0), name(0), value(0), first_child(0), prev_sibling_c(0),
 		next_sibling(0), first_attribute(0)
@@ -40,45 +40,45 @@ struct html_node_struct {
 	// Pointer to memory page in which this node resides.
 	uintptr_t header;
 
-	html_node_struct* parent;
+	node_struct* parent;
 
 	char_t* name;
 	//Pointer to any associated string data.
 	char_t* value;
 
-	html_node_struct* first_child;
+	node_struct* first_child;
 
 	// Left brother (cyclic list)
-	html_node_struct* prev_sibling_c;
-	html_node_struct* next_sibling;
+	node_struct* prev_sibling_c;
+	node_struct* next_sibling;
 
 	attribute_struct* first_attribute;
 };
 
 
-class html_node_iterator;
+class node_iterator;
 class html_tree_walker;
 
 /**
  * A light-weight handle for manipulating nodes in DOM tree.
  */
-class PUGIHTML_CLASS html_node {
+class PUGIHTML_CLASS node {
 	friend class attribute_iterator;
-	friend class html_node_iterator;
+	friend class node_iterator;
 
 protected:
-	html_node_struct* _root;
+	node_struct* _root;
 
-	typedef html_node_struct* html_node::*unspecified_bool_type;
+	typedef node_struct* node::*unspecified_bool_type;
 
 public:
 	/**
 	 * Constructs an empty node.
 	 */
-	html_node();
+	node();
 
 	// Constructs node from internal pointer
-	explicit html_node(html_node_struct* p);
+	explicit node(node_struct* p);
 
 	// Safe bool conversion operator
 	operator unspecified_bool_type() const;
@@ -88,12 +88,12 @@ public:
 
 	// Comparison operators (compares wrapped node pointers)
 	// TODO(povilas): consider is this is needed.
-	bool operator==(const html_node& r) const;
-	bool operator!=(const html_node& r) const;
-	bool operator<(const html_node& r) const;
-	bool operator>(const html_node& r) const;
-	bool operator<=(const html_node& r) const;
-	bool operator>=(const html_node& r) const;
+	bool operator==(const node& r) const;
+	bool operator!=(const node& r) const;
+	bool operator<(const node& r) const;
+	bool operator>(const node& r) const;
+	bool operator<=(const node& r) const;
+	bool operator>=(const node& r) const;
 
 	/**
 	 * Check if node is empty.
@@ -101,7 +101,7 @@ public:
 	bool empty() const;
 
 	// Get node type
-	html_node_type type() const;
+	node_type type() const;
 
 	// Get node name/value, or "" if node is empty or it has no name/value
 	const char_t* name() const;
@@ -112,26 +112,26 @@ public:
 	attribute last_attribute() const;
 
 	// Get children list
-	html_node first_child() const;
-	html_node last_child() const;
+	node first_child() const;
+	node last_child() const;
 
 	// Get next/previous sibling in the children list of the parent node
-	html_node next_sibling() const;
-	html_node previous_sibling() const;
+	node next_sibling() const;
+	node previous_sibling() const;
 
 	/**
 	 * @return parent node or empty node if there's no parent.
 	 */
-	html_node parent() const;
+	node parent() const;
 
 	// Get root of DOM tree this node belongs to
-	html_node root() const;
+	node root() const;
 
 	// Get child, attribute or next/previous sibling with the specified name
-	html_node child(const char_t* name) const;
+	node child(const char_t* name) const;
 	attribute get_attribute(const char_t* name) const;
-	html_node next_sibling(const char_t* name) const;
-	html_node previous_sibling(const char_t* name) const;
+	node next_sibling(const char_t* name) const;
+	node previous_sibling(const char_t* name) const;
 
 	// Get child value of current node; that is, value of the first child node of type PCDATA/CDATA
 	const char_t* child_value() const;
@@ -156,29 +156,29 @@ public:
 	attribute insert_copy_before(const attribute& proto, const attribute& attr);
 
 	// Add child node with specified type. Returns added node, or empty node on errors.
-	html_node append_child(html_node_type type = node_element);
-	html_node prepend_child(html_node_type type = node_element);
-	html_node insert_child_after(html_node_type type, const html_node& node);
-	html_node insert_child_before(html_node_type type, const html_node& node);
+	node append_child(node_type type = node_element);
+	node prepend_child(node_type type = node_element);
+	node insert_child_after(node_type type, const node& node);
+	node insert_child_before(node_type type, const node& node);
 
 	// Add child element with specified name. Returns added node, or empty node on errors.
-	html_node append_child(const char_t* name);
-	html_node prepend_child(const char_t* name);
-	html_node insert_child_after(const char_t* name, const html_node& node);
-	html_node insert_child_before(const char_t* name, const html_node& node);
+	node append_child(const char_t* name);
+	node prepend_child(const char_t* name);
+	node insert_child_after(const char_t* name, const node& node);
+	node insert_child_before(const char_t* name, const node& node);
 
 	// Add a copy of the specified node as a child. Returns added node, or empty node on errors.
-	html_node append_copy(const html_node& proto);
-	html_node prepend_copy(const html_node& proto);
-	html_node insert_copy_after(const html_node& proto, const html_node& node);
-	html_node insert_copy_before(const html_node& proto, const html_node& node);
+	node append_copy(const node& proto);
+	node prepend_copy(const node& proto);
+	node insert_copy_after(const node& proto, const node& node);
+	node insert_copy_before(const node& proto, const node& node);
 
 	// Remove specified attribute
 	bool remove_attribute(const attribute& a);
 	bool remove_attribute(const char_t* name);
 
 	// Remove specified child
-	bool remove_child(const html_node& n);
+	bool remove_child(const node& n);
 	bool remove_child(const char_t* name);
 
 	// Find attribute using predicate. Returns first attribute for which predicate returned true.
@@ -194,28 +194,28 @@ public:
 	}
 
 	// Find child node using predicate. Returns first child for which predicate returned true.
-	template <typename Predicate> html_node find_child(Predicate pred) const
+	template <typename Predicate> node find_child(Predicate pred) const
 	{
-		if (!_root) return html_node();
+		if (!_root) return node();
 
-		for (html_node node = first_child(); node; node = node.next_sibling())
+		for (node node = first_child(); node; node = node.next_sibling())
 			if (pred(node))
 				return node;
 
-		return html_node();
+		return node();
 	}
 
 	/**
 	 * Find node from subtree using predicate. Returns first node from
 	 * subtree (depth-first), for which predicate returned true.
 	 */
-	template <typename Predicate> html_node
+	template <typename Predicate> node
 	find_node(Predicate pred) const {
 		if (this->empty()) {
-			return html_node();
+			return node();
 		}
 
-		html_node cur = first_child();
+		node cur = first_child();
 		while (cur._root && cur._root != this->_root) {
 			if (pred(cur)) {
 				return cur;
@@ -239,7 +239,7 @@ public:
 			}
 		}
 
-		return html_node();
+		return node();
 	}
 
 	/**
@@ -253,7 +253,7 @@ public:
 	 * @return html node with the specified tag name and attribute or
 	 *	empty node if the specified criteria were not satisfied.
 	 */
-	html_node find_child_by_attribute(const char_t* tag,
+	node find_child_by_attribute(const char_t* tag,
 		const char_t* attr_name, const char_t* attr_value) const;
 
 	/**
@@ -265,7 +265,7 @@ public:
 	 * @return html node with the specified tag name and attribute or
 	 *	empty node if the specified criteria were not satisfied.
 	 */
-	html_node find_child_by_attribute(const char_t* attr_name,
+	node find_child_by_attribute(const char_t* attr_name,
 		const char_t* attr_value) const;
 
 #ifndef PUGIHTML_NO_STL
@@ -274,7 +274,7 @@ public:
 #endif
 
 	// Search for a node by path consisting of node names and . or .. elements.
-	html_node first_element_by_path(const char_t* path, char_t delimiter = '/') const;
+	node first_element_by_path(const char_t* path, char_t delimiter = '/') const;
 
 	// Recursively traverse subtree with html_tree_walker
 	bool traverse(html_tree_walker& walker);
@@ -299,7 +299,7 @@ public:
 #endif
 
 	// Child nodes iterators
-	typedef html_node_iterator iterator;
+	typedef node_iterator iterator;
 
 	iterator begin() const;
 	iterator end() const;
@@ -314,67 +314,67 @@ public:
 	size_t hash_value() const;
 
 	// Get internal pointer
-	html_node_struct* internal_object() const;
+	node_struct* internal_object() const;
 };
 
 #ifdef __BORLANDC__
 // Borland C++ workaround
-bool PUGIHTML_FUNCTION operator&&(const html_node& lhs, bool rhs);
-bool PUGIHTML_FUNCTION operator||(const html_node& lhs, bool rhs);
+bool PUGIHTML_FUNCTION operator&&(const node& lhs, bool rhs);
+bool PUGIHTML_FUNCTION operator||(const node& lhs, bool rhs);
 #endif
 
-// Child node iterator (a bidirectional iterator over a collection of html_node)
-class PUGIHTML_CLASS html_node_iterator
+// Child node iterator (a bidirectional iterator over a collection of node)
+class PUGIHTML_CLASS node_iterator
 {
-	friend class html_node;
+	friend class node;
 
 private:
-	html_node _wrap;
-	html_node _parent;
+	node _wrap;
+	node _parent;
 
-	html_node_iterator(html_node_struct* ref, html_node_struct* parent);
+	node_iterator(node_struct* ref, node_struct* parent);
 
 public:
 	// Iterator traits
 	typedef ptrdiff_t difference_type;
-	typedef html_node value_type;
-	typedef html_node* pointer;
-	typedef html_node& reference;
+	typedef node value_type;
+	typedef node* pointer;
+	typedef node& reference;
 
 #ifndef PUGIHTML_NO_STL
 	typedef std::bidirectional_iterator_tag iterator_category;
 #endif
 
 	// Default constructor
-	html_node_iterator();
+	node_iterator();
 
 	// Construct an iterator which points to the specified node
-	html_node_iterator(const html_node& node);
+	node_iterator(const node& node);
 
 	// Iterator operators
-	bool operator==(const html_node_iterator& rhs) const;
-	bool operator!=(const html_node_iterator& rhs) const;
+	bool operator==(const node_iterator& rhs) const;
+	bool operator!=(const node_iterator& rhs) const;
 
-	html_node& operator*();
-	html_node* operator->();
+	node& operator*();
+	node* operator->();
 
-	const html_node_iterator& operator++();
-	html_node_iterator operator++(int);
+	const node_iterator& operator++();
+	node_iterator operator++(int);
 
-	const html_node_iterator& operator--();
-	html_node_iterator operator--(int);
+	const node_iterator& operator--();
+	node_iterator operator--(int);
 };
 
 // Attribute iterator (a bidirectional iterator over a collection of attribute)
 class PUGIHTML_CLASS attribute_iterator
 {
-	friend class html_node;
+	friend class node;
 
 private:
 	attribute _wrap;
-	html_node _parent;
+	node _parent;
 
-	attribute_iterator(attribute_struct* ref, html_node_struct* parent);
+	attribute_iterator(attribute_struct* ref, node_struct* parent);
 
 public:
 	// Iterator traits
@@ -391,7 +391,7 @@ public:
 	attribute_iterator();
 
 	// Construct an iterator which points to the specified attribute
-	attribute_iterator(const attribute& attr, const html_node& parent);
+	attribute_iterator(const attribute& attr, const node& parent);
 
 	// Iterator operators
 	bool operator==(const attribute_iterator& rhs) const;
@@ -409,10 +409,10 @@ public:
 
 
 /**
- * Abstract tree walker class (see html_node::traverse)
+ * Abstract tree walker class (see node::traverse)
  */
 class PUGIHTML_CLASS html_tree_walker {
-	friend class html_node;
+	friend class node;
 
 private:
 	int _depth;
@@ -432,33 +432,33 @@ public:
 	 *
 	 * @return false if should stop iterating the tree.
 	 */
-	virtual bool begin(html_node& node);
+	virtual bool begin(node& node);
 
 	/**
 	 * Callback that is called for each node traversed
 	 *
 	 * @return false if should stop iterating the tree.
 	 */
-	virtual bool for_each(html_node& node) = 0;
+	virtual bool for_each(node& node) = 0;
 
 	/**
 	 * Callback that is called when traversal ends.
 	 *
 	 * @return traversal state: success or failure.
 	 */
-	virtual bool end(html_node& node);
+	virtual bool end(node& node);
 };
 
 
-html_node_struct* append_node(html_node_struct* node, html_allocator& alloc,
-	html_node_type type = node_element);
+node_struct* append_node(node_struct* node, html_allocator& alloc,
+	node_type type = node_element);
 
-attribute_struct* append_attribute_ll(html_node_struct* node,
+attribute_struct* append_attribute_ll(node_struct* node,
 	html_allocator& alloc);
 
-html_node_struct* allocate_node(html_allocator& alloc, html_node_type type);
+node_struct* allocate_node(html_allocator& alloc, node_type type);
 
-void node_output(html_buffered_writer& writer, const html_node& node,
+void node_output(html_buffered_writer& writer, const node& node,
 	const char_t* indent, unsigned int flags, unsigned int depth);
 
 }
