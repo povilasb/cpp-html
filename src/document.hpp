@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "memory.hpp"
-#include "html_node.hpp"
+#include "node.hpp"
 #include "common.hpp"
 #include "parser.hpp"
 
@@ -12,9 +12,9 @@
 namespace pugihtml
 {
 
-struct document_struct : public html_node_struct, public html_allocator {
+struct document_struct : public node_struct, public html_allocator {
 	document_struct(html_memory_page* page):
-		html_node_struct(page, node_document), html_allocator(page),
+		node_struct(page, node_document), html_allocator(page),
 		buffer(0)
 	{
 	}
@@ -23,7 +23,7 @@ struct document_struct : public html_node_struct, public html_allocator {
 };
 
 // Document class (DOM tree root)
-class PUGIHTML_CLASS document : public html_node {
+class PUGIHTML_CLASS document : public node {
 private:
 	char_t* _buffer;
 
@@ -81,11 +81,11 @@ public:
 	// You should allocate the buffer with pugihtml allocation function; document will free the buffer when it is no longer needed (you can't use it anymore).
 	html_parse_result load_buffer_inplace_own(void* contents, size_t size, unsigned int options = parser::parse_default, html_encoding encoding = encoding_auto);
 
-	// Save HTML document to writer (semantics is slightly different from html_node::print, see documentation for details).
+	// Save HTML document to writer (semantics is slightly different from node::print, see documentation for details).
 	void save(html_writer& writer, const char_t* indent = PUGIHTML_TEXT("\t"), unsigned int flags = format_default, html_encoding encoding = encoding_auto) const;
 
 #ifndef PUGIHTML_NO_STL
-	// Save HTML document to stream (semantics is slightly different from html_node::print, see documentation for details).
+	// Save HTML document to stream (semantics is slightly different from node::print, see documentation for details).
 	void save(std::basic_ostream<char, std::char_traits<char> >& stream, const char_t* indent = PUGIHTML_TEXT("\t"), unsigned int flags = format_default, html_encoding encoding = encoding_auto) const;
 	void save(std::basic_ostream<wchar_t, std::char_traits<wchar_t> >& stream, const char_t* indent = PUGIHTML_TEXT("\t"), unsigned int flags = format_default) const;
 #endif
@@ -95,19 +95,19 @@ public:
 	bool save_file(const wchar_t* path, const char_t* indent = PUGIHTML_TEXT("\t"), unsigned int flags = format_default, html_encoding encoding = encoding_auto) const;
 
 	// Get document element
-	html_node document_element() const;
+	node document_element() const;
 
 	/**
 	 * Returns an array of all the links in the current document.
 	 * The links collection counts <a href=""> tags and <area> tags.
 	 */
-	std::vector<html_node> links() const;
+	std::vector<node> links() const;
 
 	/**
 	 * Traverses DOM tree and searches for html node with the specified
 	 * id attribute. If no tag is found, empty html node is returned.
 	 */
-	html_node get_element_by_id(const string_t& id);
+	node get_element_by_id(const string_t& id);
 };
 
 } // pugihtml.

@@ -12,7 +12,7 @@
 #include "pugihtml.hpp"
 #include "pugiutil.hpp"
 #include "memory.hpp"
-#include "html_node.hpp"
+#include "node.hpp"
 #include "parser.hpp"
 #include "html_writer.hpp"
 #include "utf_decoder.hpp"
@@ -186,9 +186,9 @@ namespace
 namespace
 {
 	// TODO(povilas): use from document.hpp.
-	struct document_struct: public html_node_struct, public html_allocator
+	struct document_struct: public node_struct, public html_allocator
 	{
-		document_struct(html_memory_page* page): html_node_struct(page, node_document), html_allocator(page), buffer(0)
+		document_struct(html_memory_page* page): node_struct(page, node_document), html_allocator(page), buffer(0)
 		{
 		}
 
@@ -721,7 +721,7 @@ namespace
 			return s;
 		}
 
-		char_t* parse_exclamation(char_t* s, html_node_struct* cursor, unsigned int optmsk, char_t endch)
+		char_t* parse_exclamation(char_t* s, node_struct* cursor, unsigned int optmsk, char_t endch)
 		{
 			// parse node contents, starting with exclamation mark
 			++s;
@@ -832,10 +832,10 @@ namespace
 			return s;
 		}
 
-		char_t* parse_question(char_t* s, html_node_struct*& ref_cursor, unsigned int optmsk, char_t endch)
+		char_t* parse_question(char_t* s, node_struct*& ref_cursor, unsigned int optmsk, char_t endch)
 		{
 			// load into registers
-			html_node_struct* cursor = ref_cursor;
+			node_struct* cursor = ref_cursor;
 			char_t ch = 0;
 
 			// parse node contents, starting with question mark
@@ -943,7 +943,7 @@ namespace
 			return s;
 		}
 
-		void parse(char_t* s, html_node_struct* htmldoc, unsigned int optmsk, char_t endch)
+		void parse(char_t* s, node_struct* htmldoc, unsigned int optmsk, char_t endch)
 		{
 			strconv_attribute_t strconv_attribute = get_strconv_attribute(optmsk);
 			strconv_pcdata_t strconv_pcdata = get_strconv_pcdata(optmsk);
@@ -951,7 +951,7 @@ namespace
 			char_t ch = 0;
 
 			// Point the cursor to the html document node
-			html_node_struct* cursor = htmldoc;
+			node_struct* cursor = htmldoc;
 
 			// Set the marker
 			char_t* mark = s;
@@ -1298,7 +1298,7 @@ namespace
 			}
 		}
 
-		static html_parse_result parse(char_t* buffer, size_t length, html_node_struct* root, unsigned int optmsk)
+		static html_parse_result parse(char_t* buffer, size_t length, node_struct* root, unsigned int optmsk)
 		{
 			document_struct* htmldoc = static_cast<document_struct*>(root);
 
@@ -1348,11 +1348,11 @@ namespace pugihtml
 	{
 	}
 
-	attribute_iterator::attribute_iterator(const attribute& attr, const html_node& parent): _wrap(attr), _parent(parent)
+	attribute_iterator::attribute_iterator(const attribute& attr, const node& parent): _wrap(attr), _parent(parent)
 	{
 	}
 
-	attribute_iterator::attribute_iterator(attribute_struct* ref, html_node_struct* parent): _wrap(ref), _parent(parent)
+	attribute_iterator::attribute_iterator(attribute_struct* ref, node_struct* parent): _wrap(ref), _parent(parent)
 	{
 	}
 
@@ -1441,7 +1441,7 @@ namespace pugihtml
 namespace std
 {
 	// Workarounds for (non-standard) iterator category detection for older versions (MSVC7/IC8 and earlier)
-	std::bidirectional_iterator_tag _Iter_cat(const html_node_iterator&)
+	std::bidirectional_iterator_tag _Iter_cat(const node_iterator&)
 	{
 		return std::bidirectional_iterator_tag();
 	}
@@ -1457,7 +1457,7 @@ namespace std
 namespace std
 {
 	// Workarounds for (non-standard) iterator category detection
-	std::bidirectional_iterator_tag __iterator_category(const html_node_iterator&)
+	std::bidirectional_iterator_tag __iterator_category(const node_iterator&)
 	{
 		return std::bidirectional_iterator_tag();
 	}
@@ -2083,7 +2083,7 @@ namespace
 			return xpath_string_const(na.attribute().value());
 		else
 		{
-			const html_node& n = na.node();
+			const node& n = na.node();
 
 			switch (n.type())
 			{
@@ -2098,7 +2098,7 @@ namespace
 			{
 				xpath_string result;
 
-				html_node cur = n.first_child();
+				node cur = n.first_child();
 
 				while (cur && cur != n)
 				{
@@ -2127,7 +2127,7 @@ namespace
 		}
 	}
 
-	unsigned int node_height(html_node n)
+	unsigned int node_height(node n)
 	{
 		unsigned int result = 0;
 
@@ -2140,7 +2140,7 @@ namespace
 		return result;
 	}
 
-	bool node_is_before(html_node ln, unsigned int lh, html_node rn, unsigned int rh)
+	bool node_is_before(node ln, unsigned int lh, node rn, unsigned int rh)
 	{
 		// normalize heights
 		for (unsigned int i = rh; i < lh; i++) ln = ln.parent();
@@ -2167,7 +2167,7 @@ namespace
 		return false;
 	}
 
-	bool node_is_ancestor(html_node parent, html_node node)
+	bool node_is_ancestor(node parent, node node)
 	{
 		while (node && node != parent) node = node.parent();
 
@@ -2176,7 +2176,7 @@ namespace
 
 	const void* document_order(const xpath_node& xnode)
 	{
-		html_node_struct* node = xnode.node().internal_object();
+		node_struct* node = xnode.node().internal_object();
 
 		if (node)
 		{
@@ -2208,7 +2208,7 @@ namespace
 			if (lo && ro) return lo < ro;
 
 			// slow comparison
-			html_node ln = lhs.node(), rn = rhs.node();
+			node ln = lhs.node(), rn = rhs.node();
 
 			// compare attributes
 			if (lhs.attribute() && rhs.attribute())
@@ -2558,11 +2558,11 @@ namespace
 		}
 	};
 
-	const char_t* namespace_uri(const html_node& node)
+	const char_t* namespace_uri(const node& node)
 	{
 		namespace_uri_predicate pred = node.name();
 
-		html_node p = node;
+		node p = node;
 
 		while (p)
 		{
@@ -2576,14 +2576,14 @@ namespace
 		return PUGIHTML_TEXT("");
 	}
 
-	const char_t* namespace_uri(const attribute& attr, const html_node& parent)
+	const char_t* namespace_uri(const attribute& attr, const node& parent)
 	{
 		namespace_uri_predicate pred = attr.name();
 
 		// Default namespace does not apply to attributes
 		if (!pred.prefix) return PUGIHTML_TEXT("");
 
-		html_node p = parent;
+		node p = parent;
 
 		while (p)
 		{
@@ -3651,7 +3651,7 @@ namespace
 			}
 		}
 
-		void step_push(xpath_node_set_raw& ns, const attribute& a, const html_node& parent, xpath_allocator* alloc)
+		void step_push(xpath_node_set_raw& ns, const attribute& a, const node& parent, xpath_allocator* alloc)
 		{
 			if (!a) return;
 
@@ -3682,7 +3682,7 @@ namespace
 			}
 		}
 
-		void step_push(xpath_node_set_raw& ns, const html_node& n, xpath_allocator* alloc)
+		void step_push(xpath_node_set_raw& ns, const node& n, xpath_allocator* alloc)
 		{
 			if (!n) return;
 
@@ -3731,7 +3731,7 @@ namespace
 			}
 		}
 
-		template <class T> void step_fill(xpath_node_set_raw& ns, const html_node& n, xpath_allocator* alloc, T)
+		template <class T> void step_fill(xpath_node_set_raw& ns, const node& n, xpath_allocator* alloc, T)
 		{
 			const axis_t axis = T::axis;
 
@@ -3747,7 +3747,7 @@ namespace
 
 			case axis_child:
 			{
-				for (html_node c = n.first_child(); c; c = c.next_sibling())
+				for (node c = n.first_child(); c; c = c.next_sibling())
 					step_push(ns, c, alloc);
 
 				break;
@@ -3759,7 +3759,7 @@ namespace
 				if (axis == axis_descendant_or_self)
 					step_push(ns, n, alloc);
 
-				html_node cur = n.first_child();
+				node cur = n.first_child();
 
 				while (cur && cur != n)
 				{
@@ -3783,7 +3783,7 @@ namespace
 
 			case axis_following_sibling:
 			{
-				for (html_node c = n.next_sibling(); c; c = c.next_sibling())
+				for (node c = n.next_sibling(); c; c = c.next_sibling())
 					step_push(ns, c, alloc);
 
 				break;
@@ -3791,7 +3791,7 @@ namespace
 
 			case axis_preceding_sibling:
 			{
-				for (html_node c = n.previous_sibling(); c; c = c.previous_sibling())
+				for (node c = n.previous_sibling(); c; c = c.previous_sibling())
 					step_push(ns, c, alloc);
 
 				break;
@@ -3799,7 +3799,7 @@ namespace
 
 			case axis_following:
 			{
-				html_node cur = n;
+				node cur = n;
 
 				// exit from this node so that we don't include descendants
 				while (cur && !cur.next_sibling()) cur = cur.parent();
@@ -3827,7 +3827,7 @@ namespace
 
 			case axis_preceding:
 			{
-				html_node cur = n;
+				node cur = n;
 
 				while (cur && !cur.previous_sibling()) cur = cur.parent();
 				cur = cur.previous_sibling();
@@ -3870,7 +3870,7 @@ namespace
 				if (axis == axis_ancestor_or_self)
 					step_push(ns, n, alloc);
 
-				html_node cur = n.parent();
+				node cur = n.parent();
 
 				while (cur)
 				{
@@ -3901,7 +3901,7 @@ namespace
 			}
 		}
 
-		template <class T> void step_fill(xpath_node_set_raw& ns, const attribute& a, const html_node& p, xpath_allocator* alloc, T v)
+		template <class T> void step_fill(xpath_node_set_raw& ns, const attribute& a, const node& p, xpath_allocator* alloc, T v)
 		{
 			const axis_t axis = T::axis;
 
@@ -3913,7 +3913,7 @@ namespace
 				if (axis == axis_ancestor_or_self && _test == nodetest_type_node) // reject attributes based on principal node type test
 					step_push(ns, a, p, alloc);
 
-				html_node cur = p;
+				node cur = p;
 
 				while (cur)
 				{
@@ -3936,7 +3936,7 @@ namespace
 
 			case axis_following:
 			{
-				html_node cur = p;
+				node cur = p;
 
 				for (;;)
 				{
@@ -4136,7 +4136,7 @@ namespace
 
 				xpath_string lang = _left->eval_string(c, stack);
 
-				for (html_node n = c.n.node(); n; n = n.parent())
+				for (node n = c.n.node(); n; n = n.parent())
 				{
 					attribute a = n.attribute(PUGIHTML_TEXT("html:lang"));
 
@@ -5682,17 +5682,17 @@ namespace pugihtml
 	{
 	}
 
-	xpath_node::xpath_node(const html_node& node): _node(node)
+	xpath_node::xpath_node(const node& node): _node(node)
 	{
 	}
 
-	xpath_node::xpath_node(const attribute& attribute, const html_node& parent): _node(attribute ? parent : html_node()), _attribute(attribute)
+	xpath_node::xpath_node(const attribute& attribute, const node& parent): _node(attribute ? parent : node()), _attribute(attribute)
 	{
 	}
 
-	html_node xpath_node::node() const
+	node xpath_node::node() const
 	{
-		return _attribute ? html_node() : _node;
+		return _attribute ? node() : _node;
 	}
 
 	attribute xpath_node::attribute() const
@@ -5700,7 +5700,7 @@ namespace pugihtml
 		return _attribute;
 	}
 
-	html_node xpath_node::parent() const
+	node xpath_node::parent() const
 	{
 		return _attribute ? _node : _node.parent();
 	}
@@ -6192,25 +6192,25 @@ namespace pugihtml
 		return !_impl;
 	}
 
-	xpath_node html_node::select_single_node(const char_t* query, xpath_variable_set* variables) const
+	xpath_node node::select_single_node(const char_t* query, xpath_variable_set* variables) const
 	{
 		xpath_query q(query, variables);
 		return select_single_node(q);
 	}
 
-	xpath_node html_node::select_single_node(const xpath_query& query) const
+	xpath_node node::select_single_node(const xpath_query& query) const
 	{
 		xpath_node_set s = query.evaluate_node_set(*this);
 		return s.empty() ? xpath_node() : s.first();
 	}
 
-	xpath_node_set html_node::select_nodes(const char_t* query, xpath_variable_set* variables) const
+	xpath_node_set node::select_nodes(const char_t* query, xpath_variable_set* variables) const
 	{
 		xpath_query q(query, variables);
 		return select_nodes(q);
 	}
 
-	xpath_node_set html_node::select_nodes(const xpath_query& query) const
+	xpath_node_set node::select_nodes(const xpath_query& query) const
 	{
 		return query.evaluate_node_set(*this);
 	}

@@ -5,7 +5,7 @@
 
 #include "parser.hpp"
 #include "attribute.hpp"
-#include "html_node.hpp"
+#include "node.hpp"
 #include "document.hpp"
 #include "memory.hpp"
 #include "pugiutil.hpp"
@@ -146,7 +146,7 @@ parser::parse_doctype_group(char_t* s, char_t endch, bool toplevel)
 
 
 char_t*
-parser::parse_exclamation(char_t* s, html_node_struct* cursor,
+parser::parse_exclamation(char_t* s, node_struct* cursor,
 	unsigned int optmsk, char_t endch)
 {
 	// TODO(povilas): optmsk unused?
@@ -258,12 +258,12 @@ parser::parse_exclamation(char_t* s, html_node_struct* cursor,
 
 
 char_t*
-parser::parse_question(char_t* s, html_node_struct*& ref_cursor,
+parser::parse_question(char_t* s, node_struct*& ref_cursor,
 	unsigned int optmsk, char_t endch)
 {
 	// TODO(povilas): optmsk unused?
 	// load into registers
-	html_node_struct* cursor = ref_cursor;
+	node_struct* cursor = ref_cursor;
 	char_t ch = 0;
 
 	// parse node contents, starting with question mark
@@ -604,7 +604,7 @@ get_strconv_pcdata(unsigned int optmask)
 
 
 void
-parser::parse(char_t* s, html_node_struct* htmldoc, unsigned int optmsk,
+parser::parse(char_t* s, node_struct* htmldoc, unsigned int optmsk,
 	char_t endch)
 {
 	strconv_attribute_t strconv_attribute = get_strconv_attribute(optmsk);
@@ -613,7 +613,7 @@ parser::parse(char_t* s, html_node_struct* htmldoc, unsigned int optmsk,
 	char_t ch = 0;
 
 	// Point the cursor to the html document node
-	html_node_struct* cursor = htmldoc;
+	node_struct* cursor = htmldoc;
 
 	// Set the marker
 	char_t* mark = s;
@@ -977,7 +977,7 @@ make_parse_result(html_parse_status status, ptrdiff_t offset = 0)
 
 
 html_parse_result
-parser::parse(char_t* buffer, size_t length, html_node_struct* root,
+parser::parse(char_t* buffer, size_t length, node_struct* root,
 	unsigned int optmsk)
 {
 	if (buffer == nullptr || root == nullptr) {

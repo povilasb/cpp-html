@@ -29,7 +29,7 @@ struct attribute_struct {
 };
 
 
-class html_node;
+class node;
 class attribute_iterator;
 
 /**
@@ -37,7 +37,7 @@ class attribute_iterator;
  */
 class PUGIHTML_CLASS attribute {
 	friend class attribute_iterator;
-	friend class html_node;
+	friend class node;
 
 private:
 	attribute_struct* _attr;

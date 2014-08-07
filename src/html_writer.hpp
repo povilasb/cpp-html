@@ -27,7 +27,7 @@ const unsigned int format_no_declaration = 0x08;
 const unsigned int format_default = format_indent;
 
 
-// Writer interface for node printing (see html_node::print)
+// Writer interface for node printing (see node::print)
 class PUGIHTML_CLASS html_writer {
 public:
 	virtual ~html_writer() {}

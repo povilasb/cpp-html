@@ -17,7 +17,7 @@
 
 #include "common.hpp"
 #include "parser.hpp"
-#include "html_node.hpp"
+#include "node.hpp"
 #include "attribute.hpp"
 #include "html_writer.hpp"
 
@@ -26,10 +26,10 @@
 namespace pugihtml
 {
 	// Forward declarations
-	class html_node_iterator;
+	class node_iterator;
 	class attribute_iterator;
 
-	class html_node;
+	class node;
 
 	#ifndef PUGIHTML_NO_XPATH
 	class xpath_node;
@@ -211,29 +211,29 @@ namespace pugihtml
 	};
 	#endif
 
-	// XPath node class (either html_node or attribute)
+	// XPath node class (either node or attribute)
 	class PUGIHTML_CLASS xpath_node
 	{
 	private:
-		html_node _node;
+		node _node;
 		attribute _attribute;
 
-		typedef html_node xpath_node::*unspecified_bool_type;
+		typedef node xpath_node::*unspecified_bool_type;
 
 	public:
 		// Default constructor; constructs empty XPath node
 		xpath_node();
 
 		// Construct XPath node from HTML node/attribute
-		xpath_node(const html_node& node);
-		xpath_node(const attribute& attribute, const html_node& parent);
+		xpath_node(const node& node);
+		xpath_node(const attribute& attribute, const node& parent);
 
 		// Get node/attribute, if any
-		html_node node() const;
+		node node() const;
 		attribute attribute() const;
 
 		// Get parent of contained node/attribute
-		html_node parent() const;
+		node parent() const;
 
 		// Safe bool conversion operator
 		operator unspecified_bool_type() const;
@@ -325,7 +325,7 @@ namespace pugihtml
 namespace std
 {
 	// Workarounds for (non-standard) iterator category detection for older versions (MSVC7/IC8 and earlier)
-	std::bidirectional_iterator_tag PUGIHTML_FUNCTION _Iter_cat(const pugihtml::html_node_iterator&);
+	std::bidirectional_iterator_tag PUGIHTML_FUNCTION _Iter_cat(const pugihtml::node_iterator&);
 	std::bidirectional_iterator_tag PUGIHTML_FUNCTION _Iter_cat(const pugihtml::attribute_iterator&);
 }
 #endif
@@ -334,7 +334,7 @@ namespace std
 namespace std
 {
 	// Workarounds for (non-standard) iterator category detection
-	std::bidirectional_iterator_tag PUGIHTML_FUNCTION __iterator_category(const pugihtml::html_node_iterator&);
+	std::bidirectional_iterator_tag PUGIHTML_FUNCTION __iterator_category(const pugihtml::node_iterator&);
 	std::bidirectional_iterator_tag PUGIHTML_FUNCTION __iterator_category(const pugihtml::attribute_iterator&);
 }
 #endif

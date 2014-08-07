@@ -40,7 +40,7 @@ document::reset(const document& proto)
 {
 	reset();
 
-	for (html_node cur = proto.first_child(); cur; cur = cur.next_sibling()) {
+	for (node cur = proto.first_child(); cur; cur = cur.next_sibling()) {
 		append_copy(cur);
 	}
 }
@@ -616,11 +616,11 @@ write_bom(html_writer& writer, html_encoding encoding)
 
 
 inline bool
-has_declaration(const html_node& node)
+has_declaration(const node& _node)
 {
-	for (html_node child = node.first_child(); child; child = child.next_sibling())
+	for (node child = _node.first_child(); child; child = child.next_sibling())
 	{
-		html_node_type type = child.type();
+		node_type type = child.type();
 
 		if (type == node_declaration) return true;
 		if (type == node_element) return false;
@@ -690,25 +690,25 @@ bool document::save_file(const wchar_t* path, const char_t* indent, unsigned int
 	return true;
 }
 
-html_node
+node
 document::document_element() const
 {
-	for (html_node_struct* i = _root->first_child; i; i = i->next_sibling)
+	for (node_struct* i = _root->first_child; i; i = i->next_sibling)
 		if ((i->header & html_memory_page_type_mask) + 1 == node_element)
-			return html_node(i);
+			return node(i);
 
-	return html_node();
+	return node();
 }
 
 
 class links_walker : public html_tree_walker {
 public:
-	links_walker(vector<html_node>& links) : links_(links)
+	links_walker(vector<node>& links) : links_(links)
 	{
 	}
 
 	bool
-	for_each(html_node& node) override
+	for_each(node& node) override
 	{
 		string_t node_name(node.name());
 
@@ -721,13 +721,13 @@ public:
 	}
 
 private:
-	vector<html_node>& links_;
+	vector<node>& links_;
 };
 
-std::vector<html_node>
+std::vector<node>
 document::links() const
 {
-	vector<html_node> result;
+	vector<node> result;
 
 	links_walker html_walker(result);
 	this->document_element().traverse(html_walker);
@@ -736,10 +736,10 @@ document::links() const
 }
 
 
-html_node
+node
 document::get_element_by_id(const string_t& id)
 {
-	return this->find_node([&](const html_node& node) {
+	return this->find_node([&](const node& node) {
 		attribute attr = node.get_attribute("ID");
 		if (attr.value() == id) {
 			return true;

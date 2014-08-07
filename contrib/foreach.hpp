@@ -10,9 +10,9 @@
 #include "pugihtml.hpp"
 
 /*
- * These types add support for BOOST_FOREACH macro to html_node and document classes (child iteration only).
+ * These types add support for BOOST_FOREACH macro to node and document classes (child iteration only).
  * Example usage:
- * BOOST_FOREACH(html_node n, doc) {}
+ * BOOST_FOREACH(node n, doc) {}
  */
 
 namespace boost
@@ -20,14 +20,14 @@ namespace boost
 	template <typename> struct range_mutable_iterator;
 	template <typename> struct range_const_iterator;
 
-	template<> struct range_mutable_iterator<pugi::html_node>
+	template<> struct range_mutable_iterator<pugi::node>
 	{
-		typedef pugi::html_node::iterator type;
+		typedef pugi::node::iterator type;
 	};
 
-	template<> struct range_const_iterator<pugi::html_node>
+	template<> struct range_const_iterator<pugi::node>
 	{
-		typedef pugi::html_node::iterator type;
+		typedef pugi::node::iterator type;
 	};
 
 	template<> struct range_mutable_iterator<pugi::document>
@@ -42,20 +42,20 @@ namespace boost
 }
 
 /*
- * These types add support for BOOST_FOREACH macro to html_node and document classes (child/attribute iteration).
+ * These types add support for BOOST_FOREACH macro to node and document classes (child/attribute iteration).
  * Example usage:
- * BOOST_FOREACH(html_node n, children(doc)) {}
- * BOOST_FOREACH(html_node n, attributes(doc)) {}
+ * BOOST_FOREACH(node n, children(doc)) {}
+ * BOOST_FOREACH(node n, attributes(doc)) {}
  */
 
 namespace pugi
 {
-	struct html_node_children_adapter
+	struct node_children_adapter
 	{
-		typedef pugi::html_node::iterator iterator;
-		typedef pugi::html_node::iterator const_iterator;
+		typedef pugi::node::iterator iterator;
+		typedef pugi::node::iterator const_iterator;
 
-		html_node node;
+		node node;
 
 		const_iterator begin() const
 		{
@@ -68,18 +68,18 @@ namespace pugi
 		}
 	};
 
-	html_node_children_adapter children(const pugi::html_node& node)
+	node_children_adapter children(const pugi::node& node)
 	{
-		html_node_children_adapter result = {node};
+		node_children_adapter result = {node};
 		return result;
 	}
 
-	struct html_node_attribute_adapter
+	struct node_attribute_adapter
 	{
-		typedef pugi::html_node::attribute_iterator iterator;
-		typedef pugi::html_node::attribute_iterator const_iterator;
+		typedef pugi::node::attribute_iterator iterator;
+		typedef pugi::node::attribute_iterator const_iterator;
 
-		html_node node;
+		node node;
 
 		const_iterator begin() const
 		{
@@ -92,9 +92,9 @@ namespace pugi
 		}
 	};
 
-	html_node_attribute_adapter attributes(const pugi::html_node& node)
+	node_attribute_adapter attributes(const pugi::node& node)
 	{
-		html_node_attribute_adapter result = {node};
+		node_attribute_adapter result = {node};
 		return result;
 	}
 }

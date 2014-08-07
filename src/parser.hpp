@@ -6,7 +6,7 @@
 
 #include "memory.hpp"
 #include "common.hpp"
-#include "html_node.hpp"
+#include "node.hpp"
 
 
 namespace pugihtml
@@ -153,13 +153,13 @@ public:
 
 	char_t* parse_doctype_group(char_t* s, char_t endch, bool toplevel);
 
-	char_t* parse_exclamation(char_t* s, html_node_struct* cursor,
+	char_t* parse_exclamation(char_t* s, node_struct* cursor,
 		unsigned int optmsk, char_t endch);
 
-	char_t* parse_question(char_t* s, html_node_struct*& ref_cursor,
+	char_t* parse_question(char_t* s, node_struct*& ref_cursor,
 		unsigned int optmsk, char_t endch);
 
-	void parse(char_t* s, html_node_struct* htmldoc, unsigned int optmsk,
+	void parse(char_t* s, node_struct* htmldoc, unsigned int optmsk,
 		char_t endch);
 
 	/**
@@ -168,7 +168,7 @@ public:
 	 *	DOM tree.
 	 */
 	static html_parse_result parse(char_t* buffer, size_t length,
-		html_node_struct* root, unsigned int optmask = parse_default);
+		node_struct* root, unsigned int optmask = parse_default);
 
 //private:
 	html_allocator alloc;
