@@ -1,10 +1,11 @@
 #include <new>
 #include <cassert>
 
-#include "node.hpp"
-#include "attribute.hpp"
+#include <pugihtml/node.hpp>
+#include <pugihtml/document.hpp>
+#include <pugihtml/attribute.hpp>
+
 #include "pugiutil.hpp"
-#include "document.hpp"
 #include "common.hpp"
 
 

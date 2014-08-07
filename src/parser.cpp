@@ -3,10 +3,11 @@
 #include <algorithm>
 #include <list>
 
+#include <pugihtml/attribute.hpp>
+#include <pugihtml/node.hpp>
+#include <pugihtml/document.hpp>
+
 #include "parser.hpp"
-#include "attribute.hpp"
-#include "node.hpp"
-#include "document.hpp"
 #include "memory.hpp"
 #include "pugiutil.hpp"
 

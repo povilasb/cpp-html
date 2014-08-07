@@ -4,7 +4,8 @@
 #include <cstring>
 #include <vector>
 
-#include "document.hpp"
+#include <pugihtml/document.hpp>
+
 #include "parser.hpp"
 #include "pugiutil.hpp"
 #include "utf_decoder.hpp"

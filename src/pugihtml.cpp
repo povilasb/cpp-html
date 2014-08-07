@@ -9,14 +9,15 @@
  * Copyright (C) 2006-2010, by Arseny Kapoulkine (arseny [DOT] kapoulkine [AT] gmail [DOT] com)
  */
 
+#include <pugihtml/document.hpp>
+#include <pugihtml/node.hpp>
+
 #include "pugihtml.hpp"
 #include "pugiutil.hpp"
 #include "memory.hpp"
-#include "node.hpp"
 #include "parser.hpp"
 #include "html_writer.hpp"
 #include "utf_decoder.hpp"
-#include "document.hpp"
 
 #include <stdlib.h>
 #include <stdio.h>

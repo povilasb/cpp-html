@@ -1,6 +1,7 @@
 #include <cstdio>
 
-#include "attribute.hpp"
+#include <pugihtml/attribute.hpp>
+
 #include "common.hpp"
 #include "pugiutil.hpp"
 

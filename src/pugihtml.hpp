@@ -15,10 +15,11 @@
 
 #include <stddef.h>
 
+#include <pugihtml/node.hpp>
+#include <pugihtml/attribute.hpp>
+
 #include "common.hpp"
 #include "parser.hpp"
-#include "node.hpp"
-#include "attribute.hpp"
 #include "html_writer.hpp"
 
 
