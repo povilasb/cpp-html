@@ -28,10 +28,34 @@ html_memory_page::construct(void* memory)
 }
 
 
+// FIXME: still not working.
+html_allocator::html_allocator()
+{
+	// Some magic number taken from document class _memory variable.
+	size_t data_size = html_memory_page_size;
+	size_t size = offsetof(html_memory_page, data) + data_size;
+
+	// Allocate block with some alignment, leaving memory for worst-case
+	// padding.
+	void* memory = global_allocate(size + html_memory_page_alignment);
+
+	// Align upwards to page boundary.
+	void* page_memory = reinterpret_cast<void*>(
+		(reinterpret_cast<uintptr_t>(memory)
+		+ (html_memory_page_alignment - 1))
+		& ~(html_memory_page_alignment - 1));
+
+	this->_root = html_memory_page::construct(page_memory);
+	this->_root->memory = memory;
+	this->_root->allocator = this;
+}
+
+
 html_allocator::html_allocator(html_memory_page* root) : _root(root),
 	_busy_size(root->busy_size)
 {
 }
+
 
 void
 html_allocator::deallocate_page(html_memory_page* page)
@@ -48,7 +72,7 @@ html_allocator::allocate_page(size_t data_size)
 	// Allocate block with some alignment, leaving memory for worst-case
 	// padding.
 	void* memory = global_allocate(size + html_memory_page_alignment);
-	if (!memory) {
+	if (memory == nullptr) {
 		return 0;
 	}
 
@@ -62,7 +86,7 @@ html_allocator::allocate_page(size_t data_size)
 	html_memory_page* page = html_memory_page::construct(page_memory);
 
 	page->memory = memory;
-	page->allocator = _root->allocator;
+	page->allocator = this->_root->allocator;
 
 	return page;
 }

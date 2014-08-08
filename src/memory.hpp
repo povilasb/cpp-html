@@ -85,6 +85,8 @@ struct html_memory_string_header {
 
 
 struct html_allocator {
+	html_allocator();
+
 	html_allocator(html_memory_page* root);
 
 	/**
