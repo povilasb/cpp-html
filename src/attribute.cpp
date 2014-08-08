@@ -244,7 +244,9 @@ attribute::set_name(const string_type& name)
 		html_memory_page_name_allocated_mask, name.c_str());
 }
 
-bool attribute::set_value(const char_t* rhs)
+
+bool
+attribute::set_value(const char_t* rhs)
 {
 	if (!attr_) return false;
 
