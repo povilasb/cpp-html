@@ -1,7 +1,9 @@
-#ifndef PUGIHTML_HTML_NODE_HPP
-#define PUGIHTML_HTML_NODE_HPP 1
+#ifndef PUGIHTML_NODE_HPP
+#define PUGIHTML_NODE_HPP 1
 
-#include <cstddef>
+#include <memory>
+#include <list>
+#include <algorithm>
 
 #include <pugihtml/pugihtml.hpp>
 
@@ -27,20 +29,6 @@ enum node_type {
 	node_doctype // Document type declaration, i.e. '<!DOCTYPE doc>'
 };
 
-/**
- * An HTML document tree node.
- */
-// TODO(povilas): consider if reinterpret_cast is really neccessary here.
-struct node_struct {
-	node_struct(html_memory_page* page, node_type type)
-		: header(reinterpret_cast<uintptr_t>(page) | (type - 1)),
-		parent(0), name(0), value(0), first_child(0), prev_sibling_c(0),
-		next_sibling(0), first_attribute(0)
-	{
-	}
-
-	// Pointer to memory page in which this node resides.
-	uintptr_t header;
 
 	node_struct* parent;
 
@@ -55,172 +43,212 @@ struct node_struct {
 	node_struct* next_sibling;
 
 	attribute_struct* first_attribute;
-};
 
-
-class node_iterator;
-class html_tree_walker;
 
 /**
- * A light-weight handle for manipulating nodes in DOM tree.
+ * An HTML document tree node.
  */
-class PUGIHTML_CLASS node {
-	friend class attribute_iterator;
-	friend class node_iterator;
-
-protected:
-	node_struct* _root;
-
-	typedef node_struct* node::*unspecified_bool_type;
-
+class node {
 public:
 	/**
-	 * Constructs an empty node.
+	 * Constructs node with the specified type. Default is pcdata aka text.
 	 */
-	node();
-
-	// Constructs node from internal pointer
-	explicit node(node_struct* p);
-
-	// Safe bool conversion operator
-	operator unspecified_bool_type() const;
-
-	// Borland C++ workaround
-	bool operator!() const;
-
-	// Comparison operators (compares wrapped node pointers)
-	// TODO(povilas): consider is this is needed.
-	bool operator==(const node& r) const;
-	bool operator!=(const node& r) const;
-	bool operator<(const node& r) const;
-	bool operator>(const node& r) const;
-	bool operator<=(const node& r) const;
-	bool operator>=(const node& r) const;
+	node(node_type type = node_pcdata);
 
 	/**
-	 * Check if node is empty.
+	 * @return node type.
 	 */
-	bool empty() const;
-
-	// Get node type
 	node_type type() const;
 
-	// Get node name/value, or "" if node is empty or it has no name/value
-	const char_t* name() const;
-	const char_t* value() const;
-
-	// Get attribute list
-	attribute first_attribute() const;
-	attribute last_attribute() const;
-
-	// Get children list
-	node first_child() const;
-	node last_child() const;
-
-	// Get next/previous sibling in the children list of the parent node
-	node next_sibling() const;
-	node previous_sibling() const;
+	/**
+	 * @return node name. E.g. HTML or BODY, etc.
+	 */
+	string_type name() const;
 
 	/**
-	 * @return parent node or empty node if there's no parent.
+	 * @return text inside node.
 	 */
-	node parent() const;
+	string_type value() const;
 
-	// Get root of DOM tree this node belongs to
-	node root() const;
+	/**
+	 * Change text node value.
+	 */
+	void value(const string_type& value);
 
-	// Get child, attribute or next/previous sibling with the specified name
-	node child(const char_t* name) const;
-	attribute get_attribute(const char_t* name) const;
-	node next_sibling(const char_t* name) const;
-	node previous_sibling(const char_t* name) const;
 
-	// Get child value of current node; that is, value of the first child node of type PCDATA/CDATA
-	const char_t* child_value() const;
+	// Attribute related methods.
 
-	// Get child value of child with specified name. Equivalent to child(name).child_value().
-	const char_t* child_value(const char_t* name) const;
+	/**
+	 * Returns pointer to the first attribute or nullptr, if node has
+	 * no attributes.
+	 */
+	std::shared_ptr<attribute> first_attribute() const;
 
-	// Set node name/value (returns false if node is empty, there is not enough memory, or node can not have name/value)
-	bool set_name(const char_t* rhs);
-	bool set_value(const char_t* rhs);
+	/**
+	 * Returns pointer to the first attribute or nullptr, if node has
+	 * no attributes.
+	 */
+	std::shared_ptr<attribute> last_attribute() const;
 
-	// Add attribute with specified name. Returns added attribute, or
-	// empty attribute on errors.
-	attribute append_attribute(const string_type& name);
-	attribute prepend_attribute(const string_type& name);
-	attribute insert_attribute_after(const string_type& name,
-		const attribute& attr);
-	attribute insert_attribute_before(const string_type& name,
-		const attribute& attr);
+	/**
+	 * @return pointer to the attribute with the specified name or nullptr,
+	 *	if such attribute does not exist.
+	 */
+	std::shared_ptr<attribute> attribute(const string_type& name) const;
 
-	// Add a copy of the specified attribute. Returns added attribute, or empty attribute on errors.
-	attribute append_copy(const attribute& proto);
-	attribute prepend_copy(const attribute& proto);
-	attribute insert_copy_after(const attribute& proto, const attribute& attr);
-	attribute insert_copy_before(const attribute& proto, const attribute& attr);
+	/**
+	 * Appends new attribute with the specified name to the end of attribute
+	 * list.
+	 *
+	 * @param name new attribute name.
+	 * @param value new attribute value.
+	 * @return pointer to newly added attribute.
+	 */
+	std::shared_ptr<attribute> append_attribute(const string_type& name,
+		const string_type& value = "");
 
-	// Add child node with specified type. Returns added node, or empty node on errors.
-	node append_child(node_type type = node_element);
-	node prepend_child(node_type type = node_element);
-	node insert_child_after(node_type type, const node& node);
-	node insert_child_before(node_type type, const node& node);
+	/**
+	 * Appends new attribute to the end of attribute list.
+	 *
+	 * @return pointer to newly added attribute.
+	 */
+	std::shared_ptr<attribute> append_attribute(const attribute& attr);
 
-	// Add child element with specified name. Returns added node, or empty node on errors.
-	node append_child(const char_t* name);
-	node prepend_child(const char_t* name);
-	node insert_child_after(const char_t* name, const node& node);
-	node insert_child_before(const char_t* name, const node& node);
+	/**
+	 * Prepends new attribute with the specified name to the beginning of
+	 * attribute list.
+	 *
+	 * @param name new attribute name.
+	 * @param value new attribute value.
+	 * @return pointer to newly added attribute.
+	 */
+	std::shared_ptr<attribute> prepend_attribute(const string_type& name,
+		const string_type& value);
 
-	// Add a copy of the specified node as a child. Returns added node, or empty node on errors.
-	node append_copy(const node& proto);
-	node prepend_copy(const node& proto);
-	node insert_copy_after(const node& proto, const node& node);
-	node insert_copy_before(const node& proto, const node& node);
+	/**
+	 * Prepends new attribute to the beginning of attribute list.
+	 *
+	 * @return pointer to newly added attribute.
+	 */
+	std::shared_ptr<attribute> prepend_attribute(const attribute& attr);
 
-	// Remove specified attribute
-	bool remove_attribute(const attribute& a);
-	bool remove_attribute(const char_t* name);
+	/**
+	 * Remove specified attribute if it exists.
+	 *
+	 * @return true on success, false if attribute with the specified name
+	 *	was not found.
+	 */
+	bool remove_attribute(const string_type& name);
 
-	// Remove specified child
-	bool remove_child(const node& n);
-	bool remove_child(const char_t* name);
 
-	// Find attribute using predicate. Returns first attribute for which predicate returned true.
-	template <typename Predicate> attribute find_attribute(Predicate pred) const
+	// Child nodes related methods.
+
+	/**
+	 * @return first child node or nullptr, if no such exist.
+	 */
+	std::shared_ptr<node> first_child() const;
+
+	/**
+	 * @return first child node or nullptr, if no such exist.
+	 */
+	std::shared_ptr<node> last_child() const;
+
+	/**
+	 * @return pointer to the child node with the specified name or nullptr,
+	 *	if such does not exist.
+	 */
+	std::shared_ptr<node> child(const string_type& name) const;
+
+	/**
+	 * @return next node in the children list of the parent node.
+	 */
+	std::shared_ptr<node> next_sibling() const;
+
+	/**
+	 * @return next sibling node with the specified name or nullptr, if
+	 *	such node does not exist.
+	 */
+	std::shared_ptr<node> next_sibling(const string_type& name) const;
+
+	/**
+	 * @return previous the children list of the parent node.
+	 */
+	std::shared_ptr<node> previous_sibling() const;
+
+	/**
+	 * @return previous sibling node with the specified name or nullptr, if
+	 *	such node does not exist.
+	 */
+	std::shared_ptr<node> previous_sibling(const string_type& name) const;
+
+	/**
+	 * @return parent node or nullptr, if there's no parent.
+	 */
+	std::shared_ptr<node> parent() const;
+
+	/**
+	 * @return root of DOM tree this node belongs to.
+	 */
+	std::shared_ptr<node> root() const;
+
+	/**
+	 * @return value of the first child node of type PCDATA/CDATA.
+	 */
+	string_type child_value() const;
+
+	/**
+	 * @return value of the first child node of type PCDATA/CDATA with the
+	 *	specified name.
+	 */
+	string_type child_value(const string_type& name) const;
+
+	/**
+	 * Append new child node.
+	 */
+	void append_child(const node& node);
+
+	/**
+	 * Prepend new child node.
+	 */
+	void prepend_child(const node& node);
+
+	/**
+	 * Remove child node with the specified name.
+	 *
+	 * @return true on success, false if such node was not found.
+	 */
+	bool remove_child(const string_type& name);
+
+	/**
+	 * Find attribute using predicate. Returns first attribute for which
+	 * predicate returned true.
+	 */
+	template <typename Predicate> std::shared_ptr<attribute>
+	find_attribute(Predicate pred) const
 	{
-		if (!_root) return attribute();
-
-		for (attribute attrib = first_attribute(); attrib; attrib = attrib.next_attribute())
-			if (pred(attrib))
-				return attrib;
-
-		return attribute();
+		return find_if(this->attributes.cbegin(),
+			this->attribues.cend(), pred);
 	}
 
-	// Find child node using predicate. Returns first child for which predicate returned true.
-	template <typename Predicate> node find_child(Predicate pred) const
+	/**
+	 * Find child node using predicate. Returns first child for which
+	 * predicate returned true.
+	 */
+	template <typename Predicate> std::shared_ptr<node>
+	find_child(Predicate pred) const
 	{
-		if (!_root) return node();
-
-		for (node node = first_child(); node; node = node.next_sibling())
-			if (pred(node))
-				return node;
-
-		return node();
+		return find_if(this->children.cbegin(), this->children.cend(),
+			pred);
 	}
 
 	/**
 	 * Find node from subtree using predicate. Returns first node from
 	 * subtree (depth-first), for which predicate returned true.
 	 */
-	template <typename Predicate> node
-	find_node(Predicate pred) const {
-		if (this->empty()) {
-			return node();
-		}
-
-		node cur = first_child();
+	template <typename Predicate> std::shared_ptr<node>
+	find_node(Predicate pred) const
+	{
+		std::shared_ptr<node> cur = this->first_child();
 		while (cur._root && cur._root != this->_root) {
 			if (pred(cur)) {
 				return cur;
@@ -414,9 +442,9 @@ public:
 
 
 /**
- * Abstract tree walker class (see node::traverse)
+ * Abstract DOM tree node walker class (see node::traverse)
  */
-class PUGIHTML_CLASS html_tree_walker {
+class node_walker {
 	friend class node;
 
 private:
@@ -427,7 +455,7 @@ protected:
 	int depth() const;
 
 public:
-	html_tree_walker();
+	node_walker();
 
 	virtual ~html_tree_walker();
 
@@ -455,17 +483,9 @@ public:
 };
 
 
-node_struct* append_node(node_struct* node, html_allocator& alloc,
-	node_type type = node_element);
-
-attribute_struct* append_attribute_ll(node_struct* node,
-	html_allocator& alloc);
-
-node_struct* allocate_node(html_allocator& alloc, node_type type);
-
 void node_output(html_buffered_writer& writer, const node& node,
 	const char_t* indent, unsigned int flags, unsigned int depth);
 
 }
 
-#endif /* PUGIHTML_HTML_NODE_HPP */
+#endif /* PUGIHTML_NODE_HPP */
