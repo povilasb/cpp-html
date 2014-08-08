@@ -5,6 +5,7 @@
 
 #include "common.hpp"
 #include "pugiutil.hpp"
+#include "memory.hpp"
 
 
 using namespace pugihtml;
@@ -300,4 +301,14 @@ bool
 attribute::set_value(bool rhs)
 {
 	return set_value(rhs ? PUGIHTML_TEXT("true") : PUGIHTML_TEXT("false"));
+}
+
+
+attribute_struct*
+attribute::allocate_attribute(html_allocator& alloc)
+{
+	html_memory_page* page;
+	void* memory = alloc.allocate_memory(sizeof(attribute_struct), page);
+
+	return new (memory) attribute_struct(page);
 }

@@ -33,6 +33,7 @@ struct attribute_struct {
 
 class node;
 class attribute_iterator;
+struct html_allocator;
 
 /**
  * A light-weight handle for manipulating attributes in DOM tree.
@@ -167,6 +168,9 @@ public:
 	 * Get internal pointer.
 	 */
 	attribute_struct* internal_object() const;
+
+	// TODO(povilas): remove once attribute creation is refactored.
+	static attribute_struct* allocate_attribute(html_allocator& alloc);
 };
 
 } // pugihtml.

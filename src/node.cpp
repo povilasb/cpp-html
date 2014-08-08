@@ -61,16 +61,6 @@ get_allocator(const node_struct* node)
 }
 
 
-inline attribute_struct*
-allocate_attribute(html_allocator& alloc)
-{
-	html_memory_page* page;
-	void* memory = alloc.allocate_memory(sizeof(attribute_struct), page);
-
-	return new (memory) attribute_struct(page);
-}
-
-
 inline void
 destroy_attribute(attribute_struct* a, html_allocator& alloc)
 {
@@ -387,7 +377,7 @@ node::prepend_attribute(const string_type& name)
 		return attribute();
 	}
 
-	attribute a(allocate_attribute(get_allocator(this->_root)));
+	attribute a(attribute::allocate_attribute(get_allocator(this->_root)));
 	if (!a) {
 		return attribute();
 	}
@@ -425,7 +415,7 @@ node::insert_attribute_before(const string_type& name, const attribute& attr)
 
 	if (cur != _root->first_attribute) return attribute();
 
-	attribute a(allocate_attribute(get_allocator(_root)));
+	attribute a(attribute::allocate_attribute(get_allocator(_root)));
 	if (!a) return attribute();
 
 	a.set_name(name);
@@ -458,7 +448,7 @@ node::insert_attribute_after(const string_type& name, const attribute& attr)
 
 	if (cur != _root->first_attribute) return attribute();
 
-	attribute a(allocate_attribute(get_allocator(_root)));
+	attribute a(attribute::allocate_attribute(get_allocator(_root)));
 	if (!a) return attribute();
 
 	a.set_name(name);
@@ -1168,7 +1158,7 @@ pugihtml::append_node(node_struct* node, html_allocator& alloc,
 attribute_struct*
 pugihtml::append_attribute_ll(node_struct* node, html_allocator& alloc)
 {
-	attribute_struct* a = allocate_attribute(alloc);
+	attribute_struct* a = attribute::allocate_attribute(alloc);
 	if (!a) return 0;
 
 	attribute_struct* first_attribute = node->first_attribute;
