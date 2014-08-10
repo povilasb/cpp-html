@@ -4,6 +4,7 @@
 #include <list>
 #include <algorithm>
 #include <iterator>
+#include <memory>
 
 #include <pugihtml/pugihtml.hpp>
 #include <pugihtml/attribute.hpp>
