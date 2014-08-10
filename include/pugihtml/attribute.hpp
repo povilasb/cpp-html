@@ -17,6 +17,8 @@ public:
 	 */
 	attribute(const string_type& name, const string_type& value = "");
 
+	//TODO(povilas): add copy constructor, move constructor.
+
 	/**
 	 * Compares attribute name/value pairs.
 	 */
