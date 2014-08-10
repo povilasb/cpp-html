@@ -151,8 +151,10 @@ public:
 	template <typename Predicate> std::shared_ptr<attribute>
 	find_attribute(Predicate pred) const
 	{
-		return find_if(std::begin(this->attributes_),
+		auto it_attr = std::find_if(std::begin(this->attributes_),
 			std::end(this->attributes_), pred);
+		return it_attr == std::end(this->attributes_) ? nullptr
+			: *it_attr;
 	}
 
 
