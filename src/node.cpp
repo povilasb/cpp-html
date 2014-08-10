@@ -256,8 +256,9 @@ node::next_sibling(const string_type& name) const
 std::shared_ptr<node>
 node::previous_sibling() const
 {
-	return this->parent_it_ == std::begin(this->parent_->children_)
-		? nullptr : *(--node::iterator(this->parent_it_));
+	return this->parent_
+		&& this->parent_it_ != std::begin(this->parent_->children_)
+		? *(--node::iterator(this->parent_it_)) : nullptr;
 }
 
 
@@ -305,7 +306,9 @@ node::child_value(const string_type& name) const
 void
 node::append_child(const node& _node)
 {
-	this->children_.push_back(std::shared_ptr<node>(new node(_node)));
+	auto new_node = std::shared_ptr<node>(new node(_node)));
+	// TODO: set parent node.
+	this->children_.push_back(new_node);
 }
 
 
