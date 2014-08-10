@@ -1,16 +1,14 @@
 #ifndef PUGIHTML_NODE_HPP
 #define PUGIHTML_NODE_HPP 1
 
-#include <memory>
 #include <list>
 #include <algorithm>
+#include <iterator>
 
 #include <pugihtml/pugihtml.hpp>
+#include <pugihtml/attribute.hpp>
 
-#include "common.hpp"
-#include "memory.hpp"
-#include "attribute.hpp"
-#include "html_writer.hpp"
+#include "pugiconfig.hpp"
 
 
 namespace pugihtml
@@ -30,26 +28,25 @@ enum node_type {
 };
 
 
-	node_struct* parent;
-
-	char_t* name;
-	//Pointer to any associated string data.
-	char_t* value;
-
-	node_struct* first_child;
-
-	// Left brother (cyclic list)
-	node_struct* prev_sibling_c;
-	node_struct* next_sibling;
-
-	attribute_struct* first_attribute;
-
+class node_walker;
 
 /**
  * An HTML document tree node.
  */
 class node {
 public:
+	/**
+	 * Node children interator type.
+	 */
+	typedef std::list<std::shared_ptr<node> >::iterator iterator;
+
+	/**
+	 * Node attribute interator type.
+	 */
+	typedef std::list<std::shared_ptr<attribute> >::iterator
+		attribute_iterator;
+
+
 	/**
 	 * Constructs node with the specified type. Default is pcdata aka text.
 	 */
@@ -64,6 +61,12 @@ public:
 	 * @return node name. E.g. HTML or BODY, etc.
 	 */
 	string_type name() const;
+
+	/**
+	 * Sets node tag name. Node name is optional. E.g. pcdata nodes
+	 * do not have a name.
+	 */
+	void name(const string_type& name);
 
 	/**
 	 * @return text inside node.
@@ -94,7 +97,7 @@ public:
 	 * @return pointer to the attribute with the specified name or nullptr,
 	 *	if such attribute does not exist.
 	 */
-	std::shared_ptr<attribute> attribute(const string_type& name) const;
+	std::shared_ptr<attribute> get_attribute(const string_type& name) const;
 
 	/**
 	 * Appends new attribute with the specified name to the end of attribute
@@ -123,7 +126,7 @@ public:
 	 * @return pointer to newly added attribute.
 	 */
 	std::shared_ptr<attribute> prepend_attribute(const string_type& name,
-		const string_type& value);
+		const string_type& value = "");
 
 	/**
 	 * Prepends new attribute to the beginning of attribute list.
@@ -139,6 +142,17 @@ public:
 	 *	was not found.
 	 */
 	bool remove_attribute(const string_type& name);
+
+	/**
+	 * Find attribute using predicate. Returns first attribute for which
+	 * predicate returned true.
+	 */
+	template <typename Predicate> std::shared_ptr<attribute>
+	find_attribute(Predicate pred) const
+	{
+		return find_if(std::begin(this->attributes_),
+			std::end(this->attributes_), pred);
+	}
 
 
 	// Child nodes related methods.
@@ -192,25 +206,26 @@ public:
 	std::shared_ptr<node> root() const;
 
 	/**
+	 * Returns empty string of no PCDATA/CDATA child nodes are found.
+	 *
 	 * @return value of the first child node of type PCDATA/CDATA.
 	 */
 	string_type child_value() const;
 
 	/**
-	 * @return value of the first child node of type PCDATA/CDATA with the
-	 *	specified name.
+	 * @return value of the first child node with the specified name.
 	 */
 	string_type child_value(const string_type& name) const;
 
 	/**
 	 * Append new child node.
 	 */
-	void append_child(const node& node);
+	void append_child(const node& _node);
 
 	/**
 	 * Prepend new child node.
 	 */
-	void prepend_child(const node& node);
+	void prepend_child(const node& _node);
 
 	/**
 	 * Remove child node with the specified name.
@@ -220,24 +235,13 @@ public:
 	bool remove_child(const string_type& name);
 
 	/**
-	 * Find attribute using predicate. Returns first attribute for which
-	 * predicate returned true.
-	 */
-	template <typename Predicate> std::shared_ptr<attribute>
-	find_attribute(Predicate pred) const
-	{
-		return find_if(this->attributes.cbegin(),
-			this->attribues.cend(), pred);
-	}
-
-	/**
 	 * Find child node using predicate. Returns first child for which
 	 * predicate returned true.
 	 */
 	template <typename Predicate> std::shared_ptr<node>
 	find_child(Predicate pred) const
 	{
-		return find_if(this->children.cbegin(), this->children.cend(),
+		return find_if(this->children_.cbegin(), this->children_.cend(),
 			pred);
 	}
 
@@ -248,31 +252,34 @@ public:
 	template <typename Predicate> std::shared_ptr<node>
 	find_node(Predicate pred) const
 	{
-		std::shared_ptr<node> cur = this->first_child();
-		while (cur._root && cur._root != this->_root) {
-			if (pred(cur)) {
-				return cur;
+		std::shared_ptr<node> child = this->first_child();
+		int traverse_depth = 1;
+		while (traverse_depth > 0) {
+			if (pred(child)) {
+				return child;
 			}
 
-			if (cur.first_child()) {
-				cur = cur.first_child();
+			if (child->first_child()) {
+				child = child->first_child();
+				++traverse_depth;
 			}
-			else if (cur.next_sibling()) {
-				cur = cur.next_sibling();
+			else if (child->next_sibling()) {
+				child = child->next_sibling();
 			}
 			else {
-				while (!cur.next_sibling() &&
-					cur._root != this->_root) {
-					cur = cur.parent();
+				while (!child->next_sibling() &&
+					traverse_depth > 0) {
+					child = child->parent();
+					--traverse_depth;
 				}
 
-				if (cur._root != this->_root) {
-					cur = cur.next_sibling();
+				if (traverse_depth > 0) {
+					child = child->next_sibling();
 				}
 			}
 		}
 
-		return node();
+		return std::shared_ptr<node>(nullptr);
 	}
 
 	/**
@@ -286,8 +293,9 @@ public:
 	 * @return html node with the specified tag name and attribute or
 	 *	empty node if the specified criteria were not satisfied.
 	 */
-	node find_child_by_attribute(const char_t* tag,
-		const char_t* attr_name, const char_t* attr_value) const;
+	std::shared_ptr<node> find_child_by_attribute(const string_type& tag,
+		const string_type& attr_name,
+		const string_type& attr_value) const;
 
 	/**
 	 * Find child node by attribute name/value. Checks only child nodes.
@@ -298,146 +306,86 @@ public:
 	 * @return html node with the specified tag name and attribute or
 	 *	empty node if the specified criteria were not satisfied.
 	 */
-	node find_child_by_attribute(const char_t* attr_name,
-		const char_t* attr_value) const;
+	std::shared_ptr<node> find_child_by_attribute(
+		const string_type& attr_name,
+		const string_type& attr_value) const;
 
-#ifndef PUGIHTML_NO_STL
-	// Get the absolute node path from root as a text string.
-	string_t path(char_t delimiter = '/') const;
-#endif
+	/**
+	 * Get the absolute node path from root as a text string.
+	 */
+	string_type path(char_type delimiter = '/') const;
 
-	// Search for a node by path consisting of node names and . or .. elements.
-	node first_element_by_path(const char_t* path, char_t delimiter = '/') const;
+	/**
+	 * Search for a node by path consisting of node names.
+	 */
+	std::shared_ptr<node> first_element_by_path(const string_type& path,
+		char_type delimiter = '/') const;
 
-	// Recursively traverse subtree with html_tree_walker
-	bool traverse(html_tree_walker& walker);
+	/**
+	 * Recursively traverse subtree with node_walker.
+	 */
+	bool traverse(node_walker& walker);
+
+	/**
+	 * Print subtree using a writer object.
+	 */
+	/*
+	void print(html_writer& writer, const string_type& indent = "\t",
+		unsigned int flags = format_default,
+		html_encoding encoding = encoding_auto,
+		unsigned int depth = 0) const;
+
+	// Print subtree to stream
+	void print(std::basic_ostream<char_type,
+		std::char_traits<char_type> >& os,
+		const string_type& indent = "\t",
+		unsigned int flags = format_default,
+		html_encoding encoding = encoding_auto,
+		unsigned int depth = 0) const;
+	*/
+
+	/**
+	 * @return node children begin iterator pointing to the first child
+	 *	or end() iterator if this node has no children nodes.
+	 */
+	iterator begin();
+
+	/**
+	 * @return node children iterator refering to the past the last
+	 *	child node.
+	 */
+	iterator end();
+
+	attribute_iterator attributes_begin();
+	attribute_iterator attributes_end();
 
 #ifndef PUGIHTML_NO_XPATH
-	// Select single node by evaluating XPath query. Returns first node from the resulting node set.
-	xpath_node select_single_node(const char_t* query, xpath_variable_set* variables = 0) const;
+	// Select single node by evaluating XPath query. Returns first node
+	// from the resulting node set.
+	xpath_node select_single_node(const char_t* query,
+		xpath_variable_set* variables = 0) const;
 	xpath_node select_single_node(const xpath_query& query) const;
 
 	// Select node set by evaluating XPath query
-	xpath_node_set select_nodes(const char_t* query, xpath_variable_set* variables = 0) const;
+	xpath_node_set select_nodes(const char_t* query,
+		xpath_variable_set* variables = 0) const;
 	xpath_node_set select_nodes(const xpath_query& query) const;
 #endif
 
-	// Print subtree using a writer object
-	void print(html_writer& writer, const char_t* indent = PUGIHTML_TEXT("\t"), unsigned int flags = format_default, html_encoding encoding = encoding_auto, unsigned int depth = 0) const;
-
-#ifndef PUGIHTML_NO_STL
-	// Print subtree to stream
-	void print(std::basic_ostream<char, std::char_traits<char> >& os, const char_t* indent = PUGIHTML_TEXT("\t"), unsigned int flags = format_default, html_encoding encoding = encoding_auto, unsigned int depth = 0) const;
-	void print(std::basic_ostream<wchar_t, std::char_traits<wchar_t> >& os, const char_t* indent = PUGIHTML_TEXT("\t"), unsigned int flags = format_default, unsigned int depth = 0) const;
-#endif
-
-	// Child nodes iterators
-	typedef node_iterator iterator;
-
-	iterator begin() const;
-	iterator end() const;
-
-	attribute_iterator attributes_begin() const;
-	attribute_iterator attributes_end() const;
-
-	// Get node offset in parsed file/string (in char_t units) for debugging purposes
-	ptrdiff_t offset_debug() const;
-
-	// Get hash value (unique for handles to the same object)
-	size_t hash_value() const;
-
-	// Get internal pointer
-	node_struct* internal_object() const;
-};
-
-#ifdef __BORLANDC__
-// Borland C++ workaround
-bool PUGIHTML_FUNCTION operator&&(const node& lhs, bool rhs);
-bool PUGIHTML_FUNCTION operator||(const node& lhs, bool rhs);
-#endif
-
-// Child node iterator (a bidirectional iterator over a collection of node)
-class PUGIHTML_CLASS node_iterator
-{
-	friend class node;
 
 private:
-	node _wrap;
-	node _parent;
+	// TODO(povilas): use weak_ptr to eliminate cyclick pointing.
+	std::shared_ptr<node> parent_;
+	// Iterator in parent child nodes. Used for next_sibling(),
+	// prev_sibling().
+	iterator parent_it_;
 
-	node_iterator(node_struct* ref, node_struct* parent);
+	string_type name_;
+	string_type value_;
+	node_type type_;
 
-public:
-	// Iterator traits
-	typedef ptrdiff_t difference_type;
-	typedef node value_type;
-	typedef node* pointer;
-	typedef node& reference;
-
-#ifndef PUGIHTML_NO_STL
-	typedef std::bidirectional_iterator_tag iterator_category;
-#endif
-
-	// Default constructor
-	node_iterator();
-
-	// Construct an iterator which points to the specified node
-	node_iterator(const node& node);
-
-	// Iterator operators
-	bool operator==(const node_iterator& rhs) const;
-	bool operator!=(const node_iterator& rhs) const;
-
-	node& operator*();
-	node* operator->();
-
-	const node_iterator& operator++();
-	node_iterator operator++(int);
-
-	const node_iterator& operator--();
-	node_iterator operator--(int);
-};
-
-// Attribute iterator (a bidirectional iterator over a collection of attribute)
-class PUGIHTML_CLASS attribute_iterator
-{
-	friend class node;
-
-private:
-	attribute _wrap;
-	node _parent;
-
-	attribute_iterator(attribute_struct* ref, node_struct* parent);
-
-public:
-	// Iterator traits
-	typedef ptrdiff_t difference_type;
-	typedef attribute value_type;
-	typedef attribute* pointer;
-	typedef attribute& reference;
-
-#ifndef PUGIHTML_NO_STL
-	typedef std::bidirectional_iterator_tag iterator_category;
-#endif
-
-	// Default constructor
-	attribute_iterator();
-
-	// Construct an iterator which points to the specified attribute
-	attribute_iterator(const attribute& attr, const node& parent);
-
-	// Iterator operators
-	bool operator==(const attribute_iterator& rhs) const;
-	bool operator!=(const attribute_iterator& rhs) const;
-
-	attribute& operator*();
-	attribute* operator->();
-
-	const attribute_iterator& operator++();
-	attribute_iterator operator++(int);
-
-	const attribute_iterator& operator--();
-	attribute_iterator operator--(int);
+	std::list<std::shared_ptr<node> > children_;
+	std::list<std::shared_ptr<attribute> > attributes_;
 };
 
 
@@ -447,17 +395,10 @@ public:
 class node_walker {
 	friend class node;
 
-private:
-	int _depth;
-
-protected:
-	// Get current traversal depth
-	int depth() const;
-
 public:
 	node_walker();
 
-	virtual ~html_tree_walker();
+	virtual ~node_walker();
 
 	/**
 	 * Callback that is called when traversal begins. Always returns true.
@@ -480,11 +421,20 @@ public:
 	 * @return traversal state: success or failure.
 	 */
 	virtual bool end(node& node);
+
+protected:
+	/**
+	 * @return current traversal depth.
+	 */
+	int depth() const;
+
+private:
+	int depth_;
 };
 
 
-void node_output(html_buffered_writer& writer, const node& node,
-	const char_t* indent, unsigned int flags, unsigned int depth);
+//void node_output(html_buffered_writer& writer, const node& node,
+//	const string_type& indent, unsigned int flags, unsigned int depth);
 
 }
 
