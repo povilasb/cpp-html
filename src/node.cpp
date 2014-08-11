@@ -354,7 +354,9 @@ node::append_child(std::shared_ptr<node> _node)
 void
 node::prepend_child(std::shared_ptr<node> _node)
 {
+	_node->parent_ = this->shared_from_this();
 	this->children_.push_front(_node);
+	_node->parent_it_ = std::begin(this->children_);
 }
 
 
