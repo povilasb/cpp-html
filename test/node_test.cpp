@@ -209,7 +209,30 @@ TEST(node, sibling)
 
 	auto child = div->child("p");
 	ASSERT_NE(nullptr, child.get());
+
 	auto prev_sibling = child->previous_sibling();
 	ASSERT_NE(nullptr, prev_sibling.get());
+	ASSERT_EQ("h1", prev_sibling->name());
+
+	auto next_sibling = child->next_sibling();
+	ASSERT_NE(nullptr, next_sibling);
+	ASSERT_EQ("input", next_sibling->name());
+
+
+	child = div->first_child();
+	ASSERT_NE(nullptr, child);
+	ASSERT_EQ("h1", child->name());
+
+	next_sibling = child->next_sibling("input");
+	ASSERT_NE(nullptr, next_sibling);
+	ASSERT_EQ("input", next_sibling->name());
+
+
+	child = div->last_child();
+	ASSERT_NE(nullptr, child);
+	ASSERT_EQ("input", child->name());
+
+	prev_sibling = child->previous_sibling("h1");
+	ASSERT_NE(nullptr, prev_sibling);
 	ASSERT_EQ("h1", prev_sibling->name());
 }
