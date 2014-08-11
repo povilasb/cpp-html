@@ -306,7 +306,7 @@ node::child_value(const string_type& name) const
 void
 node::append_child(const node& _node)
 {
-	auto new_node = std::shared_ptr<node>(new node(_node)));
+	auto new_node = std::make_shared<node>(_node);
 	// TODO: set parent node.
 	this->children_.push_back(new_node);
 }
