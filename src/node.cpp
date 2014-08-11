@@ -311,12 +311,15 @@ node::parent() const
 std::shared_ptr<node>
 node::root() const
 {
+	std::shared_ptr<node> result;
+
 	auto parent = this->parent_.lock();
 	while (parent) {
+		result = parent;
 		parent = parent->parent_.lock();
 	}
 
-	return parent;
+	return result;
 }
 
 
