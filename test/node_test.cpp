@@ -236,3 +236,71 @@ TEST(node, sibling)
 	ASSERT_NE(nullptr, prev_sibling);
 	ASSERT_EQ("h1", prev_sibling->name());
 }
+
+
+TEST(node, get_parent_and_root)
+{
+	auto div = html::node::create(html::node_element);
+
+	auto p = html::node::create(html::node_element);
+	p->name("p");
+	div->append_child(p);
+
+	auto text = html::node::create(html::node_pcdata);
+	text->value("string");
+	p->append_child(text);
+
+	auto parent = p->parent();
+	ASSERT_EQ(div, parent);
+
+
+	auto child = p->first_child();
+	ASSERT_NE(nullptr, child);
+	ASSERT_EQ("string", child->value());
+	ASSERT_EQ(div, child->root());
+}
+
+
+TEST(node, prepend_child)
+{
+	auto div = html::node::create(html::node_element);
+	auto p = html::node::create(html::node_element);
+	div->prepend_child(p);
+
+	auto child = div->first_child();
+	ASSERT_EQ(p, child);
+	ASSERT_EQ(div, p->parent());
+}
+
+
+TEST(node, child_value)
+{
+	auto div = html::node::create(html::node_element);
+	auto p = html::node::create(html::node_element);
+	div->append_child(p);
+
+	auto text = html::node::create(html::node_pcdata);
+	text->value("content");
+	div->append_child(text);
+
+	ASSERT_EQ("content", div->child_value());
+}
+
+
+TEST(node, remove_child)
+{
+	auto div = html::node::create(html::node_element);
+
+	auto p = html::node::create(html::node_element);
+	p->name("p");
+	div->append_child(p);
+
+	auto anchor = html::node::create(html::node_element);
+	anchor->name("a");
+	div->append_child(anchor);
+
+	div->remove_child("p");
+	auto child = div->first_child();
+	ASSERT_NE(nullptr, child);
+	ASSERT_EQ("a", child->name());
+}
