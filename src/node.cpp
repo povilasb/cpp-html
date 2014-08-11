@@ -76,6 +76,13 @@ node::node(node_type type) : type_(type)
 }
 
 
+std::shared_ptr<node>
+node::create(node_type type)
+{
+	return std::shared_ptr<node>(new node(type));
+}
+
+
 node_type
 node::type() const
 {
@@ -232,32 +239,38 @@ std::shared_ptr<node>
 node::next_sibling() const
 {
 	auto it_next_node = this->parent_it_;
-	return ++it_next_node == std::end(this->parent_->children_)
-		? nullptr : *it_next_node;
+	auto parent = this->parent_.lock();
+	return parent && ++it_next_node != std::end(parent->children_)
+		? *it_next_node : nullptr;
 }
 
 
 std::shared_ptr<node>
 node::next_sibling(const string_type& name) const
 {
+	auto parent = this->parent_.lock();
+	if (!parent) {
+		return nullptr;
+	}
+
 	auto it_next_sibling = this->parent_it_;
 	++it_next_sibling;
 
 	auto result = std::find_if(it_next_sibling,
-		std::end(this->parent_->children_),
+		std::end(parent->children_),
 		[&](const std::shared_ptr<node>& child) {
 			return child->name() == name;
 		});
 
-	return result == std::end(this->parent_->children_) ? nullptr : *result;
+	return result == std::end(parent->children_) ? nullptr : *result;
 }
 
 
 std::shared_ptr<node>
 node::previous_sibling() const
 {
-	return this->parent_
-		&& this->parent_it_ != std::begin(this->parent_->children_)
+	auto parent = this->parent_.lock();
+	return parent && this->parent_it_ != std::begin(parent->children_)
 		? *(--node::iterator(this->parent_it_)) : nullptr;
 }
 
@@ -265,16 +278,16 @@ node::previous_sibling() const
 std::shared_ptr<node>
 node::parent() const
 {
-	return this->parent_;
+	return this->parent_.lock();
 }
 
 
 std::shared_ptr<node>
 node::root() const
 {
-	auto parent = this->parent_;
+	auto parent = this->parent_.lock();
 	while (parent) {
-		parent = parent->parent_;
+		parent = parent->parent_.lock();
 	}
 
 	return parent;
@@ -304,18 +317,18 @@ node::child_value(const string_type& name) const
 
 
 void
-node::append_child(const node& _node)
+node::append_child(std::shared_ptr<node> _node)
 {
-	auto new_node = std::make_shared<node>(_node);
 	// TODO: set parent node.
-	this->children_.push_back(new_node);
+	// TODO: set iterator in parent children list.
+	this->children_.push_back(_node);
 }
 
 
 void
-node::prepend_child(const node& _node)
+node::prepend_child(std::shared_ptr<node> _node)
 {
-	this->children_.push_front(std::shared_ptr<node>(new node(_node)));
+	this->children_.push_front(_node);
 }
 
 

@@ -51,7 +51,7 @@ public:
 	/**
 	 * Constructs node with the specified type. Default is pcdata aka text.
 	 */
-	node(node_type type = node_pcdata);
+	static std::shared_ptr<node> create(node_type type = node_pcdata);
 
 	/**
 	 * @return node type.
@@ -223,12 +223,12 @@ public:
 	/**
 	 * Append new child node.
 	 */
-	void append_child(const node& _node);
+	void append_child(std::shared_ptr<node> _node);
 
 	/**
 	 * Prepend new child node.
 	 */
-	void prepend_child(const node& _node);
+	void prepend_child(std::shared_ptr<node> _node);
 
 	/**
 	 * Remove child node with the specified name.
@@ -377,8 +377,7 @@ public:
 
 
 private:
-	// TODO(povilas): use weak_ptr to eliminate cyclick pointing.
-	std::shared_ptr<node> parent_;
+	std::weak_ptr<node> parent_;
 	// Iterator in parent child nodes. Used for next_sibling(),
 	// prev_sibling().
 	iterator parent_it_;
@@ -389,6 +388,12 @@ private:
 
 	std::list<std::shared_ptr<node> > children_;
 	std::list<std::shared_ptr<attribute> > attributes_;
+
+	/**
+	 * Creates node with the specified type.
+	 * Prevents from creating non-shared node.
+	 */
+	node(node_type type = node_pcdata);
 };
 
 
