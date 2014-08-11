@@ -276,6 +276,32 @@ node::previous_sibling() const
 
 
 std::shared_ptr<node>
+node::previous_sibling(const string_type& name) const
+{
+	auto parent = this->parent_.lock();
+	if (!parent) {
+		return nullptr;
+	}
+
+	if (this->parent_it_ == std::begin(parent->children_)) {
+		return nullptr;
+	}
+
+	auto result = std::end(parent->children_);
+	for (auto it_prev_sibling = this->parent_it_; it_prev_sibling
+		!= std::begin(parent->children_); ){
+
+		--it_prev_sibling;
+		if ((*it_prev_sibling)->name() == name) {
+			result = it_prev_sibling;
+		}
+	}
+
+	return result != std::end(parent->children_) ? *result : nullptr;
+}
+
+
+std::shared_ptr<node>
 node::parent() const
 {
 	return this->parent_.lock();
@@ -319,9 +345,9 @@ node::child_value(const string_type& name) const
 void
 node::append_child(std::shared_ptr<node> _node)
 {
-	// TODO: set parent node.
-	// TODO: set iterator in parent children list.
+	_node->parent_ = this->shared_from_this();
 	this->children_.push_back(_node);
+	_node->parent_it_ = --std::end(this->children_);
 }
 
 

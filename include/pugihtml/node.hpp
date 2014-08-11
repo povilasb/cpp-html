@@ -34,7 +34,7 @@ class node_walker;
 /**
  * An HTML document tree node.
  */
-class node {
+class node : public std::enable_shared_from_this<node> {
 public:
 	/**
 	 * Node children interator type.
