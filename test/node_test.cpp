@@ -304,3 +304,81 @@ TEST(node, remove_child)
 	ASSERT_NE(nullptr, child);
 	ASSERT_EQ("a", child->name());
 }
+
+
+TEST(node, find_child)
+{
+	auto div = html::node::create(html::node_element);
+
+	auto p = html::node::create(html::node_element);
+	div->append_child(p);
+
+	auto text = html::node::create(html::node_pcdata);
+	text->value("pcdata");
+	div->append_child(text);
+
+	auto child = div->find_child([](const std::shared_ptr<html::node>& node) {
+		return node->type() == html::node_pcdata;
+	});
+	ASSERT_NE(nullptr, child);
+	ASSERT_EQ("pcdata", child->value());
+}
+
+
+TEST(node, find_node)
+{
+	auto div = html::node::create(html::node_element);
+	auto p = html::node::create(html::node_element);
+
+	auto text = html::node::create(html::node_pcdata);
+	text->value("data");
+
+	p->append_child(text);
+	div->append_child(p);
+
+	auto child = div->find_node([](const std::shared_ptr<html::node>& node) {
+		return node->type() == html::node_pcdata;
+	});
+	ASSERT_NE(nullptr, child);
+	ASSERT_EQ("data", child->value());
+}
+
+
+TEST(node, find_child_by_attribute)
+{
+	auto div = html::node::create(html::node_element);
+	auto p = html::node::create(html::node_element);
+	div->append_child(p);
+
+	auto input = html::node::create(html::node_element);
+	input->append_attribute("type", "submit");
+	input->append_attribute("id", "btn-post");
+	input->name("input");
+	div->append_child(input);
+
+	auto child = div->find_child_by_attribute("input", "type", "submit");
+	ASSERT_NE(nullptr, child);
+	ASSERT_EQ("btn-post", child->get_attribute("id")->value());
+
+	child = div->find_child_by_attribute("type", "submit");
+	ASSERT_NE(nullptr, child);
+	ASSERT_EQ("btn-post", child->get_attribute("id")->value());
+}
+
+
+TEST(node, get_path)
+{
+	auto div = html::node::create(html::node_element);
+	div->name("div");
+
+	auto p = html::node::create(html::node_element);
+	p->name("p");
+
+	auto input = html::node::create(html::node_element);
+	input->name("input");
+
+	p->append_child(input);
+	div->append_child(p);
+
+	ASSERT_EQ("div/p/input", input->path());
+}
