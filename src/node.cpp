@@ -446,7 +446,7 @@ bool
 node::traverse(node_walker& walker)
 {
 
-	if (!walker.begin(*this)) {
+	if (!walker.begin(this->shared_from_this())) {
 		return false;
 	}
 
@@ -456,7 +456,7 @@ node::traverse(node_walker& walker)
 		++walker.depth_;
 
 		do {
-			if (!walker.for_each(*child)) {
+			if (!walker.for_each(child)) {
 				return false;
 			}
 
@@ -484,7 +484,7 @@ node::traverse(node_walker& walker)
 		while (child && walker.depth_ > 0);
 	}
 
-	return walker.end(*this);
+	return walker.end(this->shared_from_this());
 }
 
 
@@ -556,14 +556,14 @@ node_walker::depth() const
 
 
 bool
-node_walker::begin(node&)
+node_walker::begin(std::shared_ptr<node>)
 {
 	return true;
 }
 
 
 bool
-node_walker::end(node&)
+node_walker::end(std::shared_ptr<node>)
 {
 	return true;
 }

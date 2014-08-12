@@ -415,21 +415,21 @@ public:
 	 *
 	 * @return false if should stop iterating the tree.
 	 */
-	virtual bool begin(node& node);
+	virtual bool begin(std::shared_ptr<node> node);
 
 	/**
 	 * Callback that is called for each node traversed
 	 *
 	 * @return false if should stop iterating the tree.
 	 */
-	virtual bool for_each(node& node) = 0;
+	virtual bool for_each(std::shared_ptr<node> node) = 0;
 
 	/**
 	 * Callback that is called when traversal ends.
 	 *
 	 * @return traversal state: success or failure.
 	 */
-	virtual bool end(node& node);
+	virtual bool end(std::shared_ptr<node> node);
 
 protected:
 	/**
