@@ -422,8 +422,8 @@ node::path(char_type delimiter) const
 
 	auto curr_node = this->parent();
 	while (curr_node) {
-		curr_node = curr_node->parent();
 		result = curr_node->name() + delimiter + result;
+		curr_node = curr_node->parent();
 	}
 
 	return result;
