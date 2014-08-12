@@ -1,12 +1,11 @@
-#ifndef PUGIHTML_HTML_PARSER_HPP
-#define PUGIHTML_HTML_PARSER_HPP 1
+#ifndef PUGIHTML_PARSER_HPP
+#define PUGIHTML_PARSER_HPP 1
 
 #include <csetjmp>
 #include <cstddef>
 
 #include <pugihtml/node.hpp>
 
-#include "memory.hpp"
 #include "common.hpp"
 
 
@@ -65,12 +64,16 @@ struct html_parse_result {
 	// Cast to bool operator
 	operator bool() const;
 
-	// Get error description
-	const char* description() const;
+	/**
+	 * @return error description.
+	 */
+	string_type description() const;
+
+	std::shared_ptr<document> doc;
 };
 
 
-struct parser {
+class parser {
 public:
 	// Parsing options
 
@@ -137,8 +140,6 @@ public:
 		| parse_comments | parse_declaration | parse_doctype;
 
 
-	parser(const html_allocator& alloc);
-
 	/**
 	 * DOCTYPE consists of nested sections of the following possible types:
 	 * 1. <!-- ... -->, <? ... ?>, "...", '...'
@@ -148,7 +149,7 @@ public:
 	 * Second group can contain nested groups of the same type.
 	 * Third group can contain all other groups.
 	 */
-	char_t* parse_doctype_primitive(char_t* s);
+	char_type parse_doctype_primitive(string_type str);
 
 	char_t* parse_doctype_ignore(char_t* s);
 
@@ -160,23 +161,22 @@ public:
 	char_t* parse_question(char_t* s, node_struct*& ref_cursor,
 		unsigned int optmsk, char_t endch);
 
-	void parse(char_t* s, node_struct* htmldoc, unsigned int optmsk,
-		char_t endch);
-
 	/**
+	 * Parses the specified HTML string and returns document object
+	 * representing the HTML document tree.
+	 *
 	 * @param optmask parsing options defined in pugihtml.hpp. E.g.
 	 *	You can configure to parse and add comment nodes to the
 	 *	DOM tree.
 	 */
-	static html_parse_result parse(char_t* buffer, size_t length,
-		node_struct* root, unsigned int optmask = parse_default);
+	std::shared_ptr<document> parse(const string_type& str_html,
+		unsigned int optmsk);
 
-//private:
-	html_allocator alloc;
-	char_t* error_offset;
+private:
+	char_type* error_offset;
 	jmp_buf error_handler;
 };
 
 } //pugihtml.
 
-#endif /* PUGIHTML_HTML_PARSER_HPP */
+#endif /* PUGIHTML_PARSER_HPP */

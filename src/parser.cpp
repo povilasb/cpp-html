@@ -12,8 +12,8 @@
 #include "pugiutil.hpp"
 
 
-using namespace pugihtml;
-
+namespace pugihtml
+{
 
 // Parser utilities.
 // TODO(povilas): replace with inline functions or completely remove some of them.
@@ -31,15 +31,9 @@ using namespace pugihtml;
 #define ENDSWITH(c, e) ((c) == (e) || ((c) == 0 && endch == (e)))
 
 
-std::list<pugihtml::string_t> html_void_elements = {"AREA", "BASE", "BR",
+std::list<string_type> html_void_elements = {"AREA", "BASE", "BR",
 	"COL", "EMBED", "HR", "IMG", "INPUT", "KEYGEN", "LINK", "MENUITEM",
 	"META", "PARAM", "SOURCE", "TRACK", "WBR"};
-
-
-parser::parser(const html_allocator& alloc) : alloc(alloc),
-	error_offset(0)
-{
-}
 
 
 char_t*
@@ -128,13 +122,10 @@ parser::parse_doctype_group(char_t* s, char_t endch, bool toplevel)
 			s = parse_doctype_primitive(s);
 		}
 		else if (*s == '>') {
-			// TODO(povilas): return ++s.
-			s++;
-			return s;
+			return ++s;
 		}
 		else {
-			// TODO(povilas): ++s.
-			s++;
+			++s;
 		}
 	}
 
@@ -604,9 +595,8 @@ get_strconv_pcdata(unsigned int optmask)
 }
 
 
-void
-parser::parse(char_t* s, node_struct* htmldoc, unsigned int optmsk,
-	char_t endch)
+std::shared_ptr<document>
+parse(const string_type& str_html, unsigned int optmsk)
 {
 	strconv_attribute_t strconv_attribute = get_strconv_attribute(optmsk);
 	strconv_pcdata_t strconv_pcdata = get_strconv_pcdata(optmsk);
@@ -978,30 +968,15 @@ make_parse_result(html_parse_status status, ptrdiff_t offset = 0)
 
 
 html_parse_result
-parser::parse(char_t* buffer, size_t length, node_struct* root,
-	unsigned int optmsk)
+parser::parse(const string_type& str_html, unsigned int optmsk)
 {
-	if (buffer == nullptr || root == nullptr) {
-		throw std::invalid_argument("buffer and root node cannot be "
-			"null.");
+	html_parse_result result;
+
+	if (str_html.size() == 0) {
+		return result;
 	}
 
-	document_struct* htmldoc = static_cast<document_struct*>(root);
-
-	// Store buffer for offset_debug.
-	htmldoc->buffer = buffer;
-
-	// Early-out for empty documents.
-	if (length == 0) {
-		return make_parse_result(status_ok);
-	}
-
-	// create parser on stack
-	parser parser(*htmldoc);
-
-	// save last character and make buffer zero-terminated (speeds up parsing)
-	char_t endch = buffer[length - 1];
-	buffer[length - 1] = 0;
+	auto doc = html::document::create();
 
 	// perform actual parsing
 	int error = setjmp(parser.error_handler);
@@ -1065,3 +1040,5 @@ html_parse_result::description() const
 	default: return "Unknown error";
 	}
 }
+
+} // pugihtml.
