@@ -376,6 +376,12 @@ public:
 	xpath_node_set select_nodes(const xpath_query& query) const;
 #endif
 
+protected:
+	/**
+	 * Creates node with the specified type.
+	 * Prevents from creating non-shared node.
+	 */
+	node(node_type type = node_pcdata);
 
 private:
 	std::weak_ptr<node> parent_;
@@ -389,12 +395,6 @@ private:
 
 	std::list<std::shared_ptr<node> > children_;
 	std::list<std::shared_ptr<attribute> > attributes_;
-
-	/**
-	 * Creates node with the specified type.
-	 * Prevents from creating non-shared node.
-	 */
-	node(node_type type = node_pcdata);
 };
 
 
