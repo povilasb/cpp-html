@@ -18,9 +18,9 @@ namespace pugihtml
 class document : public node {
 public:
 	/**
-	 * Builds an empty document.
+	 * Builds an empty document. It's html node with type node_document.
 	 */
-	document();
+	static std::shared_ptr<document> create();
 
 	/**
 	 * Load document from stream.
@@ -55,6 +55,11 @@ public:
 	 */
 	std::shared_ptr<node> get_element_by_id(const string_type& id) const;
 
+private:
+	/**
+	 * Builds an empty document. It's html node with type node_document.
+	 */
+	document();
 };
 
 } // pugihtml.

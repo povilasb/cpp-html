@@ -1,6 +1,7 @@
 #include <ios>
 #include <istream>
 #include <vector>
+#include <memory>
 
 #include <pugihtml/document.hpp>
 #include <pugihtml/node.hpp>
@@ -8,6 +9,18 @@
 
 namespace pugihtml
 {
+
+
+std::shared_ptr<document>
+document::create()
+{
+	return std::shared_ptr<document>(new document());
+}
+
+
+document::document() : node(node_document)
+{
+}
 
 
 /*
