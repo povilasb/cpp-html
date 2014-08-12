@@ -244,8 +244,9 @@ public:
 	template <typename Predicate> std::shared_ptr<node>
 	find_child(Predicate pred) const
 	{
-		return find_if(this->children_.cbegin(), this->children_.cend(),
-			pred);
+		auto it_node = find_if(this->children_.cbegin(),
+			this->children_.cend(), pred);
+		return it_node != std::end(this->children_) ? *it_node : nullptr;
 	}
 
 	/**
