@@ -23,7 +23,8 @@ set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 #file(GLOB_RECURSE SRC_FILES "${SRC_DIR}/*.cpp")
-set(SRC_FILES "${SRC_DIR}/node.cpp" "${SRC_DIR}/attribute.cpp")
+set(SRC_FILES "${SRC_DIR}/node.cpp" "${SRC_DIR}/attribute.cpp"
+	"${SRC_DIR}/document.cpp")
 add_library("${PROJECT_LIB}" STATIC ${SRC_FILES})
 
 include_directories("${INCLUDE_DIR}")
