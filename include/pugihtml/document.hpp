@@ -1,115 +1,62 @@
-#ifndef PUGIHTML_HTML_DOCUMENT_HPP
-#define PUGIHTML_HTML_DOCUMENT_HPP 1
+#ifndef PUGIHTML_DOCUMENT_HPP
+#define PUGIHTML_DOCUMENT_HPP 1
 
 #include <vector>
+#include <memory>
 
-#include "memory.hpp"
-#include "node.hpp"
-#include "common.hpp"
-#include "parser.hpp"
+#include <pugihtml/pugihtml.hpp>
+#include <pugihtml/encoding.hpp>
+#include <pugihtml/node.hpp>
 
 
 namespace pugihtml
 {
 
-struct document_struct : public node_struct, public html_allocator {
-	document_struct(html_memory_page* page):
-		node_struct(page, node_document), html_allocator(page),
-		buffer(0)
-	{
-	}
-
-	const char_t* buffer;
-};
-
-// Document class (DOM tree root)
-class PUGIHTML_CLASS document : public node {
-private:
-	char_t* _buffer;
-
-	char _memory[192];
-
-	// Non-copyable semantics
-	document(const document&);
-	const document& operator=(const document&);
-
-	/**
-	 * Initializes document: allocates memory page, etc.
-	 */
-	void create();
-
-	void destroy();
-
-	html_parse_result load_buffer_impl(void* contents, size_t size,
-		unsigned int options, html_encoding encoding,
-		bool is_mutable, bool own);
-
+/**
+ * Document class (DOM tree root).
+ */
+class document : public node {
 public:
-	// Default constructor, makes empty document
+	/**
+	 * Builds an empty document.
+	 */
 	document();
 
-	// Destructor, invalidates all node/attribute handles to this document
-	~document();
+	/**
+	 * Load document from stream.
+	 */
+	/*
+	html_parse_result load(std::basic_istream<char_type,
+		std::char_traits<char_type> >& stream,
+		unsigned int options = parser::parse_default,
+		html_encoding encoding = encoding_auto);
+	*/
 
-	// Removes all nodes, leaving the empty document
-	void reset();
-
-	// Removes all nodes, then copies the entire contents of the specified document
-	void reset(const document& proto);
-
-#ifndef PUGIHTML_NO_STL
-	// Load document from stream.
-	html_parse_result load(std::basic_istream<char, std::char_traits<char> >& stream, unsigned int options = parser::parse_default, html_encoding encoding = encoding_auto);
-	html_parse_result load(std::basic_istream<wchar_t, std::char_traits<wchar_t> >& stream, unsigned int options = parser::parse_default);
-#endif
-
-	// Load document from zero-terminated string. No encoding conversions are applied.
-	html_parse_result load(const char_t* contents, unsigned int options = parser::parse_default);
-
-	// Load document from file
-	html_parse_result load_file(const char* path, unsigned int options = parser::parse_default, html_encoding encoding = encoding_auto);
-	html_parse_result load_file(const wchar_t* path, unsigned int options = parser::parse_default, html_encoding encoding = encoding_auto);
-
-	// Load document from buffer. Copies/converts the buffer, so it may be deleted or changed after the function returns.
-	html_parse_result load_buffer(const void* contents, size_t size, unsigned int options = parser::parse_default, html_encoding encoding = encoding_auto);
-
-	// Load document from buffer, using the buffer for in-place parsing (the buffer is modified and used for storage of document data).
-	// You should ensure that buffer data will persist throughout the document's lifetime, and free the buffer memory manually once document is destroyed.
-	html_parse_result load_buffer_inplace(void* contents, size_t size, unsigned int options = parser::parse_default, html_encoding encoding = encoding_auto);
-
-	// Load document from buffer, using the buffer for in-place parsing (the buffer is modified and used for storage of document data).
-	// You should allocate the buffer with pugihtml allocation function; document will free the buffer when it is no longer needed (you can't use it anymore).
-	html_parse_result load_buffer_inplace_own(void* contents, size_t size, unsigned int options = parser::parse_default, html_encoding encoding = encoding_auto);
-
-	// Save HTML document to writer (semantics is slightly different from node::print, see documentation for details).
-	void save(html_writer& writer, const char_t* indent = PUGIHTML_TEXT("\t"), unsigned int flags = format_default, html_encoding encoding = encoding_auto) const;
-
-#ifndef PUGIHTML_NO_STL
-	// Save HTML document to stream (semantics is slightly different from node::print, see documentation for details).
-	void save(std::basic_ostream<char, std::char_traits<char> >& stream, const char_t* indent = PUGIHTML_TEXT("\t"), unsigned int flags = format_default, html_encoding encoding = encoding_auto) const;
-	void save(std::basic_ostream<wchar_t, std::char_traits<wchar_t> >& stream, const char_t* indent = PUGIHTML_TEXT("\t"), unsigned int flags = format_default) const;
-#endif
-
-	// Save HTML to file
-	bool save_file(const char* path, const char_t* indent = PUGIHTML_TEXT("\t"), unsigned int flags = format_default, html_encoding encoding = encoding_auto) const;
-	bool save_file(const wchar_t* path, const char_t* indent = PUGIHTML_TEXT("\t"), unsigned int flags = format_default, html_encoding encoding = encoding_auto) const;
-
-	// Get document element
-	node document_element() const;
+	/**
+	 * Save HTML document to stream.
+	 */
+	/*
+	void save(std::basic_ostream<char_type,
+		std::char_traits<char_type> >& stream,
+		const string_type& indent = "\t",
+		unsigned int flags = format_default,
+		html_encoding encoding = encoding_auto) const;
+	*/
 
 	/**
 	 * Returns an array of all the links in the current document.
 	 * The links collection counts <a href=""> tags and <area> tags.
 	 */
-	std::vector<node> links() const;
+	std::vector<std::shared_ptr<node> > links() const;
 
 	/**
 	 * Traverses DOM tree and searches for html node with the specified
 	 * id attribute. If no tag is found, empty html node is returned.
 	 */
-	node get_element_by_id(const string_t& id);
+	std::shared_ptr<node> get_element_by_id(const string_type& id) const;
+
 };
 
 } // pugihtml.
 
-#endif /* PUGIHTML_HTML_DOCUMENT_HPP */
+#endif /* PUGIHTML_DOCUMENT_HPP */

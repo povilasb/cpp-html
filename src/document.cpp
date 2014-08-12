@@ -1,108 +1,16 @@
-#include <cassert>
 #include <ios>
 #include <istream>
-#include <cstring>
 #include <vector>
 
 #include <pugihtml/document.hpp>
-
-#include "parser.hpp"
-#include "pugiutil.hpp"
-#include "utf_decoder.hpp"
-#include "encoding.hpp"
+#include <pugihtml/node.hpp>
 
 
-using namespace pugihtml;
-using namespace std;
-
-
-document::document() : _buffer(0)
+namespace pugihtml
 {
-	create();
-}
 
 
-document::~document()
-{
-	destroy();
-}
-
-
-void
-document::reset()
-{
-	destroy();
-	create();
-}
-
-
-void
-document::reset(const document& proto)
-{
-	reset();
-
-	for (node cur = proto.first_child(); cur; cur = cur.next_sibling()) {
-		append_copy(cur);
-	}
-}
-
-
-void
-document::create()
-{
-	// initialize sentinel page
-	STATIC_ASSERT(offsetof(html_memory_page, data) + sizeof(document_struct) + html_memory_page_alignment <= sizeof(_memory));
-
-	// align upwards to page boundary
-	void* page_memory = reinterpret_cast<void*>((reinterpret_cast<uintptr_t>(_memory) + (html_memory_page_alignment - 1)) & ~(html_memory_page_alignment - 1));
-
-	// prepare page structure
-	html_memory_page* page = html_memory_page::construct(page_memory);
-
-	page->busy_size = html_memory_page_size;
-
-	// allocate new root
-	_root = new (page->data) document_struct(page);
-	_root->prev_sibling_c = _root;
-
-	// setup sentinel page
-	page->allocator = static_cast<document_struct*>(_root);
-}
-
-
-void
-document::destroy()
-{
-	// destroy static storage
-	if (_buffer) {
-		global_deallocate(_buffer);
-		_buffer = 0;
-	}
-
-	// destroy dynamic storage, leave sentinel page (it's in static memory)
-	if (_root) {
-		html_memory_page* root_page = reinterpret_cast<html_memory_page*>(_root->header & html_memory_page_pointer_mask);
-		assert(root_page && !root_page->prev && !root_page->memory);
-
-		// destroy all pages
-		for (html_memory_page* page = root_page->next; page; ) {
-			html_memory_page* next = page->next;
-
-			html_allocator::deallocate_page(page);
-
-			page = next;
-		}
-
-		// cleanup root page
-		root_page->allocator = 0;
-		root_page->next = 0;
-		root_page->busy_size = root_page->freed_size = 0;
-
-		_root = 0;
-	}
-}
-
-
+/*
 inline html_parse_result
 make_parse_result(html_parse_status status, ptrdiff_t offset = 0)
 {
@@ -570,21 +478,6 @@ document::load_buffer_impl(void* contents, size_t size, unsigned int options, ht
 	return res;
 }
 
-html_parse_result document::load_buffer(const void* contents, size_t size, unsigned int options, html_encoding encoding)
-{
-	return load_buffer_impl(const_cast<void*>(contents), size, options, encoding, false, false);
-}
-
-html_parse_result document::load_buffer_inplace(void* contents, size_t size, unsigned int options, html_encoding encoding)
-{
-	return load_buffer_impl(contents, size, options, encoding, true, false);
-}
-
-html_parse_result document::load_buffer_inplace_own(void* contents, size_t size, unsigned int options, html_encoding encoding)
-{
-	return load_buffer_impl(contents, size, options, encoding, true, true);
-}
-
 
 void
 write_bom(html_writer& writer, html_encoding encoding)
@@ -649,72 +542,29 @@ document::save(html_writer& writer, const char_t* indent,
 }
 
 
-#ifndef PUGIHTML_NO_STL
-void document::save(std::basic_ostream<char, std::char_traits<char> >& stream, const char_t* indent, unsigned int flags, html_encoding encoding) const
+void
+document::save(std::basic_ostream<char_type,
+	std::char_traits<char_type> >& stream, const string_type& indent,
+	unsigned int flags, html_encoding encoding) const;
 {
 	html_writer_stream writer(stream);
 
 	save(writer, indent, flags, encoding);
 }
-
-void document::save(std::basic_ostream<wchar_t, std::char_traits<wchar_t> >& stream, const char_t* indent, unsigned int flags) const
-{
-	html_writer_stream writer(stream);
-
-	save(writer, indent, flags, encoding_wchar);
-}
-#endif
-
-bool document::save_file(const char* path, const char_t* indent, unsigned int flags, html_encoding encoding) const
-{
-	FILE* file = fopen(path, "wb");
-	if (!file) return false;
-
-	html_writer_file writer(file);
-	save(writer, indent, flags, encoding);
-
-	fclose(file);
-
-	return true;
-}
-
-bool document::save_file(const wchar_t* path, const char_t* indent, unsigned int flags, html_encoding encoding) const
-{
-	FILE* file = open_file_wide(path, L"wb");
-	if (!file) return false;
-
-	html_writer_file writer(file);
-	save(writer, indent, flags, encoding);
-
-	fclose(file);
-
-	return true;
-}
-
-node
-document::document_element() const
-{
-	for (node_struct* i = _root->first_child; i; i = i->next_sibling)
-		if ((i->header & html_memory_page_type_mask) + 1 == node_element)
-			return node(i);
-
-	return node();
-}
+*/
 
 
-class links_walker : public html_tree_walker {
+class links_walker : public node_walker {
 public:
-	links_walker(vector<node>& links) : links_(links)
+	links_walker(std::vector<std::shared_ptr<node> >& links) : links_(links)
 	{
 	}
 
 	bool
-	for_each(node& node) override
+	for_each(std::shared_ptr<node> node) override
 	{
-		string_t node_name(node.name());
-
-		if (node_name == "A" ||
-			node_name == "AREA") {
+		if (node->name() == "A" ||
+			node->name() == "AREA") {
 			this->links_.push_back(node);
 		}
 
@@ -722,30 +572,32 @@ public:
 	}
 
 private:
-	vector<node>& links_;
+	std::vector<std::shared_ptr<node> >& links_;
 };
 
-std::vector<node>
+std::vector<std::shared_ptr<node> >
 document::links() const
 {
-	vector<node> result;
+	std::vector<std::shared_ptr<node> > result;
 
 	links_walker html_walker(result);
-	this->document_element().traverse(html_walker);
+	const_cast<document*>(this)->traverse(html_walker);
 
 	return result;
 }
 
 
-node
-document::get_element_by_id(const string_t& id)
+std::shared_ptr<node>
+document::get_element_by_id(const string_type& id) const
 {
-	return this->find_node([&](const node& node) {
-		attribute attr = node.get_attribute("ID");
-		if (attr.value() == id) {
+	return this->find_node([&](const std::shared_ptr<node>& node) {
+		auto attr = node->get_attribute("ID");
+		if (attr->value() == id) {
 			return true;
 		}
 
 		return false;
 	});
 }
+
+} // pugihtml.
