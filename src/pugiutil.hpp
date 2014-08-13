@@ -12,8 +12,9 @@
 #ifndef PUGI_UTIL_H
 #define PUGI_UTIL_H
 
+#include <pugihtml/parser.hpp>
+
 #include "common.hpp"
-#include "parser.hpp"
 
 
 namespace pugihtml

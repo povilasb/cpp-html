@@ -2,11 +2,12 @@
 #include <cassert>
 #include <cstring>
 
+#include <pugihtml/parser.hpp>
+#include <pugihtml/encoding.hpp>
+
 #include "pugiutil.hpp"
 #include "common.hpp"
-#include "parser.hpp"
 #include "utf_decoder.hpp"
-#include "encoding.hpp"
 
 
 using namespace pugihtml;
