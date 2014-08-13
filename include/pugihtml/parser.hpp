@@ -1,12 +1,11 @@
 #ifndef PUGIHTML_PARSER_HPP
 #define PUGIHTML_PARSER_HPP 1
 
-#include <csetjmp>
 #include <cstddef>
+#include <stdexcept>
 
-#include <pugihtml/node.hpp>
-
-#include "common.hpp"
+#include <pugihtml/pugihtml.hpp>
+#include <pugihtml/document.hpp>
 
 
 namespace pugihtml
@@ -24,8 +23,10 @@ enum chartype_t {
 };
 
 
-// Parsing status, returned as part of html_parse_result object
-enum html_parse_status {
+/**
+ * Parsing status, returned as part of html_parse_result object.
+ */
+enum parse_status {
 	status_ok = 0,              // No error
 
 	status_file_not_found,      // File was not found during load_file()
@@ -46,30 +47,24 @@ enum html_parse_status {
 	status_end_element_mismatch // There was a mismatch of start-end tags (closing tag had incorrect name, some tag was not closed or there was an excessive closing tag)
 };
 
+class parse_error : public std::runtime_error {
+public:
+	parse_error(const std::string& what) : std::runtime_error(what)
+	{
+	}
 
-// Parsing result
-struct html_parse_result {
-	// Parsing status (see html_parse_status)
-	html_parse_status status;
+	parse_error(parse_status status) : std::runtime_error(""),
+		status_(status)
+	{
+	}
 
-	// Last parsed offset (in char_t units from start of input data)
-	ptrdiff_t offset;
+	parse_status status() const
+	{
+		return this->status_;
+	}
 
-	// Source document encoding
-	html_encoding encoding;
-
-	// Default constructor, initializes object to failed state
-	html_parse_result();
-
-	// Cast to bool operator
-	operator bool() const;
-
-	/**
-	 * @return error description.
-	 */
-	string_type description() const;
-
-	std::shared_ptr<document> doc;
+private:
+	parse_status status_;
 };
 
 
@@ -141,6 +136,8 @@ public:
 
 
 	/**
+	 * Advances the specified string pointer to the end of doctype element.
+	 *
 	 * DOCTYPE consists of nested sections of the following possible types:
 	 * 1. <!-- ... -->, <? ... ?>, "...", '...'
 	 * 2. <![...]]>
@@ -149,17 +146,23 @@ public:
 	 * Second group can contain nested groups of the same type.
 	 * Third group can contain all other groups.
 	 */
-	char_type parse_doctype_primitive(string_type str);
+	const char_type* parse_doctype_primitive(const char_type* s);
 
-	char_t* parse_doctype_ignore(char_t* s);
+/*
+	const char_type* parse_doctype_ignore(const char_type* s);
 
-	char_t* parse_doctype_group(char_t* s, char_t endch, bool toplevel);
+	const char_type* parse_doctype_group(const char_type* s,
+		char_type endch, bool toplevel);
+*/
 
-	char_t* parse_exclamation(char_t* s, node_struct* cursor,
-		unsigned int optmsk, char_t endch);
+	/**
+	 * Parse node contents, starting with exclamation mark.
+	 */
+	//char_type* parse_exclamation(char_type* s, node_struct* cursor,
+	//	unsigned int optmsk, char_type endch);
 
-	char_t* parse_question(char_t* s, node_struct*& ref_cursor,
-		unsigned int optmsk, char_t endch);
+	//char_type* parse_question(char_type* s, node_struct*& ref_cursor,
+	//	unsigned int optmsk, char_type endch);
 
 	/**
 	 * Parses the specified HTML string and returns document object
@@ -169,12 +172,24 @@ public:
 	 *	You can configure to parse and add comment nodes to the
 	 *	DOM tree.
 	 */
-	std::shared_ptr<document> parse(const string_type& str_html,
-		unsigned int optmsk);
+	//std::shared_ptr<document> parse(const string_type& str_html,
+	//	unsigned int optmsk);
+
+	/**
+	 * @return parse status description.
+	 */
+	string_type status_description() const;
 
 private:
-	char_type* error_offset;
-	jmp_buf error_handler;
+	parse_status status_ = status_ok;
+
+	// Last parsed offset (in char_type units from start of input data).
+	ptrdiff_t offset_ = 0;
+
+	// Source document encoding.
+	html_encoding encoding_ = encoding_utf8;
+
+	char_type* error_offset_ = nullptr;
 };
 
 } //pugihtml.

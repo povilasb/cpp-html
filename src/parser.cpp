@@ -6,10 +6,7 @@
 #include <pugihtml/attribute.hpp>
 #include <pugihtml/node.hpp>
 #include <pugihtml/document.hpp>
-
-#include "parser.hpp"
-#include "memory.hpp"
-#include "pugiutil.hpp"
+#include <pugihtml/parser.hpp>
 
 
 namespace pugihtml
@@ -19,7 +16,9 @@ namespace pugihtml
 // TODO(povilas): replace with inline functions or completely remove some of them.
 #define SKIPWS() { while (is_chartype(*s, ct_space)) ++s; }
 #define OPTSET(OPT)			( optmsk & OPT )
-#define THROW_ERROR(err, m) error_offset = m, longjmp(error_handler, err)
+
+#define THROW_ERROR(err, m) (void)m, throw parse_error(err)
+
 #define PUSHNODE(TYPE) { cursor = append_node(cursor, alloc, TYPE); if (!cursor) THROW_ERROR(status_out_of_memory, s); }
 #define POPNODE()			{ cursor = cursor->parent; }
 #define SCANFOR(X)			{ while (*s != 0 && !(X)) ++s; }
@@ -36,12 +35,12 @@ std::list<string_type> html_void_elements = {"AREA", "BASE", "BR",
 	"META", "PARAM", "SOURCE", "TRACK", "WBR"};
 
 
-char_t*
-parser::parse_doctype_primitive(char_t* s)
+const char_type*
+parser::parse_doctype_primitive(const char_type* s)
 {
 	if (*s == '"' || *s == '\'') {
 		// quoted string
-		char_t ch = *s++;
+		char_type ch = *s++;
 		SCANFOR(*s == ch);
 		if (!*s) THROW_ERROR(status_bad_doctype, s);
 
@@ -71,9 +70,9 @@ parser::parse_doctype_primitive(char_t* s)
 	return s;
 }
 
-
-char_t*
-parser::parse_doctype_ignore(char_t* s)
+/*
+char_type*
+parser::parse_doctype_ignore(char_type* s)
 {
 	assert(s[0] == '<' && s[1] == '!' && s[2] == '[');
 	s++;
@@ -100,8 +99,8 @@ parser::parse_doctype_ignore(char_t* s)
 }
 
 
-char_t*
-parser::parse_doctype_group(char_t* s, char_t endch, bool toplevel)
+char_type*
+parser::parse_doctype_group(char_type* s, char_type endch, bool toplevel)
 {
 	assert(s[0] == '<' && s[1] == '!');
 	s++;
@@ -137,17 +136,15 @@ parser::parse_doctype_group(char_t* s, char_t endch, bool toplevel)
 }
 
 
-char_t*
-parser::parse_exclamation(char_t* s, node_struct* cursor,
-	unsigned int optmsk, char_t endch)
+char_type*
+parser::parse_exclamation(char_type* s, node_struct* cursor,
+	unsigned int optmsk, char_type endch)
 {
 	// TODO(povilas): optmsk unused?
-	// parse node contents, starting with exclamation mark
 	++s;
 
 	if (*s == '-') { // '<!-...'
 		++s;
-
 		if (*s == '-') { // '<!--...'
 			++s;
 
@@ -224,7 +221,7 @@ parser::parse_exclamation(char_t* s, node_struct* cursor,
 
 		if (cursor->parent) THROW_ERROR(status_bad_doctype, s);
 
-		char_t* mark = s + 9;
+		char_type* mark = s + 9;
 
 		s = parse_doctype_group(s, endch, true);
 
@@ -249,20 +246,20 @@ parser::parse_exclamation(char_t* s, node_struct* cursor,
 }
 
 
-char_t*
-parser::parse_question(char_t* s, node_struct*& ref_cursor,
-	unsigned int optmsk, char_t endch)
+char_type*
+parser::parse_question(char_type* s, node_struct*& ref_cursor,
+	unsigned int optmsk, char_type endch)
 {
 	// TODO(povilas): optmsk unused?
 	// load into registers
 	node_struct* cursor = ref_cursor;
-	char_t ch = 0;
+	char_type ch = 0;
 
 	// parse node contents, starting with question mark
 	++s;
 
 	// read PI target
-	char_t* target = s;
+	char_type* target = s;
 
 	if (!is_chartype(*s, ct_start_symbol)) THROW_ERROR(status_bad_pi, s);
 
@@ -308,7 +305,7 @@ parser::parse_question(char_t* s, node_struct*& ref_cursor,
 			SKIPWS();
 
 			// scan for tag end
-			char_t* value = s;
+			char_type* value = s;
 
 			SCANFOR(s[0] == '?' && ENDSWITH(s[1], '>'));
 			CHECK_ERROR(status_bad_pi, s);
@@ -354,17 +351,17 @@ parser::parse_question(char_t* s, node_struct*& ref_cursor,
 }
 
 
-typedef char_t* (*strconv_attribute_t)(char_t*, char_t);
+typedef char_type* (*strconv_attribute_t)(char_type*, char_type);
 
 template <typename opt_escape>
 struct strconv_attribute_impl {
-	static char_t* parse_wnorm(char_t* s, char_t end_quote)
+	static char_type* parse_wnorm(char_type* s, char_type end_quote)
 	{
 		gap g;
 
 		// trim leading whitespaces
 		if (is_chartype(*s, ct_space)) {
-			char_t* str = s;
+			char_type* str = s;
 
 			do ++str;
 			while (is_chartype(*str, ct_space));
@@ -382,7 +379,7 @@ struct strconv_attribute_impl {
 
 			if (*s == end_quote)
 			{
-				char_t* str = g.flush(s);
+				char_type* str = g.flush(s);
 
 				do *str-- = 0;
 				while (is_chartype(*str, ct_space));
@@ -395,7 +392,7 @@ struct strconv_attribute_impl {
 
 				if (is_chartype(*s, ct_space))
 				{
-					char_t* str = s + 1;
+					char_type* str = s + 1;
 					while (is_chartype(*str, ct_space)) ++str;
 
 					g.push(s, str - s);
@@ -413,7 +410,7 @@ struct strconv_attribute_impl {
 		}
 	}
 
-	static char_t* parse_wconv(char_t* s, char_t end_quote)
+	static char_type* parse_wconv(char_type* s, char_type end_quote)
 	{
 		gap g;
 
@@ -449,7 +446,7 @@ struct strconv_attribute_impl {
 		}
 	}
 
-	static char_t* parse_eol(char_t* s, char_t end_quote)
+	static char_type* parse_eol(char_type* s, char_type end_quote)
 	{
 		gap g;
 
@@ -481,7 +478,7 @@ struct strconv_attribute_impl {
 		}
 	}
 
-	static char_t* parse_simple(char_t* s, char_t end_quote)
+	static char_type* parse_simple(char_type* s, char_type end_quote)
 	{
 		gap g;
 
@@ -541,11 +538,11 @@ get_strconv_attribute(unsigned int optmask)
 }
 
 
-typedef char_t* (*strconv_pcdata_t)(char_t*);
+typedef char_type* (*strconv_pcdata_t)(char_type*);
 
 template <typename opt_eol, typename opt_escape>
 struct strconv_pcdata_impl {
-	static char_t* parse(char_t* s)
+	static char_type* parse(char_type* s)
 	{
 		gap g;
 
@@ -598,21 +595,28 @@ get_strconv_pcdata(unsigned int optmask)
 std::shared_ptr<document>
 parse(const string_type& str_html, unsigned int optmsk)
 {
+	this->status_ = status_ok;
+
+	auto doc = html::document::create();
+	if (str_html.size() == 0) {
+		return doc;
+	}
+
 	strconv_attribute_t strconv_attribute = get_strconv_attribute(optmsk);
 	strconv_pcdata_t strconv_pcdata = get_strconv_pcdata(optmsk);
 
-	char_t ch = 0;
+	char_type ch = 0;
 
 	// Point the cursor to the html document node
 	node_struct* cursor = htmldoc;
 
 	// Set the marker
-	char_t* mark = s;
+	char_type* mark = s;
 
 	// It's necessary to keep another mark when we have to roll
 	// back the name and the mark at the same time.
-	char_t* sMark = s;
-	char_t* nameMark = s;
+	char_type* sMark = s;
+	char_type* nameMark = s;
 
 	// Parse while the current character is not '\0'
 	while (*s != 0) {
@@ -711,8 +715,8 @@ parse(const string_type& str_html, unsigned int optmsk)
 							else {//hot fix:try to fix that attribute=value situation;
 								ch='"';
 								a->value=s;
-								char_t* dp=s;
-								char_t temp;
+								char_type* dp=s;
+								char_type temp;
 								//find the end of attribute,200 length is enough,it must return a position;
 								temp=*dp;//backup the former char
 								*dp='"';//hack at the end position;
@@ -803,7 +807,7 @@ parse(const string_type& str_html, unsigned int optmsk)
 			{
 				++s;
 
-				char_t* name = cursor->name;
+				char_type* name = cursor->name;
 				if (!name)
 				{
 					// TODO ignore exception
@@ -954,69 +958,13 @@ parse(const string_type& str_html, unsigned int optmsk)
 		cursor = htmldoc;
 	}
 }
+*/
 
 
-inline html_parse_result
-make_parse_result(html_parse_status status, ptrdiff_t offset = 0)
+string_type
+parser::status_description() const
 {
-	html_parse_result result;
-	result.status = status;
-	result.offset = offset;
-
-	return result;
-}
-
-
-html_parse_result
-parser::parse(const string_type& str_html, unsigned int optmsk)
-{
-	html_parse_result result;
-
-	if (str_html.size() == 0) {
-		return result;
-	}
-
-	auto doc = html::document::create();
-
-	// perform actual parsing
-	int error = setjmp(parser.error_handler);
-	if (error == 0) {
-		parser.parse(buffer, htmldoc, optmsk, endch);
-	}
-
-	html_parse_result result = make_parse_result(static_cast<html_parse_status>(error), parser.error_offset ? parser.error_offset - buffer : 0);
-	assert(result.offset >= 0 && static_cast<size_t>(result.offset) <= length);
-
-	// update allocator state
-	*static_cast<html_allocator*>(htmldoc) = parser.alloc;
-
-	// since we removed last character, we have to handle the only possible false positive
-	if (result && endch == '<')
-	{
-		// there's no possible well-formed document with < at the end
-		return make_parse_result(status_unrecognized_tag, length);
-	}
-
-	return result;
-}
-
-
-html_parse_result::html_parse_result() : status(status_internal_error),
-	offset(0), encoding(encoding_auto)
-{
-}
-
-
-html_parse_result::operator bool() const
-{
-	return status == status_ok;
-}
-
-
-const char*
-html_parse_result::description() const
-{
-	switch (status)
+	switch (this->status_)
 	{
 	case status_ok: return "No error";
 
