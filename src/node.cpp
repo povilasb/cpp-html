@@ -51,6 +51,7 @@ const unsigned char chartypex_table[256] = {
 #define IS_CHARTYPEX(c, ct) IS_CHARTYPE_IMPL(c, ct, chartypex_table)
 
 
+// TODO(povilas): use thes before append_child() and prepend_child().
 inline bool
 allow_insert_child(node_type parent, node_type child)
 {
