@@ -15,7 +15,7 @@ namespace pugihtml
 // Parser utilities.
 // TODO(povilas): replace with inline functions or completely remove some of them.
 #define SKIPWS() { while (is_chartype(*s, ct_space)) ++s; }
-#define OPTSET(OPT)			( optmsk & OPT )
+#define OPTSET(OPT) ( optmsk & OPT )
 
 #define THROW_ERROR(err, m) (void)m, throw parse_error(err)
 
@@ -36,18 +36,18 @@ std::list<string_type> html_void_elements = {"AREA", "BASE", "BR",
 
 
 const char_type*
-parser::parse_doctype_primitive(const char_type* s)
+parser::advance_doctype_primitive(const char_type* s)
 {
+	// Quoted string.
 	if (*s == '"' || *s == '\'') {
-		// quoted string
 		char_type ch = *s++;
 		SCANFOR(*s == ch);
 		if (!*s) THROW_ERROR(status_bad_doctype, s);
 
-		s++;
+		++s;
 	}
+	// <? ... ?>
 	else if (s[0] == '<' && s[1] == '?') {
-		// <? ... ?>
 		s += 2;
 		// no need for ENDSWITH because ?> can't terminate proper doctype
 		SCANFOR(s[0] == '?' && s[1] == '>');
@@ -55,6 +55,7 @@ parser::parse_doctype_primitive(const char_type* s)
 
 		s += 2;
 	}
+	// <-- ... -->
 	else if (s[0] == '<' && s[1] == '!' && s[2] == '-' && s[3] == '-') {
 		s += 4;
 		// no need for ENDSWITH because --> can't terminate proper doctype
@@ -70,26 +71,24 @@ parser::parse_doctype_primitive(const char_type* s)
 	return s;
 }
 
-/*
-char_type*
-parser::parse_doctype_ignore(char_type* s)
+
+const char_type*
+parser::advance_doctype_ignore(const char_type* s)
 {
 	assert(s[0] == '<' && s[1] == '!' && s[2] == '[');
-	s++;
+	++s;
 
 	while (*s) {
 		if (s[0] == '<' && s[1] == '!' && s[2] == '[') {
-			// nested ignore section
-			s = parse_doctype_ignore(s);
+			// Nested ignore section.
+			s = advance_doctype_ignore(s);
 		}
 		else if (s[0] == ']' && s[1] == ']' && s[2] == '>') {
-			// ignore section end
-			s += 3;
-
-			return s;
+			// Ignore section end.
+			return s + 3;
 		}
 		else {
-			s++;
+			++s;
 		}
 	}
 
@@ -99,26 +98,27 @@ parser::parse_doctype_ignore(char_type* s)
 }
 
 
-char_type*
-parser::parse_doctype_group(char_type* s, char_type endch, bool toplevel)
+const char_type*
+parser::advance_doctype_group(const char_type* s, char_type endch,
+	bool top_level)
 {
 	assert(s[0] == '<' && s[1] == '!');
-	s++;
+	++s;
 
 	while (*s) {
-		if (s[0] == '<' && s[1] == '!' && s[2] != '-') {
+		if (s[0] == '<' && s[1] == '!') {
 			if (s[2] == '[') {
-				// ignore
-				s = parse_doctype_ignore(s);
+				// Ignore.
+				s = advance_doctype_ignore(s);
 			}
 			else {
-				// some control group
-				s = parse_doctype_group(s, endch, false);
+				// Some control group.
+				s = advance_doctype_group(s, endch, false);
 			}
 		}
 		else if (s[0] == '<' || s[0] == '"' || s[0] == '\'') {
 			// unknown tag (forbidden), or some primitive group
-			s = parse_doctype_primitive(s);
+			s = advance_doctype_primitive(s);
 		}
 		else if (*s == '>') {
 			return ++s;
@@ -128,7 +128,7 @@ parser::parse_doctype_group(char_type* s, char_type endch, bool toplevel)
 		}
 	}
 
-	if (!toplevel || endch != '>') {
+	if (!top_level || endch != '>') {
 		THROW_ERROR(status_bad_doctype, s);
 	}
 
@@ -136,24 +136,32 @@ parser::parse_doctype_group(char_type* s, char_type endch, bool toplevel)
 }
 
 
-char_type*
-parser::parse_exclamation(char_type* s, node_struct* cursor,
-	unsigned int optmsk, char_type endch)
+parser::parser(unsigned int options) : options_(options),
+	document_(document::create())
 {
-	// TODO(povilas): optmsk unused?
+}
+
+
+/*
+const char_type*
+parser::parse_exclamation(const char_type* s, char_type endch)
+{
 	++s;
 
-	if (*s == '-') { // '<!-...'
+	// '<!-...'
+	if (*s == '-') {
 		++s;
 		if (*s == '-') { // '<!--...'
 			++s;
 
-			if (OPTSET(parse_comments)) {
-				PUSHNODE(node_comment); // Append a new node on the tree.
-				cursor->value = s; // Save the offset.
+			if (this->option_set(parse_comments)) {
+				auto node = node::create(node_comment);
+				this->document_->append_child(node);
+				//cursor->value = s; // Save the offset.
 			}
 
-			if (OPTSET(parse_eol) && OPTSET(parse_comments)) {
+			if (this->option_set(parse_eol) &&
+				this->option_set(parse_comments)) {
 				s = strconv_comment(s, endch);
 
 				if (!s) {
@@ -223,7 +231,7 @@ parser::parse_exclamation(char_type* s, node_struct* cursor,
 
 		char_type* mark = s + 9;
 
-		s = parse_doctype_group(s, endch, true);
+		s = parse_doctype_group(s, endch);
 
 		if (OPTSET(parse_doctype)) {
 			while (is_chartype(*mark, ct_space)) ++mark;
@@ -246,6 +254,7 @@ parser::parse_exclamation(char_type* s, node_struct* cursor,
 }
 
 
+/*
 char_type*
 parser::parse_question(char_type* s, node_struct*& ref_cursor,
 	unsigned int optmsk, char_type endch)
@@ -964,7 +973,14 @@ parse(const string_type& str_html, unsigned int optmsk)
 string_type
 parser::status_description() const
 {
-	switch (this->status_)
+	return parser::status_description(this->status_);
+}
+
+
+string_type
+parser::status_description(parse_status status)
+{
+	switch (status)
 	{
 	case status_ok: return "No error";
 
@@ -987,6 +1003,13 @@ parser::status_description() const
 
 	default: return "Unknown error";
 	}
+}
+
+
+bool
+parser::option_set(unsigned int opt)
+{
+	return this->options_ & opt;
 }
 
 } // pugihtml.

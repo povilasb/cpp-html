@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <stdexcept>
+#include <memory>
 
 #include <pugihtml/pugihtml.hpp>
 #include <pugihtml/document.hpp>
@@ -47,27 +48,23 @@ enum parse_status {
 	status_end_element_mismatch // There was a mismatch of start-end tags (closing tag had incorrect name, some tag was not closed or there was an excessive closing tag)
 };
 
-class parse_error : public std::runtime_error {
-public:
-	parse_error(const std::string& what) : std::runtime_error(what)
-	{
-	}
 
-	parse_error(parse_status status) : std::runtime_error(""),
-		status_(status)
-	{
-	}
-
-	parse_status status() const
-	{
-		return this->status_;
-	}
-
-private:
-	parse_status status_;
-};
-
-
+/**
+ * HTML parser.
+ *
+ * For testing purposes some functions are exposed publicly. Like DOCTYPE parsing.
+ * DOCTYPE consists of nested sections of the following possible types:
+ * 1. <!-- ... -->, <? ... ?>, "...", '...'
+ * 2. <![...]]>
+ * 3. <!...>
+ * First group can not contain nested groups.
+ * Second group can contain nested groups of the same type.
+ * Third group can contain all other groups.
+ *
+ * NOTE:
+ * Actualy HTML standard only includes the third group <!DOCTYPE ...>. So the
+ * first two groups parsing might be removed in the future.
+ */
 class parser {
 public:
 	// Parsing options
@@ -136,30 +133,52 @@ public:
 
 
 	/**
-	 * Advances the specified string pointer to the end of doctype element.
+	 * Parses the first group of doctype primitives:
+	 *	1. <!-- ... -->, <? ... ?>, "...", '...'
+	 * This method simply advances the specified string pointer to the next
+	 * symbol of the end of doctype element.
 	 *
-	 * DOCTYPE consists of nested sections of the following possible types:
-	 * 1. <!-- ... -->, <? ... ?>, "...", '...'
-	 * 2. <![...]]>
-	 * 3. <!...>
-	 * First group can not contain nested groups.
-	 * Second group can contain nested groups of the same type.
-	 * Third group can contain all other groups.
+	 * @throws parse_error on failure.
 	 */
-	const char_type* parse_doctype_primitive(const char_type* s);
+	static const char_type* advance_doctype_primitive(const char_type* s);
 
-/*
-	const char_type* parse_doctype_ignore(const char_type* s);
+	/**
+	 * Parses the second group of doctype:
+	 *	2. <![...]]>
+	 * This method simply advances the specified string pointer to the
+	 * character which is post the last char of doctype element.
+	 *
+	 * @throws parse_error on failure.
+	 */
+	static const char_type* advance_doctype_ignore(const char_type* s);
 
-	const char_type* parse_doctype_group(const char_type* s,
-		char_type endch, bool toplevel);
-*/
+	/**
+	 * Parses the third group of doctype:
+	 *	3. <!...>
+	 * This method simply advances the specified string pointer to the
+	 * character which is post the last char of doctype element.
+	 *
+	 * @param endch character by which the doctype element must end.
+	 *	Otherwise the parse_error is thrown.
+	 * @param top_level flag indicating if this method was called
+	 *	from top level or recursively from itself.
+	 */
+	static const char_type* advance_doctype_group(const char_type* s,
+		char_type endch, bool top_level = true);
+
+	/**
+	 * Creates new parser with the specified parsing options.
+	 */
+	parser(unsigned int options = parse_default);
 
 	/**
 	 * Parse node contents, starting with exclamation mark.
+	 *
+	 * @param opts parse options. E.g. parse comments or not, etc.
+	 * @param endch character by which the doctype element must end.
+	 *	Otherwise the parse_error is thrown.
 	 */
-	//char_type* parse_exclamation(char_type* s, node_struct* cursor,
-	//	unsigned int optmsk, char_type endch);
+	const char_type* parse_exclamation(const char_type* s, char_type endch);
 
 	//char_type* parse_question(char_type* s, node_struct*& ref_cursor,
 	//	unsigned int optmsk, char_type endch);
@@ -176,11 +195,17 @@ public:
 	//	unsigned int optmsk);
 
 	/**
-	 * @return parse status description.
+	 * @return last parse status description.
 	 */
 	string_type status_description() const;
 
+	/**
+	 * @return parse status string representation.
+	 */
+	static string_type status_description(parse_status status);
+
 private:
+	unsigned int options_;
 	parse_status status_ = status_ok;
 
 	// Last parsed offset (in char_type units from start of input data).
@@ -190,6 +215,35 @@ private:
 	html_encoding encoding_ = encoding_utf8;
 
 	char_type* error_offset_ = nullptr;
+
+	std::shared_ptr<document> document_;
+
+	/**
+	 * Checks if the specified parsing option is set.
+	 */
+	bool option_set(unsigned int opt);
+};
+
+
+class parse_error : public std::runtime_error {
+public:
+	parse_error(const std::string& what) : std::runtime_error(what)
+	{
+	}
+
+	parse_error(parse_status status)
+		: std::runtime_error(parser::status_description(status)),
+		status_(status)
+	{
+	}
+
+	parse_status status() const
+	{
+		return this->status_;
+	}
+
+private:
+	parse_status status_;
 };
 
 } //pugihtml.
