@@ -10,17 +10,18 @@
 #include "utf_decoder.hpp"
 
 
-using namespace pugihtml;
-
+namespace pugihtml
+{
 
 gap::gap(): end(nullptr), size(0)
 {
 }
 
+
 void
 gap::push(char_t*& s, size_t count)
 {
-	// there was a gap already; collapse it
+	// There was a gap already, collapse it.
 	if (end)  {
 		// Move [old_gap_end, new_gap_start) to [old_gap_start, ...)
 		assert(s >= end);
@@ -475,5 +476,7 @@ as_utf8(const std::wstring& str)
 {
 	return as_utf8_impl(str.c_str(), str.size());
 }
+
+} // pugihtml.
 
 #endif

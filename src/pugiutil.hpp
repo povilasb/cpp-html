@@ -55,10 +55,8 @@ convert_utf_endian_swap(T* result, const T* data, size_t length)
 }
 
 
-struct gap {
-	char_t* end;
-	size_t size;
-
+class gap {
+public:
 	gap();
 
 	/**
@@ -71,11 +69,27 @@ struct gap {
 	 * Collapse all gaps, return past-the-end pointer
 	 */
 	char_t* flush(char_t* s);
+
+private:
+	char_t* end;
+	size_t size;
 };
 
 
+/**
+ * Normalizes EOL \r\n chars to single char \n and returns pointer
+ * to the resulting string.
+ * NOTE: original string is also altered.
+ */
 char_t* strconv_comment(char_t* s, char_t endch);
+
+/**
+ * Normalizes EOL \r\n chars to single char \n and returns pointer
+ * to the resulting string.
+ * NOTE: original string is also altered.
+ */
 char_t* strconv_cdata(char_t* s, char_t endch);
+
 char_t* strconv_escape(char_t* s, gap& g);
 
 
@@ -139,8 +153,7 @@ struct buffer_holder {
 };
 #endif
 
-
-html_parse_status get_file_size(FILE* file, size_t& out_result);
+parse_status get_file_size(FILE* file, size_t& out_result);
 
 
 #ifndef PUGIHTML_NO_STL
