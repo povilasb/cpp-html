@@ -8,3 +8,4 @@ TODO
 - [+] Add unit tests.
 - [ ] Either fix samples or remove them. Currently these are pugixml samples.
 - [ ] Remove PUGIHTML_NO_STL ifdefs.
+- [ ] Implement tests: https://github.com/html5lib/html5lib-tests
