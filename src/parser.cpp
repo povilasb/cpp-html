@@ -12,6 +12,43 @@
 namespace pugihtml
 {
 
+/**
+ * This table maps ASCII symbols with their possible types in enum chartype_t.
+ */
+const unsigned char chartype_table[256] =
+{
+	55,  0,   0,   0,   0,   0,   0,   0,      0,   12,  12,  0,   0,   63,  0,   0,   // 0-15
+	0,   0,   0,   0,   0,   0,   0,   0,      0,   0,   0,   0,   0,   0,   0,   0,   // 16-31
+	8,   0,   6,   0,   0,   0,   7,   6,      0,   0,   0,   0,   0,   96,  64,  0,   // 32-47
+	64,  64,  64,  64,  64,  64,  64,  64,     64,  64,  192, 0,   1,   0,   48,  0,   // 48-63
+	0,   192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192, // 64-79
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 0,   0,   16,  0,   192, // 80-95
+	0,   192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192, // 96-111
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 0, 0, 0, 0, 0,           // 112-127
+
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192, // 128+
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192,
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192,
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192,
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192,
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192,
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192,
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192
+};
+
+
+inline bool
+is_chartype(char_type ch, enum chartype_t char_type)
+{
+#ifdef PUGIHTML_WCHAR_MODE
+	return (static_cast<unsigned int>(ch) < 128
+		? chartype_table[static_cast<unsigned int>(ch)]
+		: chartype_table[128]) & (char_type);
+#else
+	return chartype_table[static_cast<unsigned char>(ch)] & (char_type);
+#endif
+}
+
 // Parser utilities.
 // TODO(povilas): replace with inline functions or completely remove some of them.
 #define SKIPWS() { while (is_chartype(*s, ct_space)) ++s; }
@@ -137,113 +174,96 @@ parser::advance_doctype_group(const char_type* s, char_type endch,
 
 
 parser::parser(unsigned int options) : options_(options),
-	document_(document::create())
+	document_(document::create()), current_node_(document_)
 {
 }
 
 
-/*
 const char_type*
 parser::parse_exclamation(const char_type* s, char_type endch)
 {
-	++s;
+	// Skip '<!'.
+	s += 2;
 
-	// '<!-...'
+	// '<!-...' - comment.
 	if (*s == '-') {
 		++s;
-		if (*s == '-') { // '<!--...'
-			++s;
-
-			if (this->option_set(parse_comments)) {
-				auto node = node::create(node_comment);
-				this->document_->append_child(node);
-				//cursor->value = s; // Save the offset.
-			}
-
-			if (this->option_set(parse_eol) &&
-				this->option_set(parse_comments)) {
-				s = strconv_comment(s, endch);
-
-				if (!s) {
-					THROW_ERROR(status_bad_comment,
-						cursor->value);
-				}
-			}
-			else {
-				// Scan for terminating '-->'.
-				SCANFOR(s[0] == '-' && s[1] == '-'
-					&& ENDSWITH(s[2], '>'));
-				CHECK_ERROR(status_bad_comment, s);
-
-				if (OPTSET(parse_comments)) {
-					*s = 0; // Zero-terminate this segment at the first terminating '-'.
-				}
-
-				s += (s[2] == '>' ? 3 : 2); // Step over the '\0->'.
-			}
-		}
-		else {
+		if (*s != '-') {
 			THROW_ERROR(status_bad_comment, s);
 		}
-	}
-	else if (*s == '[') {
-		// '<![CDATA[...'
-		if (*++s=='C' && *++s=='D' && *++s=='A' && *++s=='T'
-			&& *++s=='A' && *++s == '[') {
-			++s;
 
-			if (OPTSET(parse_cdata)) {
-				PUSHNODE(node_cdata); // Append a new node on the tree.
-				cursor->value = s; // Save the offset.
+		++s;
+		const char_type* comment_start = s;
 
-				if (OPTSET(parse_eol)) {
-					s = strconv_cdata(s, endch);
+		// Scan for terminating '-->'.
+		SCANFOR(s[0] == '-' && s[1] == '-'
+			&& ENDSWITH(s[2], '>'));
+		CHECK_ERROR(status_bad_comment, s);
 
-					if (!s) THROW_ERROR(status_bad_cdata, cursor->value);
-				}
-				else
-				{
-					// Scan for terminating ']]>'.
-					SCANFOR(s[0] == ']' && s[1] == ']' && ENDSWITH(s[2], '>'));
-					CHECK_ERROR(status_bad_cdata, s);
+		if (this->option_set(parse_comments)) {
+			// TODO(povilas): if this->option_set(parse_eol),
+			// replace \r\n to \n.
+			size_t comment_len = (s - 1) - comment_start + 1;
+			string_type comment(comment_start, comment_len);
 
-					*s++ = 0; // Zero-terminate this segment.
-				}
-			}
-			else // Flagged for discard, but we still have to scan for the terminator.
-			{
-				// Scan for terminating ']]>'.
-				SCANFOR(s[0] == ']' && s[1] == ']' && ENDSWITH(s[2], '>'));
-				CHECK_ERROR(status_bad_cdata, s);
+			auto comment_node = node::create(node_comment);
+			comment_node->value(comment);
 
-				++s;
-			}
-
-			s += (s[1] == '>' ? 2 : 1); // Step over the last ']>'.
+			this->current_node_->append_child(comment_node);
 		}
-		else THROW_ERROR(status_bad_cdata, s);
+
+		// Step over the '\0->'.
+		s += (s[2] == '>' ? 3 : 2);
 	}
+	// '<![CDATA[...'
+	else if (*s == '[') {
+		if (!(*++s=='C' && *++s=='D' && *++s=='A' && *++s=='T'
+			&& *++s=='A' && *++s == '[')) {
+			THROW_ERROR(status_bad_cdata, s);
+		}
+
+		++s;
+		const char_type* cdata_start = s;
+
+		SCANFOR(s[0] == ']' && s[1] == ']'
+			&& ENDSWITH(s[2], '>'));
+		CHECK_ERROR(status_bad_cdata, s);
+
+		if (this->option_set(parse_cdata)) {
+			// TODO(povilas): if this->option_set(parse_eol),
+			// replace \r\n to \n.
+			size_t cdata_len = s - cdata_start + 1;
+			string_type cdata(cdata_start, cdata_len);
+
+			auto node = node::create(node_cdata);
+			node->value(cdata);
+			this->current_node_->append_child(node);
+		}
+
+		++s;
+		s += (s[1] == '>' ? 2 : 1); // Step over the last ']>'.
+	}
+	// <!DOCTYPE
 	else if (s[0] == 'D' && s[1] == 'O' && s[2] == 'C' && s[3] == 'T'
 		&& s[4] == 'Y' && s[5] == 'P' && ENDSWITH(s[6], 'E')) {
 		s -= 2;
 
-		if (cursor->parent) THROW_ERROR(status_bad_doctype, s);
+		const char_type* doctype_start = s + 9;
 
-		char_type* mark = s + 9;
+		s = advance_doctype_group(s, endch);
 
-		s = parse_doctype_group(s, endch);
+		if (this->option_set(parse_doctype)) {
+			while (is_chartype(*doctype_start, ct_space)) {
+				++doctype_start;
+			}
 
-		if (OPTSET(parse_doctype)) {
-			while (is_chartype(*mark, ct_space)) ++mark;
+			assert(s[-1] == '>');
+			size_t doctype_len = (s - 2) - doctype_start + 1;
+			string_type doctype(doctype_start, doctype_len);
 
-			PUSHNODE(node_doctype);
-
-			cursor->value = mark;
-
-			assert((s[0] == 0 && endch == '>') || s[-1] == '>');
-			s[*s == 0 ? 0 : -1] = 0;
-
-			POPNODE();
+			auto node = node::create(node_doctype);
+			node->value(doctype);
+			this->current_node_->append_child(node);
 		}
 	}
 	else if (*s == 0 && endch == '-') THROW_ERROR(status_bad_comment, s);
@@ -911,7 +931,7 @@ parse(const string_type& str_html, unsigned int optmsk)
 			}
 			else if (*s == '!') // '<!...'
 			{
-				s = parse_exclamation(s, cursor, optmsk, endch);
+				s = parse_exclamation(s - 1, cursor, optmsk, endch);
 			}
 			else if (*s == 0 && endch == '?')
 			{
@@ -1005,6 +1025,15 @@ parser::status_description(parse_status status)
 	}
 }
 
+
+std::shared_ptr<document>
+parser::get_document() const
+{
+	return this->document_;
+}
+
+
+// Private methods.
 
 bool
 parser::option_set(unsigned int opt)

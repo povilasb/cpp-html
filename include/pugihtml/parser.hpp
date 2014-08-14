@@ -178,7 +178,8 @@ public:
 	 * @param endch character by which the doctype element must end.
 	 *	Otherwise the parse_error is thrown.
 	 */
-	const char_type* parse_exclamation(const char_type* s, char_type endch);
+	const char_type* parse_exclamation(const char_type* s,
+		char_type endch = '>');
 
 	//char_type* parse_question(char_type* s, node_struct*& ref_cursor,
 	//	unsigned int optmsk, char_type endch);
@@ -204,6 +205,11 @@ public:
 	 */
 	static string_type status_description(parse_status status);
 
+	/**
+	 * Returns the parsed HTML document object.
+	 */
+	std::shared_ptr<document> get_document() const;
+
 private:
 	unsigned int options_;
 	parse_status status_ = status_ok;
@@ -217,6 +223,7 @@ private:
 	char_type* error_offset_ = nullptr;
 
 	std::shared_ptr<document> document_;
+	std::shared_ptr<document> current_node_;
 
 	/**
 	 * Checks if the specified parsing option is set.
