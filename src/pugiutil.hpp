@@ -1,20 +1,12 @@
-/**
- * pugihtml parser - version 0.1
- * --------------------------------------------------------
- * Copyright (c) 2012 Adgooroo, LLC (kgantchev [AT] adgooroo [DOT] com)
- *
- * This library is distributed under the MIT License. See notice in license.txt
- *
- * This work is based on the pugxml parser, which is:
- * Copyright (C) 2006-2010, by Arseny Kapoulkine (arseny [DOT] kapoulkine [AT] gmail [DOT] com)
- */
-
-#ifndef PUGI_UTIL_H
-#define PUGI_UTIL_H
+#ifndef PUGIHTML_UTIL_HPP
+#define PUGIHMTL_UTIL_HPP 1
 
 #include <pugihtml/parser.hpp>
 
 #include "common.hpp"
+
+
+// TODO(povilas): rename to util.hpp.
 
 
 namespace pugihtml
@@ -27,14 +19,6 @@ namespace pugihtml
 #define STATIC_ASSERT(cond) { \
 	static const char condition_failed[(cond) ? 1 : -1] = {0}; \
 	(void)condition_failed[0]; }
-
-
-// Digital Mars C++ bug workaround for passing char loaded from memory via stack
-#ifdef __DMC__
-#	define DMC_VOLATILE volatile
-#else
-#	define DMC_VOLATILE
-#endif
 
 
 static inline void
@@ -257,5 +241,7 @@ std::basic_string<char, std::char_traits<char>, std::allocator<char> > PUGIHTML_
 //    }
 //    memset(tmp, 0, strlen(tmp));
 //}
-}
-#endif
+
+} // pugihtml.
+
+#endif /* PUGIHMTL_UTIL_HPP */
