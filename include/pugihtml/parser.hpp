@@ -14,13 +14,17 @@ namespace pugihtml
 
 enum chartype_t {
 	ct_parse_pcdata = 1, // \0, &, \r, <
-	ct_parse_attr = 2, // \0, &, \r, ', "
+
+	// Parse until these symbols are found: \0, &, \r, ', "
+	ct_parse_attr = 2,
 	ct_parse_attr_ws = 4, // \0, &, \r, ', ", \n, tab
 	ct_space = 8, // \r, \n, space, tab
 	ct_parse_cdata = 16, // \0, ], >, \r
 	ct_parse_comment = 32, // \0, -, >, \r
 	ct_symbol = 64, // Any symbol > 127, a-z, A-Z, 0-9, _, :, -, .
-	ct_start_symbol = 128 // Any symbol > 127, a-z, A-Z, _, :
+
+	// Tag start symbol - any symbol > 127, a-z, A-Z, _, :
+	ct_start_symbol = 128
 };
 
 
@@ -184,13 +188,13 @@ public:
 	/**
 	 * Parses the specified HTML string and returns document object
 	 * representing the HTML document tree.
+	 * Capitalizes element and attribute names.
 	 *
 	 * @param optmask parsing options defined in pugihtml.hpp. E.g.
 	 *	You can configure to parse and add comment nodes to the
 	 *	DOM tree.
 	 */
-	//std::shared_ptr<document> parse(const string_type& str_html,
-	//	unsigned int optmsk);
+	std::shared_ptr<document> parse(const string_type& str_html);
 
 	/**
 	 * @return last parse status description.
