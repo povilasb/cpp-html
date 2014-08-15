@@ -83,6 +83,7 @@ private:
  */
 char_t* strconv_comment(char_t* s, char_t endch);
 
+
 /**
  * Normalizes EOL \r\n chars to single char \n and returns pointer
  * to the resulting string.
@@ -90,6 +91,11 @@ char_t* strconv_comment(char_t* s, char_t endch);
  */
 char_t* strconv_cdata(char_t* s, char_t endch);
 
+
+/**
+ * Converts HTML reserved character entities to their real values.
+ * E.g. "&gt;" -> ">".
+ */
 char_t* strconv_escape(char_t* s, gap& g);
 
 
