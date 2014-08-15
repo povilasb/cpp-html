@@ -13,7 +13,9 @@ namespace pugihtml
 {
 
 enum chartype_t {
-	ct_parse_pcdata = 1, // \0, &, \r, <
+	// Parse until these symbols are found: \0, <
+	// TODO(povilas): readd & and \r symbols.
+	ct_parse_pcdata = 1,
 
 	// Parse until these symbols are found: \0, &, \r, ', "
 	ct_parse_attr = 2,
@@ -94,6 +96,7 @@ public:
 	// consist only of whitespace are added to the DOM tree.
 	// This flag is off by default; turning it on usually results in slower
 	// parsing and more memory consumption.
+	// NOTE: currently this option is disabled.
 	static const unsigned int parse_ws_pcdata = 0x0008;
 
 	// This flag determines if character and entity references are expanded
@@ -224,7 +227,7 @@ private:
 	char_type* error_offset_ = nullptr;
 
 	std::shared_ptr<document> document_;
-	std::shared_ptr<document> current_node_;
+	std::shared_ptr<node> current_node_;
 
 	/**
 	 * Checks if the specified parsing option is set.

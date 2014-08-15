@@ -18,9 +18,9 @@ namespace pugihtml
  */
 const unsigned char chartype_table[256] =
 {
-	55,  0,   0,   0,   0,   0,   0,   0,      0,   12,  12,  0,   0,   63,  0,   0,   // 0-15
+	55,  0,   0,   0,   0,   0,   0,   0,      0,   12,  12,  0,   0,   62,  0,   0,   // 0-15
 	0,   0,   0,   0,   0,   0,   0,   0,      0,   0,   0,   0,   0,   0,   0,   0,   // 16-31
-	8,   0,   6,   0,   0,   0,   7,   6,      0,   0,   0,   0,   0,   96,  64,  0,   // 32-47
+	8,   0,   6,   0,   0,   0,   6,   6,      0,   0,   0,   0,   0,   96,  64,  0,   // 32-47
 	64,  64,  64,  64,  64,  64,  64,  64,     64,  64,  192, 0,   1,   0,   48,  0,   // 48-63
 	0,   192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192, // 64-79
 	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 0,   0,   16,  0,   192, // 80-95
@@ -564,11 +564,8 @@ parser::parse(const string_type& str_html)
 				this->current_node_->append_child(node);
 				this->current_node_ = node;
 
-				char_type ch = *s;
-				s++;
-
 				// End of tag.
-				if (ch == '>') {
+				if (*s == '>') {
 					auto it = std::find(
 						std::begin(html_void_elements),
 						std::end(html_void_elements),
@@ -580,8 +577,7 @@ parser::parse(const string_type& str_html)
 						}
 					}
 				}
-				else if (is_chartype(ch, ct_space)) {
-				LOC_ATTRIBUTES:
+				else if (is_chartype(*s, ct_space)) {
 					while (true) {
 						SKIPWS();
 
@@ -653,177 +649,80 @@ parser::parse(const string_type& str_html)
 					} // while
 				}
 				// Void HTML element.
-				else if (ch == '/') {
-					if (!ENDSWITH(*s, '>')) THROW_ERROR(status_bad_start_element, s);
-
-					if(cursor->parent) {
-						POPNODE(); // Pop.
-					}
-					else {
-						break;
+				else if (*s == '/') {
+					if (s[1] != '>') {
+						THROW_ERROR(status_bad_start_element, s);
 					}
 
-					s += (*s == '>');
-				}
-				else if (ch == 0)
-				{
-					// we stepped over null terminator, backtrack & handle closing tag
-					--s;
+					if (this->current_node_->parent()) {
+						this->current_node_ =
+							this->current_node_->parent();
+					}
 
-					if (endch != '>') THROW_ERROR(status_bad_start_element, s);
+					++s;
 				}
-				else THROW_ERROR(status_bad_start_element, s);
+				else {
+					THROW_ERROR(status_bad_start_element, s);
+				}
+
+				++s;
 			}
-			else if (*s == '/')
-			{
+			// Closing tag, e.g. </hmtl>
+			else if (*s == '/') {
 				++s;
 
-				char_type* name = cursor->name;
-				if (!name)
-				{
-					// TODO ignore exception
-					//THROW_ERROR(status_end_element_mismatch, s);
-				}
-				else
-				{
-					sMark = s;
-					nameMark = name;
-					// Read the name while the character is a symbol
-					while (is_chartype(*s, ct_symbol))
-					{
-						// Check if we're closing the correct tag name:
-						// if the cursor tag does not match the current
-						// closing tag then throw an exception.
-						if (*s++ != *name++)
-						{
-							// TODO POPNODE or ignore exception
-							//THROW_ERROR(status_end_element_mismatch, s);
-
-							// Return to the last position where we started
-							// reading the expected closing tag name.
-							s = sMark;
-							name = nameMark;
-							break;
-						}
-					}
-					// Check if the end element is valid
-					if (*name)
-					{
-						if (*s == 0 && name[0] == endch && name[1] == 0)
-						{
-							THROW_ERROR(status_bad_end_element, s);
-						}
-						else
-						{
-							// TODO POPNODE or ignore exception
-							//THROW_ERROR(status_end_element_mismatch, s);
-						}
-					}
+				const char_type* tag_name_start = s;
+				while (is_chartype(*s, ct_symbol)) {
+					++s;
 				}
 
-				// The tag was closed so we have to pop the
-				// node off the "stack".
-				if(cursor->parent)
-				{
-					POPNODE(); // Pop.
+				size_t tag_name_len = (s - 1) - tag_name_start
+					+ 1;
+				string_type tag_name = string_type(tag_name_start,
+					tag_name_len);
+
+				const string_type& expected_name =
+					this->current_node_->name();
+				if (expected_name != tag_name) {
+					THROW_ERROR(status_bad_start_element,
+						s);
 				}
-				else
-				{
-					// We have reached the root node so do not
-					// attempt to pop anymore nodes
-					break;
+
+				if (this->current_node_->parent()) {
+					this->current_node_ =
+						this->current_node_->parent();
 				}
 
 				SKIPWS();
-
-				// If there end of the string is reached.
-				if (*s == 0)
-				{
-					// Check if the end character specified is the
-					// same as the closing tag.
-					if (endch != '>')
-					{
-						THROW_ERROR(status_bad_end_element, s);
-					}
-				}
-				else
-				{
-					// Skip the end character becaue the tag
-					// was closed and the node was popped off
-					// the "stack".
-					if (*s != '>')
-					{
-						// Continue parsing
-						continue;
-						// TODO ignore the exception
-						// THROW_ERROR(status_bad_end_element, s);
-					}
-					++s;
-				}
 			}
-			else if (*s == '?') // '<?...'
-			{
-				s = parse_question(s, cursor, optmsk, endch);
-
-				assert(cursor);
-				if ((cursor->header & html_memory_page_type_mask) + 1 == node_declaration)
-				{
-					goto LOC_ATTRIBUTES;
-				}
+			// Comment: <!-- ...
+			else if (*s == '!') {
+				s = parse_exclamation(s - 1);
 			}
-			else if (*s == '!') // '<!...'
-			{
-				s = parse_exclamation(s - 1, cursor, optmsk, endch);
-			}
-			else if (*s == 0 && endch == '?')
-			{
-				THROW_ERROR(status_bad_pi, s);
-			}
-			else
-			{
+			else {
 				THROW_ERROR(status_unrecognized_tag, s);
 			}
 		}
 		else {
-			mark = s; // Save this offset while searching for a terminator.
-
-			SKIPWS(); // Eat whitespace if no genuine PCDATA here.
-
-			if ((!OPTSET(parse_ws_pcdata) || mark == s) && (*s == '<' || !*s))
-			{
-				continue;
-			}
-
-			s = mark;
-
-			if (cursor->parent) {
-				PUSHNODE(node_pcdata); // Append a new node on the tree.
-				cursor->value = s; // Save the offset.
-
-				s = strconv_pcdata(s);
-
-				POPNODE(); // Pop since this is a standalone.
-
-				if (!*s) break;
-			}
-			else {
-				SCANFOR(*s == '<'); // '...<'
-				if (!*s) break;
-
+			const char_type* pcdata_start = s;
+			while (!is_chartype(*s, ct_parse_pcdata)) {
 				++s;
+			}
+
+			size_t pcdata_len = (s - 1) - pcdata_start + 1;
+			string_type pcdata = string_type(pcdata_start,
+				pcdata_len);
+			auto node = node::create(node_cdata);
+			node->value(pcdata);
+			this->current_node_->append_child(node);
+
+			if (!*s) {
+				break;
 			}
 
 			// We're after '<'
 			goto LOC_TAG;
 		}
-	}
-
-	// Check that last tag is closed
-	if (cursor != htmldoc)
-	{
-		// TODO POPNODE or ignore exception
-		// THROW_ERROR(status_end_element_mismatch, s);
-		cursor = htmldoc;
 	}
 }
 
