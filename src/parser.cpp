@@ -536,6 +536,8 @@ parser::parse(const string_type& str_html)
 
 	const char_type* s = str_html.c_str();
 
+	this->current_node_ = this->document_;
+
 	// Parse while the current character is not '\0'.
 	while (*s != '\0') {
 		// Check if the current character is the start tag character
@@ -730,7 +732,7 @@ parser::parse(const string_type& str_html)
 		}
 	}
 
-	this->current_node_.reset();
+	return this->document_;
 }
 
 
