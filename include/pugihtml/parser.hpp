@@ -1,7 +1,6 @@
 #ifndef PUGIHTML_PARSER_HPP
 #define PUGIHTML_PARSER_HPP 1
 
-#include <cstddef>
 #include <stdexcept>
 #include <memory>
 
@@ -217,9 +216,6 @@ public:
 private:
 	unsigned int options_;
 	parse_status status_ = status_ok;
-
-	// Last parsed offset (in char_type units from start of input data).
-	ptrdiff_t offset_ = 0;
 
 	// Source document encoding.
 	html_encoding encoding_ = encoding_utf8;
