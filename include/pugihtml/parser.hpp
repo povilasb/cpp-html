@@ -181,9 +181,6 @@ public:
 	const char_type* parse_exclamation(const char_type* s,
 		char_type endch = '>');
 
-	//char_type* parse_question(char_type* s, node_struct*& ref_cursor,
-	//	unsigned int optmsk, char_type endch);
-
 	/**
 	 * Parses the specified HTML string and returns document object
 	 * representing the HTML document tree.
