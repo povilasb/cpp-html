@@ -16,8 +16,7 @@ namespace pugihtml
 /**
  * This table maps ASCII symbols with their possible types in enum chartype_t.
  */
-const unsigned char chartype_table[256] =
-{
+const unsigned char chartype_table[256] = {
 	55,  0,   0,   0,   0,   0,   0,   0,      0,   12,  12,  0,   0,   62,  0,   0,   // 0-15
 	0,   0,   0,   0,   0,   0,   0,   0,      0,   0,   0,   0,   0,   0,   0,   0,   // 16-31
 	8,   0,   6,   0,   0,   0,   6,   6,      0,   0,   0,   0,   0,   96,  64,  0,   // 32-47
@@ -680,11 +679,12 @@ parser::parse(const string_type& str_html)
 					+ 1;
 				string_type tag_name = string_type(tag_name_start,
 					tag_name_len);
+				str_toupper(tag_name);
 
 				const string_type& expected_name =
 					this->current_node_->name();
 				if (expected_name != tag_name) {
-					THROW_ERROR(status_bad_start_element,
+					THROW_ERROR(status_end_element_mismatch,
 						s);
 				}
 
@@ -694,6 +694,11 @@ parser::parse(const string_type& str_html)
 				}
 
 				SKIPWS();
+				if (*s != '>') {
+					THROW_ERROR(status_bad_end_element, "");
+				}
+
+				++s;
 			}
 			// Comment: <!-- ...
 			else if (*s == '!') {
@@ -724,6 +729,8 @@ parser::parse(const string_type& str_html)
 			goto LOC_TAG;
 		}
 	}
+
+	this->current_node_.reset();
 }
 
 
