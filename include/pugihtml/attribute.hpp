@@ -1,23 +1,25 @@
 #ifndef PUGIHTML_ATTRIBUTE_HPP
 #define PUGIHTML_ATTRIBUTE_HPP 1
 
+#include <memory>
+
 #include <pugihtml/pugihtml.hpp>
+#include <pugihtml/node.hpp>
 
 
 namespace pugihtml
 {
 
 /**
- * A light-weight handle for manipulating attributes in DOM tree.
+ * Class for manipulating attributes in DOM tree.
  */
-class attribute {
+class attribute : public node {
 public:
 	/**
 	 * Constructs attribute with default value "".
 	 */
-	attribute(const string_type& name, const string_type& value = "");
-
-	//TODO(povilas): add copy constructor, move constructor.
+	static std::shared_ptr<attribute> create(const string_type& name,
+		const string_type& value = "");
 
 	/**
 	 * Compares attribute name/value pairs.
@@ -50,6 +52,8 @@ public:
 	void value(const string_type& attr_val);
 
 private:
+	attribute(const string_type& name, const string_type& value);
+
 	string_type name_;
 	string_type value_;
 };
