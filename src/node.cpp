@@ -162,36 +162,34 @@ node::get_attribute(const string_type& name) const
 std::shared_ptr<attribute>
 node::append_attribute(const string_type& name, const string_type& value)
 {
-	auto attr = std::shared_ptr<attribute>(new attribute(name, value));
+	auto attr = attribute::create(name, value);
 	this->attributes_.push_back(attr);
 	return attr;
 }
 
 
 std::shared_ptr<attribute>
-node::append_attribute(const attribute& attr)
+node::append_attribute(std::shared_ptr<attribute> attr)
 {
-	auto sh_attr = std::shared_ptr<attribute>(new attribute(attr));
-	this->attributes_.push_back(sh_attr);
-	return sh_attr;
+	this->attributes_.push_back(attr);
+	return attr;
 }
 
 
 std::shared_ptr<attribute>
 node::prepend_attribute(const string_type& name, const string_type& value)
 {
-	auto attr = std::shared_ptr<attribute>(new attribute(name, value));
+	auto attr = attribute::create(name, value);
 	this->attributes_.push_front(attr);
 	return attr;
 }
 
 
 std::shared_ptr<attribute>
-node::prepend_attribute(const attribute& attr)
+node::prepend_attribute(std::shared_ptr<attribute> attr)
 {
-	auto sh_attr = std::shared_ptr<attribute>(new attribute(attr));
-	this->attributes_.push_front(sh_attr);
-	return sh_attr;
+	this->attributes_.push_front(attr);
+	return attr;
 }
 
 

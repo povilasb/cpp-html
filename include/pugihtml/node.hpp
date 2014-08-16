@@ -7,7 +7,6 @@
 #include <memory>
 
 #include <pugihtml/pugihtml.hpp>
-#include <pugihtml/attribute.hpp>
 
 #include "pugiconfig.hpp"
 
@@ -20,6 +19,7 @@ enum node_type {
 	node_null, // Empty (null) node handle
 	node_document, // A document tree's absolute root
 	node_element, // Element tag, i.e. '<node/>'
+	node_attribute,
 	node_pcdata, // Plain character data, i.e. 'text'
 	node_cdata, // Character data, i.e. '<![CDATA[text]]>'
 	node_comment, // Comment tag, i.e. '<!-- text -->'
@@ -30,6 +30,7 @@ enum node_type {
 
 
 class node_walker;
+class attribute;
 
 /**
  * An HTML document tree node.
@@ -116,7 +117,8 @@ public:
 	 *
 	 * @return pointer to newly added attribute.
 	 */
-	std::shared_ptr<attribute> append_attribute(const attribute& attr);
+	std::shared_ptr<attribute> append_attribute(
+		std::shared_ptr<attribute> attr);
 
 	/**
 	 * Prepends new attribute with the specified name to the beginning of
@@ -134,7 +136,8 @@ public:
 	 *
 	 * @return pointer to newly added attribute.
 	 */
-	std::shared_ptr<attribute> prepend_attribute(const attribute& attr);
+	std::shared_ptr<attribute> prepend_attribute(
+		std::shared_ptr<attribute> attr);
 
 	/**
 	 * Remove specified attribute if it exists.
