@@ -5,6 +5,7 @@
 
 #include <pugihtml/document.hpp>
 #include <pugihtml/node.hpp>
+#include <pugihtml/attribute.hpp>
 
 
 namespace pugihtml
@@ -605,11 +606,7 @@ document::get_element_by_id(const string_type& id) const
 {
 	return this->find_node([&](const std::shared_ptr<node>& node) {
 		auto attr = node->get_attribute("ID");
-		if (attr->value() == id) {
-			return true;
-		}
-
-		return false;
+		return attr ? attr->value() == id : false;
 	});
 }
 
