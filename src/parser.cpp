@@ -599,6 +599,7 @@ parser::parse(const string_type& str_html)
 							if (*s != '=') {
 								THROW_ERROR(status_bad_attribute, s);
 							}
+							++s;
 
 							SKIPWS();
 							CHECK_ERROR(status_bad_attribute, s);
@@ -624,6 +625,9 @@ parser::parse(const string_type& str_html)
 							string_type attr_val = string_type(attr_val_start, attr_val_len);
 
 							// TODO(povilas): create attribute node.
+
+							// Step over quote symbol.
+							++s;
 						}
 						else if (*s == '/') {
 							++s;
