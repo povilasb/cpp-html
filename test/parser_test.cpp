@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <pugihtml/parser.hpp>
+#include <pugihtml/attribute.hpp>
 
 namespace html = pugihtml;
 
@@ -145,4 +146,61 @@ TEST(parser, parse_void_elements)
 	auto br2 = p->next_sibling();
 	ASSERT_NE(nullptr, br2);
 	ASSERT_EQ("BR", br2->name());
+}
+
+
+TEST(parser, parse_single_element_with_attribute)
+{
+	html::string_type str_html{"<html id='content'></html>"};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
+
+	auto html = doc->first_child();
+	ASSERT_NE(nullptr, html);
+	ASSERT_EQ("HTML", html->name());
+
+	auto attr = html->get_attribute("ID");
+	ASSERT_NE(nullptr, attr);
+	ASSERT_EQ("content", attr->value());
+}
+
+
+TEST(parser, parse_single_element_with_multi_attributes)
+{
+	html::string_type str_html{"<html id='content' class=\"main\"></html>"};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
+
+	auto html = doc->first_child();
+	ASSERT_NE(nullptr, html);
+	ASSERT_EQ("HTML", html->name());
+
+	auto attr = html->get_attribute("ID");
+	ASSERT_NE(nullptr, attr);
+	ASSERT_EQ("content", attr->value());
+
+	attr = html->get_attribute("CLASS");
+	ASSERT_NE(nullptr, attr);
+	ASSERT_EQ("main", attr->value());
+}
+
+
+TEST(parser, parse_tree_find_element_by_attribute)
+{
+	html::string_type str_html{
+		"<!DOCTYPE html>"
+		"<html> <body>"
+			"<div id =  'content'  >"
+				"Some content text."
+			"</div>"
+		"\n</body></html>"
+		};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
 }
