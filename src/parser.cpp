@@ -544,7 +544,6 @@ parser::parse(const string_type& str_html)
 		if (*s == '<') {
 			++s;
 
-		LOC_TAG:
 			// Check if the current character is a tag start symbol.
 			if (is_chartype(*s, ct_start_symbol)) {
 				const char_type* tag_name_start = s;
@@ -624,7 +623,8 @@ parser::parse(const string_type& str_html)
 							size_t attr_val_len = (s - 1) - attr_val_start + 1;
 							string_type attr_val = string_type(attr_val_start, attr_val_len);
 
-							// TODO(povilas): create attribute node.
+							auto attr = attribute::create(attr_name, attr_val);
+							this->current_node_->append_attribute(attr);
 
 							// Step over quote symbol.
 							++s;
@@ -726,13 +726,6 @@ parser::parse(const string_type& str_html)
 			auto node = node::create(node_cdata);
 			node->value(pcdata);
 			this->current_node_->append_child(node);
-
-			if (!*s) {
-				break;
-			}
-
-			// We're after '<'
-			goto LOC_TAG;
 		}
 	}
 
