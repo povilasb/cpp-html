@@ -23,27 +23,6 @@ public:
 	static std::shared_ptr<document> create();
 
 	/**
-	 * Load document from stream.
-	 */
-	/*
-	html_parse_result load(std::basic_istream<char_type,
-		std::char_traits<char_type> >& stream,
-		unsigned int options = parser::parse_default,
-		html_encoding encoding = encoding_auto);
-	*/
-
-	/**
-	 * Save HTML document to stream.
-	 */
-	/*
-	void save(std::basic_ostream<char_type,
-		std::char_traits<char_type> >& stream,
-		const string_type& indent = "\t",
-		unsigned int flags = format_default,
-		html_encoding encoding = encoding_auto) const;
-	*/
-
-	/**
 	 * Returns an array of all the links in the current document.
 	 * The links collection counts <a href=""> tags and <area> tags.
 	 */
