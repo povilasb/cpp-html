@@ -2,32 +2,29 @@
 About
 =====
 
-pugihtml HTML processing library based on pugixml
+*cpp-html* is a c++ library for modern c++ (c++11 and up) compilers. It
+is used to parse and manipulate HTML documents with a DOM like API.
 
-This is the distribution of pugihtml, which is a C++ HTML processing library,
-consisting of a DOM-like interface with rich traversal/modification
-capabilities, an extremely fast HTML parser which constructs the DOM tree from
-an HTML file/buffer, and an XPath 1.0 implementation for complex data-driven
-tree queries. Full Unicode support is also available, with Unicode interface
-variants and conversions between different Unicode encodings (which happen
-automatically during parsing/saving).
+Currently Unicode support is untested. Should work well with ASCII symbols.
+Also there's no functionality to save HTML document from DOM tree.
+See **TODO** for what's comming next.
 
-The distribution contains the following files and folders:
 
-	contrib/ - various contributions to pugihtml
+Goals
+=====
 
-	docs/ - documentation
-		docs/samples - pugixml usage examples
-		docs/quickstart.html - quick start guide
-		docs/manual.html - complete manual
+* Support for different character encodings.
+* Ability to save DOM tree to HTML document.
+* Almost full DOM support.
 
-	scripts/ - project files for IDE/build systems
 
-	src/ - header and source files
+Tested on
+=========
 
-        LICENSE
+* GCC 4.7.2 on Debian wheezy 7.
 
-	README - this file.
+Please submit success or failure results, if you've tried to compile with
+different compilers.
 
 
 Dependencies
