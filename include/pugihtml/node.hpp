@@ -333,24 +333,6 @@ public:
 	bool traverse(node_walker& walker);
 
 	/**
-	 * Print subtree using a writer object.
-	 */
-	/*
-	void print(html_writer& writer, const string_type& indent = "\t",
-		unsigned int flags = format_default,
-		html_encoding encoding = encoding_auto,
-		unsigned int depth = 0) const;
-
-	// Print subtree to stream
-	void print(std::basic_ostream<char_type,
-		std::char_traits<char_type> >& os,
-		const string_type& indent = "\t",
-		unsigned int flags = format_default,
-		html_encoding encoding = encoding_auto,
-		unsigned int depth = 0) const;
-	*/
-
-	/**
 	 * @return node children begin iterator pointing to the first child
 	 *	or end() iterator if this node has no children nodes.
 	 */
@@ -364,19 +346,6 @@ public:
 
 	attribute_iterator attributes_begin();
 	attribute_iterator attributes_end();
-
-#ifndef PUGIHTML_NO_XPATH
-	// Select single node by evaluating XPath query. Returns first node
-	// from the resulting node set.
-	xpath_node select_single_node(const char_t* query,
-		xpath_variable_set* variables = 0) const;
-	xpath_node select_single_node(const xpath_query& query) const;
-
-	// Select node set by evaluating XPath query
-	xpath_node_set select_nodes(const char_t* query,
-		xpath_variable_set* variables = 0) const;
-	xpath_node_set select_nodes(const xpath_query& query) const;
-#endif
 
 protected:
 	/**
@@ -443,9 +412,6 @@ private:
 	int depth_;
 };
 
-
-//void node_output(html_buffered_writer& writer, const node& node,
-//	const string_type& indent, unsigned int flags, unsigned int depth);
 
 }
 
