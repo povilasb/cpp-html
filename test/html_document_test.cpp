@@ -2,12 +2,12 @@
 
 #include <gtest/gtest.h>
 
-#include <pugihtml/document.hpp>
-#include <pugihtml/node.hpp>
+#include <cpp-html/document.hpp>
+#include <cpp-html/node.hpp>
 
 
 using namespace std;
-namespace html = pugihtml;
+namespace html = cpphtml;
 
 
 class document_test : public ::testing::Test {

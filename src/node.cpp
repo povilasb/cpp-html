@@ -5,11 +5,11 @@
 #include <sstream>
 #include <stdexcept>
 
-#include <pugihtml/node.hpp>
-#include <pugihtml/attribute.hpp>
+#include <cpp-html/node.hpp>
+#include <cpp-html/attribute.hpp>
 
 
-namespace pugihtml
+namespace cpphtml
 {
 
 
@@ -508,4 +508,4 @@ node_walker::end(std::shared_ptr<node>)
 }
 
 
-} // pugihtml.
+} // cpp-html.

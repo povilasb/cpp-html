@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 if (NOT DEFINED PROJECT_NAME)
-	set(PROJECT_NAME "pugihtml")
+	set(PROJECT_NAME "cpp-html")
 endif(NOT DEFINED PROJECT_NAME)
 
 option(PUGIHTML_ENABLE_TESTS "Enables or disables tests. Disabled by default."

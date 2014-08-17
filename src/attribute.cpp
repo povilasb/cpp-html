@@ -1,10 +1,10 @@
 #include <memory>
 
-#include <pugihtml/attribute.hpp>
-#include <pugihtml/pugihtml.hpp>
+#include <cpp-html/attribute.hpp>
+#include <cpp-html/cpp-html.hpp>
 
 
-namespace pugihtml
+namespace cpphtml
 {
 
 
@@ -63,4 +63,4 @@ attribute::value(const string_type& attr_val)
 	this->value_ = attr_val;
 }
 
-} //pugihtml.
+} //cpp-html.

@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include <pugihtml/parser.hpp>
-#include <pugihtml/attribute.hpp>
+#include <cpp-html/parser.hpp>
+#include <cpp-html/attribute.hpp>
 
-namespace html = pugihtml;
+namespace html = cpphtml;
 
 
 TEST(parser, advance_doctype_primitive)

@@ -4,7 +4,7 @@
 #include <string>
 
 
-namespace pugihtml
+namespace cpphtml
 {
 
 #ifdef PUGIHTML_WCHAR_MODE
@@ -17,7 +17,7 @@ typedef char char_type;
 typedef std::basic_string<char_type, std::char_traits<char_type>,
 	std::allocator<char_type> > string_type;
 
-} // pugihtml.
+} // cpp-html.
 
 #endif /* PUGIHTML_HPP */
 

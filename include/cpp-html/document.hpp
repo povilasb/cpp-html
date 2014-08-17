@@ -4,11 +4,11 @@
 #include <vector>
 #include <memory>
 
-#include <pugihtml/pugihtml.hpp>
-#include <pugihtml/node.hpp>
+#include <cpp-html/cpp-html.hpp>
+#include <cpp-html/node.hpp>
 
 
-namespace pugihtml
+namespace cpphtml
 {
 
 /**
@@ -40,6 +40,6 @@ private:
 	document();
 };
 
-} // pugihtml.
+} // cpp-html.
 
 #endif /* PUGIHTML_DOCUMENT_HPP */

@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include <pugihtml/attribute.hpp>
-#include <pugihtml/pugihtml.hpp>
+#include <cpp-html/attribute.hpp>
+#include <cpp-html/cpp-html.hpp>
 
 
-namespace html = pugihtml;
+namespace html = cpphtml;
 
 
 TEST(attribute, create)

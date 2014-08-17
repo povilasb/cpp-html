@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include <pugihtml/node.hpp>
-#include <pugihtml/attribute.hpp>
+#include <cpp-html/node.hpp>
+#include <cpp-html/attribute.hpp>
 
-namespace html = pugihtml;
+namespace html = cpphtml;
 
 
 TEST(node, create_text_node)

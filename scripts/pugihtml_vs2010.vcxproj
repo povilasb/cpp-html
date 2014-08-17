@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>pugihtml</ProjectName>
+    <ProjectName>cpp-html</ProjectName>
     <ProjectGuid>{D0E1A412-6B78-4F08-A813-254486C54268}</ProjectGuid>
-    <RootNamespace>pugihtml</RootNamespace>
+    <RootNamespace>cpp-html</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -79,7 +79,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <ProgramDataBaseFileName>$(OutDir)pugihtml_d.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)cpp-html_d.pdb</ProgramDataBaseFileName>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MinimalRebuild>true</MinimalRebuild>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -102,7 +102,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <ProgramDataBaseFileName>$(OutDir)pugihtml_d.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)cpp-html_d.pdb</ProgramDataBaseFileName>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
@@ -120,7 +120,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <ProgramDataBaseFileName>$(OutDir)pugihtml.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)cpp-html.pdb</ProgramDataBaseFileName>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
@@ -141,7 +141,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <ProgramDataBaseFileName>$(OutDir)pugihtml.pdb</ProgramDataBaseFileName>
+      <ProgramDataBaseFileName>$(OutDir)cpp-html.pdb</ProgramDataBaseFileName>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
@@ -153,12 +153,12 @@
     <ClInclude Include="..\src\common.hpp" />
     <ClInclude Include="..\src\memory.hpp" />
     <ClInclude Include="..\src\pugiutil.hpp" />
-    <ClInclude Include="..\src\pugihtml.hpp" />
+    <ClInclude Include="..\src\cpp-html.hpp" />
     <ClInclude Include="..\src\pugiconfig.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\memory.cpp" />
-    <ClCompile Include="..\src\pugihtml.cpp" />
+    <ClCompile Include="..\src\cpp-html.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

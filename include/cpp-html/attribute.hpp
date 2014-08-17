@@ -3,11 +3,11 @@
 
 #include <memory>
 
-#include <pugihtml/pugihtml.hpp>
-#include <pugihtml/node.hpp>
+#include <cpp-html/cpp-html.hpp>
+#include <cpp-html/node.hpp>
 
 
-namespace pugihtml
+namespace cpphtml
 {
 
 /**
@@ -58,7 +58,7 @@ private:
 	string_type value_;
 };
 
-} // pugihtml.
+} // cpp-html.
 
 
 #endif /* PUGIHTML_ATTRIBUTE_HPP */

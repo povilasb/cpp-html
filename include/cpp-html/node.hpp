@@ -6,11 +6,11 @@
 #include <iterator>
 #include <memory>
 
-#include <pugihtml/pugihtml.hpp>
-#include <pugihtml/config.hpp>
+#include <cpp-html/cpp-html.hpp>
+#include <cpp-html/config.hpp>
 
 
-namespace pugihtml
+namespace cpphtml
 {
 
 // Tree node types

@@ -4,11 +4,11 @@
 #include <stdexcept>
 #include <memory>
 
-#include <pugihtml/pugihtml.hpp>
-#include <pugihtml/document.hpp>
+#include <cpp-html/cpp-html.hpp>
+#include <cpp-html/document.hpp>
 
 
-namespace pugihtml
+namespace cpphtml
 {
 
 enum chartype_t {
@@ -218,7 +218,7 @@ public:
 	 * representing the HTML document tree.
 	 * Capitalizes element and attribute names.
 	 *
-	 * @param optmask parsing options defined in pugihtml.hpp. E.g.
+	 * @param optmask parsing options defined in cpp-html.hpp. E.g.
 	 *	You can configure to parse and add comment nodes to the
 	 *	DOM tree.
 	 */
@@ -276,6 +276,6 @@ private:
 	parse_status status_;
 };
 
-} //pugihtml.
+} //cpp-html.
 
 #endif /* PUGIHTML_PARSER_HPP */

@@ -4,13 +4,13 @@
 #include <list>
 #include <locale>
 
-#include <pugihtml/attribute.hpp>
-#include <pugihtml/node.hpp>
-#include <pugihtml/document.hpp>
-#include <pugihtml/parser.hpp>
+#include <cpp-html/attribute.hpp>
+#include <cpp-html/node.hpp>
+#include <cpp-html/document.hpp>
+#include <cpp-html/parser.hpp>
 
 
-namespace pugihtml
+namespace cpphtml
 {
 
 /**
@@ -542,4 +542,4 @@ parser::option_set(unsigned int opt)
 	return this->options_ & opt;
 }
 
-} // pugihtml.
+} // cpp-html.

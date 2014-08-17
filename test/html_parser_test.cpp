@@ -2,14 +2,14 @@
 
 #include <gtest/gtest.h>
 
-#include <pugihtml/document.hpp>
+#include <cpp-html/document.hpp>
 
 #include "parser.hpp"
 #include "memory.hpp"
 
 
 using namespace std;
-using namespace pugihtml;
+using namespace cpphtml;
 
 
 TEST(parser, parse)

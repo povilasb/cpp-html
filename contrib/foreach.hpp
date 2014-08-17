@@ -1,5 +1,5 @@
 /*
- * Boost.Foreach support for pugihtml classes.
+ * Boost.Foreach support for cpp-html classes.
  * This file is provided to the public domain.
  * Written by Arseny Kapoulkine (arseny.kapoulkine@gmail.com)
  */
@@ -7,7 +7,7 @@
 #ifndef HEADER_PUGIHTML_FOREACH_HPP
 #define HEADER_PUGIHTML_FOREACH_HPP
 
-#include "pugihtml.hpp"
+#include "cpp-html.hpp"
 
 /*
  * These types add support for BOOST_FOREACH macro to node and document classes (child iteration only).

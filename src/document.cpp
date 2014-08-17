@@ -1,12 +1,12 @@
 #include <vector>
 #include <memory>
 
-#include <pugihtml/document.hpp>
-#include <pugihtml/node.hpp>
-#include <pugihtml/attribute.hpp>
+#include <cpp-html/document.hpp>
+#include <cpp-html/node.hpp>
+#include <cpp-html/attribute.hpp>
 
 
-namespace pugihtml
+namespace cpphtml
 {
 
 
@@ -64,4 +64,4 @@ document::get_element_by_id(const string_type& id) const
 	});
 }
 
-} // pugihtml.
+} // cpp-html.

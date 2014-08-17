@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include <pugihtml/document.hpp>
-#include <pugihtml/node.hpp>
+#include <cpp-html/document.hpp>
+#include <cpp-html/node.hpp>
 
-namespace html = pugihtml;
+namespace html = cpphtml;
 
 
 TEST(document, create)
