@@ -2,6 +2,12 @@
 About
 =====
 
+Master:
+.. image:: https://travis-ci.org/povilasb/cpp-html.svg?branch=master
+Develop:
+.. image:: https://travis-ci.org/povilasb/cpp-html.svg?branch=develop
+
+
 *cpp-html* is a c++ library for modern c++ (c++11 and up) compilers. It
 is used to parse and manipulate HTML documents with a DOM like API.
 
