@@ -2,24 +2,60 @@
 #include <stdexcept>
 #include <algorithm>
 #include <list>
+#include <locale>
 
-#include <pugihtml/attribute.hpp>
-#include <pugihtml/node.hpp>
-#include <pugihtml/document.hpp>
-
-#include "parser.hpp"
-#include "memory.hpp"
-#include "pugiutil.hpp"
+#include <cpp-html/attribute.hpp>
+#include <cpp-html/node.hpp>
+#include <cpp-html/document.hpp>
+#include <cpp-html/parser.hpp>
 
 
-using namespace pugihtml;
+namespace cpphtml
+{
 
+/**
+ * This table maps ASCII symbols with their possible types in enum chartype_t.
+ */
+const unsigned char chartype_table[256] = {
+	55,  0,   0,   0,   0,   0,   0,   0,      0,   12,  12,  0,   0,   62,  0,   0,   // 0-15
+	0,   0,   0,   0,   0,   0,   0,   0,      0,   0,   0,   0,   0,   0,   0,   0,   // 16-31
+	8,   0,   6,   0,   0,   0,   6,   6,      0,   0,   0,   0,   0,   96,  64,  0,   // 32-47
+	64,  64,  64,  64,  64,  64,  64,  64,     64,  64,  192, 0,   1,   0,   48,  0,   // 48-63
+	0,   192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192, // 64-79
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 0,   0,   16,  0,   192, // 80-95
+	0,   192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192, // 96-111
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 0, 0, 0, 0, 0,           // 112-127
+
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192, // 128+
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192,
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192,
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192,
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192,
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192,
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192,
+	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192
+};
+
+
+inline bool
+is_chartype(char_type ch, enum chartype_t char_type)
+{
+#ifdef PUGIHTML_WCHAR_MODE
+	return (static_cast<unsigned int>(ch) < 128
+		? chartype_table[static_cast<unsigned int>(ch)]
+		: chartype_table[128]) & (char_type);
+#else
+	return chartype_table[static_cast<unsigned char>(ch)] & (char_type);
+#endif
+}
 
 // Parser utilities.
 // TODO(povilas): replace with inline functions or completely remove some of them.
 #define SKIPWS() { while (is_chartype(*s, ct_space)) ++s; }
-#define OPTSET(OPT)			( optmsk & OPT )
-#define THROW_ERROR(err, m) error_offset = m, longjmp(error_handler, err)
+#define OPTSET(OPT) ( optmsk & OPT )
+
+#define THROW_ERROR(err, m) (void)m, throw parse_error(err)
+
 #define PUSHNODE(TYPE) { cursor = append_node(cursor, alloc, TYPE); if (!cursor) THROW_ERROR(status_out_of_memory, s); }
 #define POPNODE()			{ cursor = cursor->parent; }
 #define SCANFOR(X)			{ while (*s != 0 && !(X)) ++s; }
@@ -31,30 +67,24 @@ using namespace pugihtml;
 #define ENDSWITH(c, e) ((c) == (e) || ((c) == 0 && endch == (e)))
 
 
-std::list<pugihtml::string_t> html_void_elements = {"AREA", "BASE", "BR",
+std::list<string_type> html_void_elements = {"AREA", "BASE", "BR",
 	"COL", "EMBED", "HR", "IMG", "INPUT", "KEYGEN", "LINK", "MENUITEM",
 	"META", "PARAM", "SOURCE", "TRACK", "WBR"};
 
 
-parser::parser(const html_allocator& alloc) : alloc(alloc),
-	error_offset(0)
+const char_type*
+parser::advance_doctype_primitive(const char_type* s)
 {
-}
-
-
-char_t*
-parser::parse_doctype_primitive(char_t* s)
-{
+	// Quoted string.
 	if (*s == '"' || *s == '\'') {
-		// quoted string
-		char_t ch = *s++;
+		char_type ch = *s++;
 		SCANFOR(*s == ch);
 		if (!*s) THROW_ERROR(status_bad_doctype, s);
 
-		s++;
+		++s;
 	}
+	// <? ... ?>
 	else if (s[0] == '<' && s[1] == '?') {
-		// <? ... ?>
 		s += 2;
 		// no need for ENDSWITH because ?> can't terminate proper doctype
 		SCANFOR(s[0] == '?' && s[1] == '>');
@@ -62,6 +92,7 @@ parser::parse_doctype_primitive(char_t* s)
 
 		s += 2;
 	}
+	// <-- ... -->
 	else if (s[0] == '<' && s[1] == '!' && s[2] == '-' && s[3] == '-') {
 		s += 4;
 		// no need for ENDSWITH because --> can't terminate proper doctype
@@ -78,25 +109,23 @@ parser::parse_doctype_primitive(char_t* s)
 }
 
 
-char_t*
-parser::parse_doctype_ignore(char_t* s)
+const char_type*
+parser::advance_doctype_ignore(const char_type* s)
 {
 	assert(s[0] == '<' && s[1] == '!' && s[2] == '[');
-	s++;
+	++s;
 
 	while (*s) {
 		if (s[0] == '<' && s[1] == '!' && s[2] == '[') {
-			// nested ignore section
-			s = parse_doctype_ignore(s);
+			// Nested ignore section.
+			s = advance_doctype_ignore(s);
 		}
 		else if (s[0] == ']' && s[1] == ']' && s[2] == '>') {
-			// ignore section end
-			s += 3;
-
-			return s;
+			// Ignore section end.
+			return s + 3;
 		}
 		else {
-			s++;
+			++s;
 		}
 	}
 
@@ -106,39 +135,37 @@ parser::parse_doctype_ignore(char_t* s)
 }
 
 
-char_t*
-parser::parse_doctype_group(char_t* s, char_t endch, bool toplevel)
+const char_type*
+parser::advance_doctype_group(const char_type* s, char_type endch,
+	bool top_level)
 {
 	assert(s[0] == '<' && s[1] == '!');
-	s++;
+	++s;
 
 	while (*s) {
-		if (s[0] == '<' && s[1] == '!' && s[2] != '-') {
+		if (s[0] == '<' && s[1] == '!') {
 			if (s[2] == '[') {
-				// ignore
-				s = parse_doctype_ignore(s);
+				// Ignore.
+				s = advance_doctype_ignore(s);
 			}
 			else {
-				// some control group
-				s = parse_doctype_group(s, endch, false);
+				// Some control group.
+				s = advance_doctype_group(s, endch, false);
 			}
 		}
 		else if (s[0] == '<' || s[0] == '"' || s[0] == '\'') {
 			// unknown tag (forbidden), or some primitive group
-			s = parse_doctype_primitive(s);
+			s = advance_doctype_primitive(s);
 		}
 		else if (*s == '>') {
-			// TODO(povilas): return ++s.
-			s++;
-			return s;
+			return ++s;
 		}
 		else {
-			// TODO(povilas): ++s.
-			s++;
+			++s;
 		}
 	}
 
-	if (!toplevel || endch != '>') {
+	if (!top_level || endch != '>') {
 		THROW_ERROR(status_bad_doctype, s);
 	}
 
@@ -146,108 +173,97 @@ parser::parse_doctype_group(char_t* s, char_t endch, bool toplevel)
 }
 
 
-char_t*
-parser::parse_exclamation(char_t* s, node_struct* cursor,
-	unsigned int optmsk, char_t endch)
+parser::parser(unsigned int options) : options_(options),
+	document_(document::create()), current_node_(document_)
 {
-	// TODO(povilas): optmsk unused?
-	// parse node contents, starting with exclamation mark
-	++s;
+}
 
-	if (*s == '-') { // '<!-...'
+
+const char_type*
+parser::parse_exclamation(const char_type* s, char_type endch)
+{
+	// Skip '<!'.
+	s += 2;
+
+	// '<!-...' - comment.
+	if (*s == '-') {
 		++s;
-
-		if (*s == '-') { // '<!--...'
-			++s;
-
-			if (OPTSET(parse_comments)) {
-				PUSHNODE(node_comment); // Append a new node on the tree.
-				cursor->value = s; // Save the offset.
-			}
-
-			if (OPTSET(parse_eol) && OPTSET(parse_comments)) {
-				s = strconv_comment(s, endch);
-
-				if (!s) {
-					THROW_ERROR(status_bad_comment,
-						cursor->value);
-				}
-			}
-			else {
-				// Scan for terminating '-->'.
-				SCANFOR(s[0] == '-' && s[1] == '-'
-					&& ENDSWITH(s[2], '>'));
-				CHECK_ERROR(status_bad_comment, s);
-
-				if (OPTSET(parse_comments)) {
-					*s = 0; // Zero-terminate this segment at the first terminating '-'.
-				}
-
-				s += (s[2] == '>' ? 3 : 2); // Step over the '\0->'.
-			}
-		}
-		else {
+		if (*s != '-') {
 			THROW_ERROR(status_bad_comment, s);
 		}
-	}
-	else if (*s == '[') {
-		// '<![CDATA[...'
-		if (*++s=='C' && *++s=='D' && *++s=='A' && *++s=='T'
-			&& *++s=='A' && *++s == '[') {
-			++s;
 
-			if (OPTSET(parse_cdata)) {
-				PUSHNODE(node_cdata); // Append a new node on the tree.
-				cursor->value = s; // Save the offset.
+		++s;
+		const char_type* comment_start = s;
 
-				if (OPTSET(parse_eol)) {
-					s = strconv_cdata(s, endch);
+		// Scan for terminating '-->'.
+		SCANFOR(s[0] == '-' && s[1] == '-'
+			&& ENDSWITH(s[2], '>'));
+		CHECK_ERROR(status_bad_comment, s);
 
-					if (!s) THROW_ERROR(status_bad_cdata, cursor->value);
-				}
-				else
-				{
-					// Scan for terminating ']]>'.
-					SCANFOR(s[0] == ']' && s[1] == ']' && ENDSWITH(s[2], '>'));
-					CHECK_ERROR(status_bad_cdata, s);
+		if (this->option_set(parse_comments)) {
+			// TODO(povilas): if this->option_set(parse_eol),
+			// replace \r\n to \n.
+			size_t comment_len = (s - 1) - comment_start + 1;
+			string_type comment(comment_start, comment_len);
 
-					*s++ = 0; // Zero-terminate this segment.
-				}
-			}
-			else // Flagged for discard, but we still have to scan for the terminator.
-			{
-				// Scan for terminating ']]>'.
-				SCANFOR(s[0] == ']' && s[1] == ']' && ENDSWITH(s[2], '>'));
-				CHECK_ERROR(status_bad_cdata, s);
+			auto comment_node = node::create(node_comment);
+			comment_node->value(comment);
 
-				++s;
-			}
-
-			s += (s[1] == '>' ? 2 : 1); // Step over the last ']>'.
+			this->current_node_->append_child(comment_node);
 		}
-		else THROW_ERROR(status_bad_cdata, s);
+
+		// Step over the '\0->'.
+		s += (s[2] == '>' ? 3 : 2);
 	}
+	// '<![CDATA[...'
+	else if (*s == '[') {
+		if (!(*++s=='C' && *++s=='D' && *++s=='A' && *++s=='T'
+			&& *++s=='A' && *++s == '[')) {
+			THROW_ERROR(status_bad_cdata, s);
+		}
+
+		++s;
+		const char_type* cdata_start = s;
+
+		SCANFOR(s[0] == ']' && s[1] == ']'
+			&& ENDSWITH(s[2], '>'));
+		CHECK_ERROR(status_bad_cdata, s);
+
+		if (this->option_set(parse_cdata)) {
+			// TODO(povilas): if this->option_set(parse_eol),
+			// replace \r\n to \n.
+			size_t cdata_len = s - cdata_start + 1;
+			string_type cdata(cdata_start, cdata_len);
+
+			auto node = node::create(node_cdata);
+			node->value(cdata);
+			this->current_node_->append_child(node);
+		}
+
+		++s;
+		s += (s[1] == '>' ? 2 : 1); // Step over the last ']>'.
+	}
+	// <!DOCTYPE
 	else if (s[0] == 'D' && s[1] == 'O' && s[2] == 'C' && s[3] == 'T'
 		&& s[4] == 'Y' && s[5] == 'P' && ENDSWITH(s[6], 'E')) {
 		s -= 2;
 
-		if (cursor->parent) THROW_ERROR(status_bad_doctype, s);
+		const char_type* doctype_start = s + 9;
 
-		char_t* mark = s + 9;
+		s = advance_doctype_group(s, endch);
 
-		s = parse_doctype_group(s, endch, true);
+		if (this->option_set(parse_doctype)) {
+			while (is_chartype(*doctype_start, ct_space)) {
+				++doctype_start;
+			}
 
-		if (OPTSET(parse_doctype)) {
-			while (is_chartype(*mark, ct_space)) ++mark;
+			assert(s[-1] == '>');
+			size_t doctype_len = (s - 2) - doctype_start + 1;
+			string_type doctype(doctype_start, doctype_len);
 
-			PUSHNODE(node_doctype);
-
-			cursor->value = mark;
-
-			assert((s[0] == 0 && endch == '>') || s[-1] == '>');
-			s[*s == 0 ? 0 : -1] = 0;
-
-			POPNODE();
+			auto node = node::create(node_doctype);
+			node->value(doctype);
+			this->current_node_->append_child(node);
 		}
 	}
 	else if (*s == 0 && endch == '-') THROW_ERROR(status_bad_comment, s);
@@ -258,788 +274,232 @@ parser::parse_exclamation(char_t* s, node_struct* cursor,
 }
 
 
-char_t*
-parser::parse_question(char_t* s, node_struct*& ref_cursor,
-	unsigned int optmsk, char_t endch)
+inline void
+str_toupper(string_type& str)
 {
-	// TODO(povilas): optmsk unused?
-	// load into registers
-	node_struct* cursor = ref_cursor;
-	char_t ch = 0;
-
-	// parse node contents, starting with question mark
-	++s;
-
-	// read PI target
-	char_t* target = s;
-
-	if (!is_chartype(*s, ct_start_symbol)) THROW_ERROR(status_bad_pi, s);
-
-	SCANWHILE(is_chartype(*s, ct_symbol));
-	CHECK_ERROR(status_bad_pi, s);
-
-	// determine node type; stricmp / strcasecmp is not portable
-	bool declaration = (target[0] | ' ') == 'x'
-		&& (target[1] | ' ') == 'm' && (target[2] | ' ') == 'l'
-		&& target + 3 == s;
-
-	if (declaration ? OPTSET(parse_declaration) : OPTSET(parse_pi)) {
-		if (declaration) {
-			// disallow non top-level declarations
-			if (cursor->parent) THROW_ERROR(status_bad_pi, s);
-
-			PUSHNODE(node_declaration);
-		}
-		else {
-			PUSHNODE(node_pi);
-		}
-
-		cursor->name = target;
-
-		ENDSEG();
-
-		// parse value/attributes
-		if (ch == '?') {
-			// empty node
-			if (!ENDSWITH(*s, '>')) THROW_ERROR(status_bad_pi, s);
-			s += (*s == '>');
-
-			if(cursor->parent) {
-				POPNODE(); // Pop.
-			}
-			else {
-				// We have reached the root node so do not
-				// attempt to pop anymore nodes
-				return s;
-			}
-		}
-		else if (is_chartype(ch, ct_space)) {
-			SKIPWS();
-
-			// scan for tag end
-			char_t* value = s;
-
-			SCANFOR(s[0] == '?' && ENDSWITH(s[1], '>'));
-			CHECK_ERROR(status_bad_pi, s);
-
-			if (declaration) {
-				// replace ending ? with / so that 'element' terminates properly
-				*s = '/';
-
-				// we exit from this function with cursor at node_declaration, which is a signal to parse() to go to LOC_ATTRIBUTES
-				s = value;
-			}
-			else {
-				// store value and step over >
-				cursor->value = value;
-
-				if(cursor->parent) {
-					POPNODE(); // Pop.
-				}
-				else {
-					// We have reached the root node so do not
-					// attempt to pop anymore nodes
-					return s;
-				}
-				ENDSEG();
-
-				s += (*s == '>');
-			}
-		}
-		else THROW_ERROR(status_bad_pi, s);
-	}
-	else {
-		// scan for tag end
-		SCANFOR(s[0] == '?' && ENDSWITH(s[1], '>'));
-		CHECK_ERROR(status_bad_pi, s);
-
-		s += (s[1] == '>' ? 2 : 1);
-	}
-
-	// store from registers
-	ref_cursor = cursor;
-
-	return s;
-}
-
-
-typedef char_t* (*strconv_attribute_t)(char_t*, char_t);
-
-template <typename opt_escape>
-struct strconv_attribute_impl {
-	static char_t* parse_wnorm(char_t* s, char_t end_quote)
-	{
-		gap g;
-
-		// trim leading whitespaces
-		if (is_chartype(*s, ct_space)) {
-			char_t* str = s;
-
-			do ++str;
-			while (is_chartype(*str, ct_space));
-
-			g.push(s, str - s);
-		}
-
-		while (true) {
-			chartype_t skip_chars =
-				static_cast<enum chartype_t>(ct_parse_attr_ws
-					| ct_space);
-			while (!is_chartype(*s, skip_chars)) {
-				++s;
-			}
-
-			if (*s == end_quote)
-			{
-				char_t* str = g.flush(s);
-
-				do *str-- = 0;
-				while (is_chartype(*str, ct_space));
-
-				return s + 1;
-			}
-			else if (is_chartype(*s, ct_space))
-			{
-				*s++ = ' ';
-
-				if (is_chartype(*s, ct_space))
-				{
-					char_t* str = s + 1;
-					while (is_chartype(*str, ct_space)) ++str;
-
-					g.push(s, str - s);
-				}
-			}
-			else if (opt_escape::value && *s == '&')
-			{
-				s = strconv_escape(s, g);
-			}
-			else if (!*s)
-			{
-				return 0;
-			}
-			else ++s;
-		}
-	}
-
-	static char_t* parse_wconv(char_t* s, char_t end_quote)
-	{
-		gap g;
-
-		while (true)
-		{
-			while (!is_chartype(*s, ct_parse_attr_ws)) ++s;
-
-			if (*s == end_quote)
-			{
-				*g.flush(s) = 0;
-
-				return s + 1;
-			}
-			else if (is_chartype(*s, ct_space))
-			{
-				if (*s == '\r')
-				{
-					*s++ = ' ';
-
-					if (*s == '\n') g.push(s, 1);
-				}
-				else *s++ = ' ';
-			}
-			else if (opt_escape::value && *s == '&')
-			{
-				s = strconv_escape(s, g);
-			}
-			else if (!*s)
-			{
-				return 0;
-			}
-			else ++s;
-		}
-	}
-
-	static char_t* parse_eol(char_t* s, char_t end_quote)
-	{
-		gap g;
-
-		while (true)
-		{
-			while (!is_chartype(*s, ct_parse_attr)) ++s;
-
-			if (*s == end_quote)
-			{
-				*g.flush(s) = 0;
-
-				return s + 1;
-			}
-			else if (*s == '\r')
-			{
-				*s++ = '\n';
-
-				if (*s == '\n') g.push(s, 1);
-			}
-			else if (opt_escape::value && *s == '&')
-			{
-				s = strconv_escape(s, g);
-			}
-			else if (!*s)
-			{
-				return 0;
-			}
-			else ++s;
-		}
-	}
-
-	static char_t* parse_simple(char_t* s, char_t end_quote)
-	{
-		gap g;
-
-		while (true)
-		{
-			while (!is_chartype(*s, ct_parse_attr)) ++s;
-
-			if (*s == end_quote)
-			{
-				*g.flush(s) = 0;
-
-				return s + 1;
-			}
-			else if (opt_escape::value && *s == '&')
-			{
-				s = strconv_escape(s, g);
-			}
-			else if (!*s)
-			{
-				return 0;
-			}
-			else ++s;
-		}
-	}
-};
-
-
-strconv_attribute_t
-get_strconv_attribute(unsigned int optmask)
-{
-	STATIC_ASSERT(parser::parse_escapes == 0x10
-		&& parser::parse_eol == 0x20
-		&& parser::parse_wconv_attribute == 0x40
-		&& parser::parse_wnorm_attribute == 0x80);
-
-	switch ((optmask >> 4) & 15) // get bitmask for flags (wconv wnorm eol escapes)
-	{
-	case 0:  return strconv_attribute_impl<opt_false>::parse_simple;
-	case 1:  return strconv_attribute_impl<opt_true>::parse_simple;
-	case 2:  return strconv_attribute_impl<opt_false>::parse_eol;
-	case 3:  return strconv_attribute_impl<opt_true>::parse_eol;
-	case 4:  return strconv_attribute_impl<opt_false>::parse_wconv;
-	case 5:  return strconv_attribute_impl<opt_true>::parse_wconv;
-	case 6:  return strconv_attribute_impl<opt_false>::parse_wconv;
-	case 7:  return strconv_attribute_impl<opt_true>::parse_wconv;
-	case 8:  return strconv_attribute_impl<opt_false>::parse_wnorm;
-	case 9:  return strconv_attribute_impl<opt_true>::parse_wnorm;
-	case 10: return strconv_attribute_impl<opt_false>::parse_wnorm;
-	case 11: return strconv_attribute_impl<opt_true>::parse_wnorm;
-	case 12: return strconv_attribute_impl<opt_false>::parse_wnorm;
-	case 13: return strconv_attribute_impl<opt_true>::parse_wnorm;
-	case 14: return strconv_attribute_impl<opt_false>::parse_wnorm;
-	case 15: return strconv_attribute_impl<opt_true>::parse_wnorm;
-	// TODO(povilas): throw exception if it does.
-	default: return 0; // should not get here
+	std::locale loc;
+	for (auto it = std::begin(str); it != std::end(str); ++it) {
+		*it = std::toupper(*it, loc);
 	}
 }
 
-
-typedef char_t* (*strconv_pcdata_t)(char_t*);
-
-template <typename opt_eol, typename opt_escape>
-struct strconv_pcdata_impl {
-	static char_t* parse(char_t* s)
-	{
-		gap g;
-
-		while (true) {
-			while (!is_chartype(*s, ct_parse_pcdata)) ++s;
-
-			if (*s == '<') { // PCDATA ends here
-				*g.flush(s) = 0;
-
-				return s + 1;
-			}
-			// Either a single 0x0d or 0x0d 0x0a pair
-			else if (opt_eol::value && *s == '\r') {
-				*s++ = '\n'; // replace first one with 0x0a
-
-				if (*s == '\n') g.push(s, 1);
-			}
-			else if (opt_escape::value && *s == '&') {
-				s = strconv_escape(s, g);
-			}
-			else if (*s == 0) {
-				return s;
-			}
-			else {
-				++s;
-			}
-		}
-	}
-};
-
-
-strconv_pcdata_t
-get_strconv_pcdata(unsigned int optmask)
+std::shared_ptr<document>
+parser::parse(const string_type& str_html)
 {
-	STATIC_ASSERT(parser::parse_escapes == 0x10
-		&& parser::parse_eol == 0x20);
+	this->status_ = status_ok;
 
-	switch ((optmask >> 4) & 3) // get bitmask for flags (eol escapes)
-	{
-	case 0: return strconv_pcdata_impl<opt_false, opt_false>::parse;
-	case 1: return strconv_pcdata_impl<opt_false, opt_true>::parse;
-	case 2: return strconv_pcdata_impl<opt_true, opt_false>::parse;
-	case 3: return strconv_pcdata_impl<opt_true, opt_true>::parse;
-	// TODO(povilas): throw exception if it does?
-	default: return 0; // should not get here
+	if (str_html.size() == 0) {
+		return this->document_;
 	}
-}
 
+	const char_type* s = str_html.c_str();
 
-void
-parser::parse(char_t* s, node_struct* htmldoc, unsigned int optmsk,
-	char_t endch)
-{
-	strconv_attribute_t strconv_attribute = get_strconv_attribute(optmsk);
-	strconv_pcdata_t strconv_pcdata = get_strconv_pcdata(optmsk);
+	this->current_node_ = this->document_;
 
-	char_t ch = 0;
-
-	// Point the cursor to the html document node
-	node_struct* cursor = htmldoc;
-
-	// Set the marker
-	char_t* mark = s;
-
-	// It's necessary to keep another mark when we have to roll
-	// back the name and the mark at the same time.
-	char_t* sMark = s;
-	char_t* nameMark = s;
-
-	// Parse while the current character is not '\0'
-	while (*s != 0) {
+	// Parse while the current character is not '\0'.
+	while (*s != '\0') {
 		// Check if the current character is the start tag character
 		if (*s == '<') {
-			// Move to the next character
 			++s;
 
-			// Check if the current character is a start symbol
-		LOC_TAG:
-			if (is_chartype(*s, ct_start_symbol)) // '<#...'
-			{
-				// Append a new node to the tree.
-				PUSHNODE(node_element);
-
-				// Set the current element's name
-				cursor->name = s;
+			// Check if the current character is a tag start symbol.
+			if (is_chartype(*s, ct_start_symbol)) {
+				const char_type* tag_name_start = s;
 
 				// Scan while the current character is a symbol belonging
 				// to the set of symbols acceptable within a tag. In other
 				// words, scan until the termination symbol is discovered.
 				SCANWHILE(is_chartype(*s, ct_symbol));
 
-				// Save char in 'ch', terminate & step over.
-				ENDSEG();
+				size_t tag_name_len = (s - 1) - tag_name_start
+					+ 1;
+				string_type tag_name = string_type(
+					tag_name_start, tag_name_len);
+				str_toupper(tag_name);
 
-				// Capitalize the tag name
-				to_upper(cursor->name);
+				auto node = node::create(node_element);
+				node->name(tag_name);
+				this->current_node_->append_child(node);
+				this->current_node_ = node;
 
-				// End of tag
-				if (ch == '>') {
+				// End of tag.
+				if (*s == '>') {
 					auto it = std::find(
-						html_void_elements.cbegin(),
-						html_void_elements.cend(),
-						cursor->name);
-					if (it != html_void_elements.cend()) {
-						if (cursor->parent) {
-							POPNODE();
+						std::begin(html_void_elements),
+						std::end(html_void_elements),
+						this->current_node_->name());
+					if (it != std::end(html_void_elements)) {
+						if (this->current_node_->parent()) {
+							this->current_node_ =
+								this->current_node_->parent();
 						}
 					}
 				}
-				else if (is_chartype(ch, ct_space)) {
-				LOC_ATTRIBUTES:
-					while (true)
-					{
-						SKIPWS(); // Eat any whitespace.
+				else if (is_chartype(*s, ct_space)) {
+					while (true) {
+						SKIPWS();
 
-						if (is_chartype(*s, ct_start_symbol)) // <... #...
-						{
-							attribute_struct* a = append_attribute_ll(cursor, alloc); // Make space for this attribute.
-							if (!a) THROW_ERROR(status_out_of_memory, s);
+						// Attribute start.
+						if (is_chartype(*s, ct_start_symbol)) {
+							const char_type* attr_name_start = s;
 
-							a->name = s; // Save the offset.
-
-							SCANWHILE(is_chartype(*s, ct_symbol)); // Scan for a terminator.
-							CHECK_ERROR(status_bad_attribute, s); //$ redundant, left for performance
-
-							ENDSEG(); // Save char in 'ch', terminate & step over.
-
-							// Capitalize the attribute name
-							to_upper(a->name);
-
-							//$ redundant, left for performance
+							SCANWHILE(is_chartype(*s, ct_symbol));
 							CHECK_ERROR(status_bad_attribute, s);
 
-							if (is_chartype(ch, ct_space))
-							{
-								SKIPWS(); // Eat any whitespace.
-								CHECK_ERROR(status_bad_attribute, s); //$ redundant, left for performance
+							size_t attr_name_len = (s - 1) - attr_name_start + 1;
+							string_type attr_name = string_type(attr_name_start, attr_name_len);
+							str_toupper(attr_name);
 
-								ch = *s;
+							SKIPWS();
+							CHECK_ERROR(status_bad_attribute, s);
+
+							if (*s != '=') {
+								THROW_ERROR(status_bad_attribute, s);
+							}
+							++s;
+
+							SKIPWS();
+							CHECK_ERROR(status_bad_attribute, s);
+
+							if (!(*s == '"' || *s == '\'')) {
+								THROW_ERROR(status_bad_attribute, s);
+							}
+
+							char_type quote_symbol = *s;
+							++s;
+
+							const char_type* attr_val_start = s;
+
+							while (!is_chartype(*s, ct_parse_attr) || *s == '&') {
 								++s;
 							}
 
-							if (ch == '=') // '<... #=...'
-							{
-								SKIPWS(); // Eat any whitespace.
-
-								if (*s == '"' || *s == '\'') // '<... #="...'
-								{
-									ch = *s; // Save quote char to avoid breaking on "''" -or- '""'.
-									++s; // Step over the quote.
-									a->value = s; // Save the offset.
-
-									s = strconv_attribute(s, ch);
-
-									if (!s) THROW_ERROR(status_bad_attribute, a->value);
-
-									// After this line the loop continues from the start;
-									// Whitespaces, / and > are ok, symbols and EOF are wrong,
-									// everything else will be detected
-									if (is_chartype(*s, ct_start_symbol)) THROW_ERROR(status_bad_attribute, s);
-								}
-								else THROW_ERROR(status_bad_attribute, s);
+							if (*s != quote_symbol) {
+								THROW_ERROR(status_bad_attribute, "Bad closing attribute value symbol.");
 							}
-							else {//hot fix:try to fix that attribute=value situation;
-								ch='"';
-								a->value=s;
-								char_t* dp=s;
-								char_t temp;
-								//find the end of attribute,200 length is enough,it must return a position;
-								temp=*dp;//backup the former char
-								*dp='"';//hack at the end position;
-								s=strconv_attribute(s,ch);
-								*dp=temp;//restore it;
-								s--;// back it because we come to the " but it is > indeed;
-								if (is_chartype(*s, ct_start_symbol)) THROW_ERROR(status_bad_attribute, s);
 
-							}
-							//THROW_ERROR(status_bad_attribute, s);
+							size_t attr_val_len = (s - 1) - attr_val_start + 1;
+							string_type attr_val = string_type(attr_val_start, attr_val_len);
+
+							auto attr = attribute::create(attr_name, attr_val);
+							this->current_node_->append_attribute(attr);
+
+							// Step over quote symbol.
+							++s;
 						}
-						else if (*s == '/')
-						{
+						else if (*s == '/') {
 							++s;
 
-							if (*s == '>')
-							{
-								if(cursor->parent)
-								{
-									POPNODE(); // Pop.
+							if (*s == '>') {
+								if (this->current_node_->parent()) {
+									this->current_node_ = this->current_node_->parent();
 								}
-								else
-								{
-									// We have reached the root node so do not
-									// attempt to pop anymore nodes
-									break;
-								}
-								s++;
+
+								++s;
 								break;
 							}
-							else if (*s == 0 && endch == '>')
-							{
-								if(cursor->parent)
-								{
-									POPNODE(); // Pop.
-								}
-								else
-								{
-									// We have reached the root node so do not
-									// attempt to pop anymore nodes
-									break;
-								}
-								break;
+							else {
+								THROW_ERROR(status_bad_start_element, s);
 							}
-							else THROW_ERROR(status_bad_start_element, s);
 						}
-						else if (*s == '>')
-						{
+						else if (*s == '>') {
 							++s;
-
 							break;
 						}
-						else if (*s == 0 && endch == '>')
-						{
-							break;
+						else {
+							THROW_ERROR(status_bad_start_element, s);
 						}
-						else THROW_ERROR(status_bad_start_element, s);
-					}// while
-
-					// !!!
+					} // while
 				}
 				// Void HTML element.
-				else if (ch == '/') {
-					if (!ENDSWITH(*s, '>')) THROW_ERROR(status_bad_start_element, s);
-
-					if(cursor->parent) {
-						POPNODE(); // Pop.
-					}
-					else
-					{
-						// We have reached the root node so do not
-						// attempt to pop anymore nodes
-						break;
+				else if (*s == '/') {
+					if (s[1] != '>') {
+						THROW_ERROR(status_bad_start_element, s);
 					}
 
-					s += (*s == '>');
-				}
-				else if (ch == 0)
-				{
-					// we stepped over null terminator, backtrack & handle closing tag
-					--s;
+					if (this->current_node_->parent()) {
+						this->current_node_ =
+							this->current_node_->parent();
+					}
 
-					if (endch != '>') THROW_ERROR(status_bad_start_element, s);
+					++s;
 				}
-				else THROW_ERROR(status_bad_start_element, s);
+				else {
+					THROW_ERROR(status_bad_start_element, s);
+				}
+
+				++s;
 			}
-			else if (*s == '/')
-			{
+			// Closing tag, e.g. </hmtl>
+			else if (*s == '/') {
 				++s;
 
-				char_t* name = cursor->name;
-				if (!name)
-				{
-					// TODO ignore exception
-					//THROW_ERROR(status_end_element_mismatch, s);
-				}
-				else
-				{
-					sMark = s;
-					nameMark = name;
-					// Read the name while the character is a symbol
-					while (is_chartype(*s, ct_symbol))
-					{
-						// Check if we're closing the correct tag name:
-						// if the cursor tag does not match the current
-						// closing tag then throw an exception.
-						if (*s++ != *name++)
-						{
-							// TODO POPNODE or ignore exception
-							//THROW_ERROR(status_end_element_mismatch, s);
-
-							// Return to the last position where we started
-							// reading the expected closing tag name.
-							s = sMark;
-							name = nameMark;
-							break;
-						}
-					}
-					// Check if the end element is valid
-					if (*name)
-					{
-						if (*s == 0 && name[0] == endch && name[1] == 0)
-						{
-							THROW_ERROR(status_bad_end_element, s);
-						}
-						else
-						{
-							// TODO POPNODE or ignore exception
-							//THROW_ERROR(status_end_element_mismatch, s);
-						}
-					}
+				const char_type* tag_name_start = s;
+				while (is_chartype(*s, ct_symbol)) {
+					++s;
 				}
 
-				// The tag was closed so we have to pop the
-				// node off the "stack".
-				if(cursor->parent)
-				{
-					POPNODE(); // Pop.
+				size_t tag_name_len = (s - 1) - tag_name_start
+					+ 1;
+				string_type tag_name = string_type(tag_name_start,
+					tag_name_len);
+				str_toupper(tag_name);
+
+				const string_type& expected_name =
+					this->current_node_->name();
+				if (expected_name != tag_name) {
+					THROW_ERROR(status_end_element_mismatch,
+						s);
 				}
-				else
-				{
-					// We have reached the root node so do not
-					// attempt to pop anymore nodes
-					break;
+
+				if (this->current_node_->parent()) {
+					this->current_node_ =
+						this->current_node_->parent();
 				}
 
 				SKIPWS();
-
-				// If there end of the string is reached.
-				if (*s == 0)
-				{
-					// Check if the end character specified is the
-					// same as the closing tag.
-					if (endch != '>')
-					{
-						THROW_ERROR(status_bad_end_element, s);
-					}
+				if (*s != '>') {
+					THROW_ERROR(status_bad_end_element, "");
 				}
-				else
-				{
-					// Skip the end character becaue the tag
-					// was closed and the node was popped off
-					// the "stack".
-					if (*s != '>')
-					{
-						// Continue parsing
-						continue;
-						// TODO ignore the exception
-						// THROW_ERROR(status_bad_end_element, s);
-					}
-					++s;
-				}
-			}
-			else if (*s == '?') // '<?...'
-			{
-				s = parse_question(s, cursor, optmsk, endch);
-
-				assert(cursor);
-				if ((cursor->header & html_memory_page_type_mask) + 1 == node_declaration)
-				{
-					goto LOC_ATTRIBUTES;
-				}
-			}
-			else if (*s == '!') // '<!...'
-			{
-				s = parse_exclamation(s, cursor, optmsk, endch);
-			}
-			else if (*s == 0 && endch == '?')
-			{
-				THROW_ERROR(status_bad_pi, s);
-			}
-			else
-			{
-				THROW_ERROR(status_unrecognized_tag, s);
-			}
-		}
-		else
-		{
-			mark = s; // Save this offset while searching for a terminator.
-
-			SKIPWS(); // Eat whitespace if no genuine PCDATA here.
-
-			if ((!OPTSET(parse_ws_pcdata) || mark == s) && (*s == '<' || !*s))
-			{
-				continue;
-			}
-
-			s = mark;
-
-			if (cursor->parent)
-			{
-				PUSHNODE(node_pcdata); // Append a new node on the tree.
-				cursor->value = s; // Save the offset.
-
-				s = strconv_pcdata(s);
-
-				POPNODE(); // Pop since this is a standalone.
-
-				if (!*s) break;
-			}
-			else
-			{
-				SCANFOR(*s == '<'); // '...<'
-				if (!*s) break;
 
 				++s;
 			}
+			// Comment: <!-- ...
+			else if (*s == '!') {
+				s = parse_exclamation(s - 1);
+			}
+			else {
+				THROW_ERROR(status_unrecognized_tag, s);
+			}
+		}
+		else {
+			const char_type* pcdata_start = s;
+			while (!is_chartype(*s, ct_parse_pcdata)) {
+				++s;
+			}
 
-			// We're after '<'
-			goto LOC_TAG;
+			size_t pcdata_len = (s - 1) - pcdata_start + 1;
+			string_type pcdata = string_type(pcdata_start,
+				pcdata_len);
+			auto node = node::create(node_cdata);
+			node->value(pcdata);
+			this->current_node_->append_child(node);
 		}
 	}
 
-	// Check that last tag is closed
-	if (cursor != htmldoc)
-	{
-		// TODO POPNODE or ignore exception
-		// THROW_ERROR(status_end_element_mismatch, s);
-		cursor = htmldoc;
-	}
+	return this->document_;
 }
 
 
-inline html_parse_result
-make_parse_result(html_parse_status status, ptrdiff_t offset = 0)
+string_type
+parser::status_description() const
 {
-	html_parse_result result;
-	result.status = status;
-	result.offset = offset;
-
-	return result;
+	return parser::status_description(this->status_);
 }
 
 
-html_parse_result
-parser::parse(char_t* buffer, size_t length, node_struct* root,
-	unsigned int optmsk)
-{
-	if (buffer == nullptr || root == nullptr) {
-		throw std::invalid_argument("buffer and root node cannot be "
-			"null.");
-	}
-
-	document_struct* htmldoc = static_cast<document_struct*>(root);
-
-	// Store buffer for offset_debug.
-	htmldoc->buffer = buffer;
-
-	// Early-out for empty documents.
-	if (length == 0) {
-		return make_parse_result(status_ok);
-	}
-
-	// create parser on stack
-	parser parser(*htmldoc);
-
-	// save last character and make buffer zero-terminated (speeds up parsing)
-	char_t endch = buffer[length - 1];
-	buffer[length - 1] = 0;
-
-	// perform actual parsing
-	int error = setjmp(parser.error_handler);
-	if (error == 0) {
-		parser.parse(buffer, htmldoc, optmsk, endch);
-	}
-
-	html_parse_result result = make_parse_result(static_cast<html_parse_status>(error), parser.error_offset ? parser.error_offset - buffer : 0);
-	assert(result.offset >= 0 && static_cast<size_t>(result.offset) <= length);
-
-	// update allocator state
-	*static_cast<html_allocator*>(htmldoc) = parser.alloc;
-
-	// since we removed last character, we have to handle the only possible false positive
-	if (result && endch == '<')
-	{
-		// there's no possible well-formed document with < at the end
-		return make_parse_result(status_unrecognized_tag, length);
-	}
-
-	return result;
-}
-
-
-html_parse_result::html_parse_result() : status(status_internal_error),
-	offset(0), encoding(encoding_auto)
-{
-}
-
-
-html_parse_result::operator bool() const
-{
-	return status == status_ok;
-}
-
-
-const char*
-html_parse_result::description() const
+string_type
+parser::status_description(parse_status status)
 {
 	switch (status)
 	{
@@ -1065,3 +525,21 @@ html_parse_result::description() const
 	default: return "Unknown error";
 	}
 }
+
+
+std::shared_ptr<document>
+parser::get_document() const
+{
+	return this->document_;
+}
+
+
+// Private methods.
+
+bool
+parser::option_set(unsigned int opt)
+{
+	return this->options_ & opt;
+}
+
+} // cpp-html.

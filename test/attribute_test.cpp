@@ -1,21 +1,41 @@
 #include <gtest/gtest.h>
 
-#include <pugihtml/attribute.hpp>
-#include <pugihtml/pugihtml.hpp>
-
-#include "memory.hpp"
+#include <cpp-html/attribute.hpp>
+#include <cpp-html/cpp-html.hpp>
 
 
-namespace html = pugihtml;
+namespace html = cpphtml;
 
 
-TEST(attribute, DISABLED_set_get_name)
+TEST(attribute, create)
 {
-	html::html_allocator allocator;
-	html::attribute_struct* attr_s = html::attribute::allocate_attribute(
-		allocator);
-	html::attribute attr(attr_s);
+	auto attr = html::attribute::create("id", "content");
+	ASSERT_NE(nullptr, attr);
+	ASSERT_EQ("id", attr->name());
+	ASSERT_EQ("content", attr->value());
+}
 
-	attr.set_name("id");
-	ASSERT_EQ(html::string_type("id"), attr.name());
+
+TEST(attribute, compare)
+{
+	auto attr1 = html::attribute::create("id", "content");
+	auto attr2 = html::attribute::create("id", "content");
+
+	ASSERT_TRUE(*attr1 == *attr2);
+	ASSERT_FALSE(*attr1 != *attr2);
+
+	attr2->value("conten2");
+
+	ASSERT_TRUE(*attr1 != *attr2);
+	ASSERT_FALSE(*attr1 == *attr2);
+}
+
+
+TEST(attribute, set_value_assign_operator)
+{
+	auto attr = html::attribute::create("id");
+	ASSERT_NE(nullptr, attr);
+
+	*attr = "content";
+	ASSERT_EQ("content", attr->value());
 }

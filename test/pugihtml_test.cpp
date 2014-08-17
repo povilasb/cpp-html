@@ -2,14 +2,14 @@
 
 #include <gtest/gtest.h>
 
-#include <pugihtml/document.hpp>
+#include <cpp-html/document.hpp>
 
 
 using namespace std;
-namespace html = pugihtml;
+namespace html = cpphtml;
 
 
-TEST(pugihtml, parse_text)
+TEST(cpp-html, parse_text)
 {
 	string str_html =
 		"<html>"
@@ -27,7 +27,7 @@ TEST(pugihtml, parse_text)
 }
 
 
-TEST(pugihtml, parse_with_void_element)
+TEST(cpp-html, parse_with_void_element)
 {
 	string str_html =
 		"<html>"
