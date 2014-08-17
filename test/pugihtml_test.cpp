@@ -2,15 +2,14 @@
 
 #include <gtest/gtest.h>
 
-#include <pugihtml.hpp>
-#include <html_document.hpp>
+#include <cpp-html/document.hpp>
 
 
 using namespace std;
-namespace html = pugihtml;
+namespace html = cpphtml;
 
 
-TEST(pugihtml, parse_text)
+TEST(cpp-html, parse_text)
 {
 	string str_html =
 		"<html>"
@@ -20,7 +19,7 @@ TEST(pugihtml, parse_text)
 		"</hmtl>"
 	;
 
-	html::html_document doc;
+	html::document doc;
 	doc.load(str_html.c_str());
 	string str_hello = doc.child("HTML").child("BODY").child("P")
 		.first_child().value();
@@ -28,7 +27,7 @@ TEST(pugihtml, parse_text)
 }
 
 
-TEST(pugihtml, parse_with_void_element)
+TEST(cpp-html, parse_with_void_element)
 {
 	string str_html =
 		"<html>"
@@ -39,7 +38,7 @@ TEST(pugihtml, parse_with_void_element)
 		"</hmtl>"
 	;
 
-	html::html_document doc;
+	html::document doc;
 	doc.load(str_html.c_str());
 	string str_hello = doc.child("HTML").child("BODY").child("P")
 		.first_child().value();

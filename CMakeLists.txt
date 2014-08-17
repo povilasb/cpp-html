@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 if (NOT DEFINED PROJECT_NAME)
-	set(PROJECT_NAME "pugihtml")
+	set(PROJECT_NAME "cpp-html")
 endif(NOT DEFINED PROJECT_NAME)
 
 option(PUGIHTML_ENABLE_TESTS "Enables or disables tests. Disabled by default."
@@ -20,9 +20,15 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -pedantic")
 
 set(LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
+set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-file(GLOB_RECURSE SRC_FILES "${SRC_DIR}/*.cpp")
-add_library(pugihtml STATIC ${SRC_FILES})
+#file(GLOB_RECURSE SRC_FILES "${SRC_DIR}/*.cpp")
+set(SRC_FILES "${SRC_DIR}/node.cpp" "${SRC_DIR}/attribute.cpp"
+	"${SRC_DIR}/document.cpp" "${SRC_DIR}/parser.cpp")
+add_library("${PROJECT_LIB}" STATIC ${SRC_FILES})
+
+include_directories("${INCLUDE_DIR}")
+include_directories("${SRC_DIR}")
 
 
 #
@@ -32,9 +38,12 @@ add_library(pugihtml STATIC ${SRC_FILES})
 if (PUGIHTML_ENABLE_TESTS)
 
 	set(TEST_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test")
-	file(GLOB_RECURSE TEST_SRC_FILES "${TEST_SRC_DIR}/*.cpp")
+	#file(GLOB_RECURSE TEST_SRC_FILES "${TEST_SRC_DIR}/*.cpp")
+	set(TEST_SRC_FILES "${TEST_SRC_DIR}/node_test.cpp"
+		"${TEST_SRC_DIR}/attribute_test.cpp"
+		"${TEST_SRC_DIR}/document_test.cpp"
+		"${TEST_SRC_DIR}/parser_test.cpp")
 
-	include_directories("${SRC_DIR}")
 
 	set(GTEST_DIR "${LIBS_DIR}/gtest")
 	add_subdirectory(${GTEST_DIR})
