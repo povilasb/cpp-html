@@ -243,9 +243,6 @@ private:
 	unsigned int options_;
 	parse_status status_ = status_ok;
 
-	// Source document encoding.
-	html_encoding encoding_ = encoding_utf8;
-
 	char_type* error_offset_ = nullptr;
 
 	std::shared_ptr<document> document_;

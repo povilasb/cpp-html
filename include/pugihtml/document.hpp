@@ -5,7 +5,6 @@
 #include <memory>
 
 #include <pugihtml/pugihtml.hpp>
-#include <pugihtml/encoding.hpp>
 #include <pugihtml/node.hpp>
 
 
