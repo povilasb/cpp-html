@@ -7,8 +7,7 @@
 #include <memory>
 
 #include <pugihtml/pugihtml.hpp>
-
-#include "pugiconfig.hpp"
+#include <pugihtml/config.hpp>
 
 
 namespace pugihtml
