@@ -2,14 +2,6 @@
 About
 =====
 
-Master:
-
-.. image:: https://travis-ci.org/povilasb/cpp-html.svg?branch=master
-
-Develop:
-
-.. image:: https://travis-ci.org/povilasb/cpp-html.svg?branch=develop
-
 
 *cpp-html* is a c++ library for modern c++ (c++11 and up) compilers. It
 is used to parse and manipulate HTML documents with a DOM like API.
@@ -17,6 +9,18 @@ is used to parse and manipulate HTML documents with a DOM like API.
 Currently Unicode support is untested. Should work well with ASCII symbols.
 Also there's no functionality to save HTML document from DOM tree.
 See **TODO** for what's comming next.
+
+
+Build status
+============
+
+Master:
+
+.. image:: https://travis-ci.org/povilasb/cpp-html.svg?branch=master
+
+Develop:
+
+.. image:: https://travis-ci.org/povilasb/cpp-html.svg?branch=develop
 
 
 Goals
