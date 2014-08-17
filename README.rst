@@ -49,9 +49,7 @@ None.
 Test
 ----
 
-* googletest. Download latest version from
-  http://code.google.com/p/googletest/downloads/list. These tests were written
-  with 1.7.0. Unzip to './lib'.
+* googletest.
 
 
 Documentation
