@@ -3,8 +3,11 @@ About
 =====
 
 Master:
+
 .. image:: https://travis-ci.org/povilasb/cpp-html.svg?branch=master
+
 Develop:
+
 .. image:: https://travis-ci.org/povilasb/cpp-html.svg?branch=develop
 
 
