@@ -52,15 +52,11 @@ is_chartype(char_type ch, enum chartype_t char_type)
 // Parser utilities.
 // TODO(povilas): replace with inline functions or completely remove some of them.
 #define SKIPWS() { while (is_chartype(*s, ct_space)) ++s; }
-#define OPTSET(OPT) ( optmsk & OPT )
 
 #define THROW_ERROR(err, m) (void)m, throw parse_error(err)
 
-#define PUSHNODE(TYPE) { cursor = append_node(cursor, alloc, TYPE); if (!cursor) THROW_ERROR(status_out_of_memory, s); }
-#define POPNODE()			{ cursor = cursor->parent; }
 #define SCANFOR(X)			{ while (*s != 0 && !(X)) ++s; }
 #define SCANWHILE(X)		{ while ((X)) ++s; }
-#define ENDSEG()			{ ch = *s; *s = 0; ++s; }
 #define CHECK_ERROR(err, m)	{ if (*s == 0) THROW_ERROR(err, m); }
 
 // Utility macro for last character handling
