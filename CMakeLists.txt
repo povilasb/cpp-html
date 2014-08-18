@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 2.6)
 
-if (NOT DEFINED PROJECT_NAME)
-	set(PROJECT_NAME "cpp-html")
-endif(NOT DEFINED PROJECT_NAME)
+if (NOT DEFINED CPPHTML_PROJECT_NAME)
+	set(CPPHTML_PROJECT_NAME "cpp-html")
+endif(NOT DEFINED CPPHTML_PROJECT_NAME)
 
-option(PUGIHTML_ENABLE_TESTS "Enables or disables tests. Disabled by default."
+option(CPPHTML_ENABLE_TESTS "Enables or disables tests. Disabled by default."
 	OFF)
 
-project(${PROJECT_NAME} CXX)
+project(${CPPHTML_PROJECT_NAME} CXX)
 
-set(PROJECT_LIB "${PROJECT_NAME}")
+set(PROJECT_LIB "${CPPHTML_PROJECT_NAME}")
 
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}.")
@@ -35,7 +35,7 @@ include_directories("${SRC_DIR}")
 # Testing rules.
 #
 
-if (PUGIHTML_ENABLE_TESTS)
+if (CPPHTML_ENABLE_TESTS)
 
 	set(TEST_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test")
 	#file(GLOB_RECURSE TEST_SRC_FILES "${TEST_SRC_DIR}/*.cpp")
