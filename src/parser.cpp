@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <list>
 #include <locale>
+#include <sstream>
 
 #include <cpp-html/attribute.hpp>
 #include <cpp-html/node.hpp>
@@ -444,8 +445,9 @@ parser::parse(const string_type& str_html)
 				const string_type& expected_name =
 					this->current_node_->name();
 				if (expected_name != tag_name) {
-					THROW_ERROR(status_end_element_mismatch,
-						s);
+					throw parse_error(
+						status_end_element_mismatch,
+						str_html.c_str(), s);
 				}
 
 				if (this->current_node_->parent()) {
@@ -528,6 +530,60 @@ parser::get_document() const
 {
 	return this->document_;
 }
+
+
+// parse_error
+
+parse_error::parse_error(parse_status status)
+	: std::runtime_error(parser::status_description(status)),
+	status_(status)
+{
+}
+
+
+parse_error::parse_error(parse_status status, const char* str_html,
+	const char* parse_pos) : std::runtime_error(
+	parse_error::format_error_msg(status, str_html, parse_pos)),
+	status_(status)
+{
+}
+
+parse_status
+parse_error::status() const
+{
+	return this->status_;
+}
+
+
+std::string
+parse_error::format_error_msg(parse_status status, const char* str_html,
+	const char* pos)
+{
+	size_t line_nr = 0;
+
+	auto find_newline = [&](const char* start) {
+		return std::find_if(start, pos, [](char symb) {
+			return symb == '\n';
+		});
+	};
+
+	auto it = find_newline(str_html);
+	auto last_newline = str_html;
+	while (it < pos) {
+		last_newline = it;
+		++line_nr;
+		it = find_newline(it + 1);
+	}
+
+	size_t row_nr = pos - last_newline;
+
+	std::stringstream ss;
+	ss << parser::status_description(status)
+		<< " Line: " << line_nr << ", row: " << row_nr << ": '" <<
+		std::string(pos, 20) << "...'";
+	return ss.str();
+}
+
 
 
 // Private methods.

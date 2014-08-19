@@ -257,20 +257,26 @@ private:
 
 class parse_error : public std::runtime_error {
 public:
-	parse_error(const std::string& what) : std::runtime_error(what)
-	{
-	}
+	static std::string format_error_msg(parse_status status,
+		const char* str_html, const char* pos);
 
-	parse_error(parse_status status)
-		: std::runtime_error(parser::status_description(status)),
-		status_(status)
-	{
-	}
+	parse_error(parse_status status);
 
-	parse_status status() const
-	{
-		return this->status_;
-	}
+	/**
+	 * Creates new parse error with the specified type and data
+	 * neccessary to locate where parse error happened.
+	 *
+	 * @param status parse error type.
+	 * @param str_html parsed html document string.
+	 * @param parse_pos pointer to html string that parses used last.
+	 */
+	parse_error(parse_status status, const char* str_html,
+		const char* parse_pos);
+
+	/**
+	 * Returns parse error type.
+	 */
+	parse_status status() const;
 
 private:
 	parse_status status_;
