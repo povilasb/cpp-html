@@ -402,6 +402,17 @@ parser::parse(const string_type& str_html)
 						}
 						// Tag end, also might be void element.
 						else if (*s == '>') {
+							auto it = std::find(
+								std::begin(html_void_elements),
+								std::end(html_void_elements),
+								this->current_node_->name());
+							if (it != std::end(html_void_elements)) {
+								if (this->current_node_->parent()) {
+									this->current_node_ =
+										this->current_node_->parent();
+								}
+							}
+
 							break;
 						}
 						else {
