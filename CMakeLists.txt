@@ -38,6 +38,7 @@ include_directories("${SRC_DIR}")
 if (CPPHTML_ENABLE_TESTS)
 
 	set(TEST_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/test")
+	add_definitions(-D'TEST_FIXTURE_DIR=\"${TEST_SRC_DIR}/fixture\"')
 	#file(GLOB_RECURSE TEST_SRC_FILES "${TEST_SRC_DIR}/*.cpp")
 	set(TEST_SRC_FILES "${TEST_SRC_DIR}/node_test.cpp"
 		"${TEST_SRC_DIR}/attribute_test.cpp"
