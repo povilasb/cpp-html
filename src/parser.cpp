@@ -402,7 +402,6 @@ parser::parse(const string_type& str_html)
 						}
 						// Tag end, also might be void element.
 						else if (*s == '>') {
-							++s;
 							break;
 						}
 						else {
