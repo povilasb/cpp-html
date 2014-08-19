@@ -445,9 +445,12 @@ parser::parse(const string_type& str_html)
 				const string_type& expected_name =
 					this->current_node_->name();
 				if (expected_name != tag_name) {
+					std::string err_msg = "Expected: '"
+						+ expected_name + "', found: '"
+						+ tag_name + "'";
 					throw parse_error(
 						status_end_element_mismatch,
-						str_html.c_str(), s);
+						str_html.c_str(), s, err_msg);
 				}
 
 				if (this->current_node_->parent()) {
@@ -570,8 +573,8 @@ parse_error::parse_error(parse_status status)
 
 
 parse_error::parse_error(parse_status status, const char* str_html,
-	const char* parse_pos) : std::runtime_error(
-	parse_error::format_error_msg(status, str_html, parse_pos)),
+	const char* parse_pos, const std::string& err_msg) : std::runtime_error(
+	parse_error::format_error_msg(status, str_html, parse_pos, err_msg)),
 	status_(status)
 {
 }
@@ -585,7 +588,7 @@ parse_error::status() const
 
 std::string
 parse_error::format_error_msg(parse_status status, const char* str_html,
-	const char* pos)
+	const char* pos, const std::string& err_msg)
 {
 	size_t line_nr = 0;
 
@@ -608,7 +611,7 @@ parse_error::format_error_msg(parse_status status, const char* str_html,
 	std::stringstream ss;
 	ss << parser::status_description(status)
 		<< " Line: " << line_nr << ", row: " << row_nr << ": '" <<
-		std::string(pos, 20) << "...'";
+		std::string(pos, 20) << "...'. " << err_msg;
 	return ss.str();
 }
 
