@@ -362,36 +362,39 @@ parser::parse(const string_type& str_html)
 								throw parse_error(status_bad_attribute, str_html, s);
 							}
 
-							if (*s != '=') {
-								throw parse_error(status_bad_attribute, str_html, s);
-							}
-							++s;
-
-							SKIPWS();
-							if (*s == '\0') {
-								throw parse_error(status_bad_attribute, str_html, s);
-							}
-
-							if (!(*s == '"' || *s == '\'')) {
-								throw parse_error(status_bad_attribute, str_html, s);
-							}
-
-							char_type quote_symbol = *s;
-							++s;
-
-							const char_type* attr_val_start = s;
-
-							while (!is_chartype(*s, ct_parse_attr) || *s == '&') {
+							string_type attr_val;
+							// Attribute with value.
+							if (*s == '=') {
 								++s;
-							}
+								SKIPWS();
+								if (!(*s == '"' || *s == '\'')) {
+									throw parse_error(status_bad_attribute, str_html, s);
+								}
 
-							if (*s != quote_symbol) {
-								throw parse_error(status_bad_attribute, str_html, s,
-									"Bad attribute value closing symbol.");
-							}
+								char_type quote_symbol = *s;
+								++s;
 
-							size_t attr_val_len = (s - 1) - attr_val_start + 1;
-							string_type attr_val = string_type(attr_val_start, attr_val_len);
+								const char_type* attr_val_start = s;
+
+								while (!is_chartype(*s, ct_parse_attr) || *s == '&') {
+									++s;
+								}
+
+								if (*s != quote_symbol) {
+									throw parse_error(status_bad_attribute, str_html, s,
+										"Bad attribute value closing symbol.");
+								}
+
+								size_t attr_val_len = (s - 1) - attr_val_start + 1;
+								attr_val = string_type(attr_val_start, attr_val_len);
+							}
+							// Attribute has no value.
+							else {
+								SKIPWS();
+								if (*s == '\0') {
+									throw parse_error(status_bad_attribute, str_html, s);
+								}
+							}
 
 							auto attr = attribute::create(attr_name, attr_val);
 							this->current_node_->append_attribute(attr);
