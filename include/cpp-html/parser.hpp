@@ -258,7 +258,7 @@ private:
 class parse_error : public std::runtime_error {
 public:
 	static std::string format_error_msg(parse_status status,
-		const char* str_html, const char* pos,
+		const std::string& html, const char* pos,
 		const std::string& err_msg);
 
 	parse_error(parse_status status);
@@ -272,7 +272,7 @@ public:
 	 * @param parse_pos pointer to html string that parses used last.
 	 * @param err_msg additional message to be concated to formated error.
 	 */
-	parse_error(parse_status status, const char* str_html,
+	parse_error(parse_status status, const std::string& str_html,
 		const char* parse_pos, const std::string& err_msg = "");
 
 	/**
