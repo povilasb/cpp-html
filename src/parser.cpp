@@ -384,6 +384,7 @@ parser::parse(const string_type& str_html)
 							// Step over quote symbol.
 							++s;
 						}
+						// Void element end.
 						else if (*s == '/') {
 							++s;
 
@@ -399,6 +400,7 @@ parser::parse(const string_type& str_html)
 								THROW_ERROR(status_bad_start_element, s);
 							}
 						}
+						// Tag end, also might be void element.
 						else if (*s == '>') {
 							++s;
 							break;
