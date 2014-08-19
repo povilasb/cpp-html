@@ -289,6 +289,20 @@ parser::parse(const string_type& str_html)
 		return this->document_;
 	}
 
+	auto on_tag_end = [&, this]() {
+		// Changes current node to parent if it is void html element.
+		auto it = std::find(std::begin(html_void_elements),
+			std::end(html_void_elements),
+			this->current_node_->name());
+
+		if (it != std::end(html_void_elements)) {
+			if (this->current_node_->parent()) {
+				this->current_node_ =
+					this->current_node_->parent();
+			}
+		}
+	};
+
 	const char_type* s = str_html.c_str();
 
 	this->current_node_ = this->document_;
@@ -321,16 +335,7 @@ parser::parse(const string_type& str_html)
 
 				// End of tag.
 				if (*s == '>') {
-					auto it = std::find(
-						std::begin(html_void_elements),
-						std::end(html_void_elements),
-						this->current_node_->name());
-					if (it != std::end(html_void_elements)) {
-						if (this->current_node_->parent()) {
-							this->current_node_ =
-								this->current_node_->parent();
-						}
-					}
+					on_tag_end();
 				}
 				else if (is_chartype(*s, ct_space)) {
 					while (true) {
@@ -402,17 +407,7 @@ parser::parse(const string_type& str_html)
 						}
 						// Tag end, also might be void element.
 						else if (*s == '>') {
-							auto it = std::find(
-								std::begin(html_void_elements),
-								std::end(html_void_elements),
-								this->current_node_->name());
-							if (it != std::end(html_void_elements)) {
-								if (this->current_node_->parent()) {
-									this->current_node_ =
-										this->current_node_->parent();
-								}
-							}
-
+							on_tag_end();
 							break;
 						}
 						else {
