@@ -349,25 +349,31 @@ parser::parse(const string_type& str_html)
 							const char_type* attr_name_start = s;
 
 							SCANWHILE(is_chartype(*s, ct_symbol));
-							CHECK_ERROR(status_bad_attribute, s);
+							if (*s == '\0') {
+								throw parse_error(status_bad_attribute, str_html, s);
+							}
 
 							size_t attr_name_len = (s - 1) - attr_name_start + 1;
 							string_type attr_name = string_type(attr_name_start, attr_name_len);
 							str_toupper(attr_name);
 
 							SKIPWS();
-							CHECK_ERROR(status_bad_attribute, s);
+							if (*s == '\0') {
+								throw parse_error(status_bad_attribute, str_html, s);
+							}
 
 							if (*s != '=') {
-								THROW_ERROR(status_bad_attribute, s);
+								throw parse_error(status_bad_attribute, str_html, s);
 							}
 							++s;
 
 							SKIPWS();
-							CHECK_ERROR(status_bad_attribute, s);
+							if (*s == '\0') {
+								throw parse_error(status_bad_attribute, str_html, s);
+							}
 
 							if (!(*s == '"' || *s == '\'')) {
-								THROW_ERROR(status_bad_attribute, s);
+								throw parse_error(status_bad_attribute, str_html, s);
 							}
 
 							char_type quote_symbol = *s;
@@ -380,7 +386,8 @@ parser::parse(const string_type& str_html)
 							}
 
 							if (*s != quote_symbol) {
-								THROW_ERROR(status_bad_attribute, "Bad closing attribute value symbol.");
+								throw parse_error(status_bad_attribute, str_html, s,
+									"Bad attribute value closing symbol.");
 							}
 
 							size_t attr_val_len = (s - 1) - attr_val_start + 1;
