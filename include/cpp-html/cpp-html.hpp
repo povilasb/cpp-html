@@ -2,6 +2,7 @@
 #define PUGIHTML_HPP 1
 
 #include <string>
+#include <memory>
 
 
 namespace cpphtml
@@ -16,6 +17,10 @@ typedef char char_type;
 // String type.
 typedef std::basic_string<char_type, std::char_traits<char_type>,
 	std::allocator<char_type> > string_type;
+
+class document;
+// HTML Document type.
+typedef std::shared_ptr<document> document_type;
 
 } // cpp-html.
 
