@@ -289,6 +289,8 @@ parser::parse(const string_type& str_html)
 		return this->document_;
 	}
 
+	const char_type* s = str_html.c_str();
+
 	auto on_tag_end = [&, this](bool check_void_elements) {
 		// Changes current node to parent if it is void html element.
 		auto it = std::end(html_void_elements);
@@ -306,7 +308,42 @@ parser::parse(const string_type& str_html)
 		}
 	};
 
-	const char_type* s = str_html.c_str();
+	auto on_tag_start = [&, this](const std::string& tag_name) {
+		auto node = node::create(node_element);
+		node->name(tag_name);
+		this->current_node_->append_child(node);
+		this->current_node_ = node;
+	};
+
+	auto on_closing_tag = [&, this](const std::string& tag_name) {
+		const string_type& expected_name =
+			this->current_node_->name();
+		if (expected_name != tag_name) {
+			std::string err_msg = "Expected: '"
+				+ expected_name + "', found: '"
+				+ tag_name + "'";
+			throw parse_error(
+				status_end_element_mismatch,
+				str_html, s, err_msg);
+		}
+
+		if (this->current_node_->parent()) {
+			this->current_node_ =
+				this->current_node_->parent();
+		}
+	};
+
+	auto on_pcdata = [&, this](const std::string& pcdata) {
+		auto node = node::create(node_cdata);
+		node->value(pcdata);
+		this->current_node_->append_child(node);
+	};
+
+	auto on_attribute = [&, this](const std::string& attr_name,
+		const std::string& attr_val) {
+		auto attr = attribute::create(attr_name, attr_val);
+		this->current_node_->append_attribute(attr);
+	};
 
 	this->current_node_ = this->document_;
 
@@ -331,10 +368,7 @@ parser::parse(const string_type& str_html)
 					tag_name_start, tag_name_len);
 				str_toupper(tag_name);
 
-				auto node = node::create(node_element);
-				node->name(tag_name);
-				this->current_node_->append_child(node);
-				this->current_node_ = node;
+				on_tag_start(tag_name);
 
 				// End of tag.
 				if (*s == '>') {
@@ -396,8 +430,7 @@ parser::parse(const string_type& str_html)
 								}
 							}
 
-							auto attr = attribute::create(attr_name, attr_val);
-							this->current_node_->append_attribute(attr);
+							on_attribute(attr_name, attr_val);
 
 							// Step over quote symbol.
 							++s;
@@ -407,10 +440,7 @@ parser::parse(const string_type& str_html)
 							++s;
 
 							if (*s == '>') {
-								if (this->current_node_->parent()) {
-									this->current_node_ = this->current_node_->parent();
-								}
-
+								on_tag_end(false);
 								++s;
 								break;
 							}
@@ -452,27 +482,14 @@ parser::parse(const string_type& str_html)
 					++s;
 				}
 
+
 				size_t tag_name_len = (s - 1) - tag_name_start
 					+ 1;
 				string_type tag_name = string_type(tag_name_start,
 					tag_name_len);
 				str_toupper(tag_name);
 
-				const string_type& expected_name =
-					this->current_node_->name();
-				if (expected_name != tag_name) {
-					std::string err_msg = "Expected: '"
-						+ expected_name + "', found: '"
-						+ tag_name + "'";
-					throw parse_error(
-						status_end_element_mismatch,
-						str_html, s, err_msg);
-				}
-
-				if (this->current_node_->parent()) {
-					this->current_node_ =
-						this->current_node_->parent();
-				}
+				on_closing_tag(tag_name);
 
 				SKIPWS();
 				if (*s != '>') {
@@ -498,9 +515,8 @@ parser::parse(const string_type& str_html)
 			size_t pcdata_len = (s - 1) - pcdata_start + 1;
 			string_type pcdata = string_type(pcdata_start,
 				pcdata_len);
-			auto node = node::create(node_cdata);
-			node->value(pcdata);
-			this->current_node_->append_child(node);
+
+			on_pcdata(pcdata);
 		}
 	}
 
