@@ -1,9 +1,49 @@
+#include <fstream>
+
 #include <gtest/gtest.h>
 
 #include <cpp-html/parser.hpp>
 #include <cpp-html/attribute.hpp>
+#include <cpp-html/cpp-html.hpp>
 
 namespace html = cpphtml;
+
+class Parse_file_test : public ::testing::Test {
+protected:
+	/**
+	 * Reads html from the specified file, parses it and builds document
+	 * object.
+	 *
+	 * @throws ios_base::failure if fails to read from file.
+	 */
+	void
+	parse_file(const std::string& fname)
+	{
+		std::ifstream f(fname);
+		if (!f.is_open()) {
+			throw std::ios_base::failure("Failed to open file " +
+				fname);
+		}
+
+		f.seekg(0, f.end);
+		auto fsize = f.tellg();
+		f.seekg(0, f.beg);
+
+		char* fbuff = new char[fsize];
+		f.read(fbuff, fsize);
+		if (!f) {
+			throw std::ios_base::failure("Failed to read html from file.");
+		}
+
+		html::string_type str_html(fbuff, fsize);
+		this->doc = this->parser.parse(str_html);
+
+		f.close();
+	}
+
+	html::parser parser;
+	html::document_type doc;
+};
 
 
 TEST(parser, advance_doctype_primitive)
@@ -203,4 +243,48 @@ TEST(parser, parse_tree_find_element_by_attribute)
 	html::parser parser;
 	auto doc = parser.parse(str_html);
 	ASSERT_NE(nullptr, doc);
+
+	auto div = doc->get_element_by_id("content");
+	ASSERT_NE(nullptr, div);
+	ASSERT_EQ("DIV", div->name());
+	ASSERT_EQ("Some content text.", div->first_child()->value());
+}
+
+
+TEST(parser, parse_void_element_with_attribute)
+{
+	html::string_type str_html{"<head><link type='text/css' href='main.css'>"
+		"</head>"};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
+
+	auto link = doc->first_child()->first_child();
+	ASSERT_NE(nullptr, link);
+
+	auto attr = link->get_attribute("HREF");
+	ASSERT_NE(nullptr, attr);
+	ASSERT_EQ("main.css", attr->value());
+}
+
+
+TEST(parser, parse_element_with_empty_attribute)
+{
+	html::string_type str_html{"<option selected value='opt1'>name"
+		"</option>'"};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
+
+	auto attr = doc->first_child()->get_attribute("SELECTED");
+	ASSERT_NE(nullptr, attr);
+	ASSERT_EQ("", attr->value());
+}
+
+
+TEST_F(Parse_file_test, craigslist_newyork_index)
+{
+	this->parse_file(TEST_FIXTURE_DIR"/craigslist_newyork_index.html");
 }
