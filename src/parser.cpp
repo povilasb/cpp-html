@@ -486,6 +486,9 @@ parser::parse(const string_type& str_html)
 
 								size_t attr_val_len = (s - 1) - attr_val_start + 1;
 								attr_val = string_type(attr_val_start, attr_val_len);
+
+								// Step over quote symbol.
+								++s;
 							}
 							// Attribute has no value.
 							else {
@@ -496,9 +499,6 @@ parser::parse(const string_type& str_html)
 							}
 
 							on_attribute(attr_name, attr_val);
-
-							// Step over quote symbol.
-							++s;
 						}
 						// Void element end.
 						else if (*s == '/') {
@@ -510,7 +510,7 @@ parser::parse(const string_type& str_html)
 								break;
 							}
 							else {
-								THROW_ERROR(status_bad_start_element, s);
+								throw parse_error(status_bad_start_element, str_html, s);
 							}
 						}
 						// Tag end, also might be void element.
@@ -519,7 +519,7 @@ parser::parse(const string_type& str_html)
 							break;
 						}
 						else {
-							THROW_ERROR(status_bad_start_element, s);
+							throw parse_error(status_bad_start_element, str_html, s);
 						}
 					} // while
 				}
@@ -527,13 +527,13 @@ parser::parse(const string_type& str_html)
 				else if (*s == '/') {
 					++s;
 					if (*s != '>') {
-						THROW_ERROR(status_bad_start_element, s);
+						throw parse_error(status_bad_start_element, str_html, s);
 					}
 
 					on_tag_end(false);
 				}
 				else {
-					THROW_ERROR(status_bad_start_element, s);
+					throw parse_error(status_bad_start_element, str_html, s);
 				}
 
 				++s;
