@@ -332,6 +332,16 @@ TEST(parser, parse_closing_and_optional_li_end_tags)
 }
 
 
+TEST(parser, parse_attribute_with_no_value_before_tag_end)
+{
+	html::string_type str_html{"<option value='' selected>all new york</option>"};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
+}
+
+
 TEST_F(Parse_file_test, craigslist_newyork_index)
 {
 	this->parse_file(TEST_FIXTURE_DIR"/craigslist_newyork_index.html");
