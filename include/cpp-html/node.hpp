@@ -211,7 +211,7 @@ public:
 	std::shared_ptr<node> root() const;
 
 	/**
-	 * Returns empty string of no PCDATA/CDATA child nodes are found.
+	 * Returns empty string, if no PCDATA/CDATA child nodes are found.
 	 *
 	 * @return value of the first child node of type PCDATA/CDATA.
 	 */
