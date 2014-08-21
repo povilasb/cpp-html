@@ -466,20 +466,23 @@ parser::parse(const string_type& str_html)
 							if (*s == '=') {
 								++s;
 								SKIPWS();
-								if (!(*s == '"' || *s == '\'')) {
-									throw parse_error(status_bad_attribute, str_html, s);
+
+								char_type quote_symbol = 0;
+								int parse_mode = ct_parse_attr;
+								if (*s == '"' || *s == '\'') {
+									quote_symbol = *s;
+									++s;
+								}
+								else {
+									parse_mode |= ct_space;
 								}
 
-								char_type quote_symbol = *s;
-								++s;
-
 								const char_type* attr_val_start = s;
-
-								while (!is_chartype(*s, ct_parse_attr) || *s == '&') {
+								while (!is_chartype(*s, static_cast<enum chartype_t>(parse_mode)) || *s == '&') {
 									++s;
 								}
 
-								if (*s != quote_symbol) {
+								if (quote_symbol && *s != quote_symbol) {
 									throw parse_error(status_bad_attribute, str_html, s,
 										"Bad attribute value closing symbol.");
 								}
@@ -487,8 +490,10 @@ parser::parse(const string_type& str_html)
 								size_t attr_val_len = (s - 1) - attr_val_start + 1;
 								attr_val = string_type(attr_val_start, attr_val_len);
 
-								// Step over quote symbol.
-								++s;
+								if (quote_symbol) {
+									// Step over quote symbol.
+									++s;
+								}
 							}
 							// Attribute has no value.
 							else {
