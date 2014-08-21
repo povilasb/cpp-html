@@ -334,11 +334,27 @@ TEST(parser, parse_closing_and_optional_li_end_tags)
 
 TEST(parser, parse_attribute_with_no_value_before_tag_end)
 {
-	html::string_type str_html{"<option value='' selected>all new york</option>"};
+	html::string_type str_html{"<option value='' selected>all new york"
+		"</option>"};
 
 	html::parser parser;
 	auto doc = parser.parse(str_html);
 	ASSERT_NE(nullptr, doc);
+}
+
+
+TEST(parser, parse_unquoted_attribute_value)
+{
+	html::string_type str_html{"<meta name=keywords content=\"kw1, kw2\">"};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
+
+	auto attr = doc->first_child()->first_attribute();
+	ASSERT_NE(nullptr, attr);
+	ASSERT_EQ("NAME", attr->name());
+	ASSERT_EQ("keywords", attr->value());
 }
 
 
