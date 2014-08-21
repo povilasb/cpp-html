@@ -4,6 +4,8 @@
 #include <list>
 #include <locale>
 #include <sstream>
+#include <unordered_map>
+#include <set>
 
 #include <cpp-html/attribute.hpp>
 #include <cpp-html/node.hpp>
@@ -64,9 +66,62 @@ is_chartype(char_type ch, enum chartype_t char_type)
 #define ENDSWITH(c, e) ((c) == (e) || ((c) == 0 && endch == (e)))
 
 
+// TODO(povilas): replace with set for faster search.
 std::list<string_type> html_void_elements = {"AREA", "BASE", "BR",
 	"COL", "EMBED", "HR", "IMG", "INPUT", "KEYGEN", "LINK", "MENUITEM",
 	"META", "PARAM", "SOURCE", "TRACK", "WBR"};
+
+
+// End tag might be ommited for some elements, if they are followed by specific
+// elements. E.g. one might write
+//	<ul>
+//		<li>item1
+//		<li>item2
+//	</ul>
+std::unordered_map<string_type, std::set<string_type> > no_end_tag_by_sibling = {
+	{"LI", {"LI"}}
+};
+
+
+// End tag might be ommited for some elements, if they are the last child
+// of their parent element. E.g.
+//	<ul>
+//		<li>item1
+//	</ul>
+std::set<string_type> no_end_tag_by_child = {"LI"};
+
+
+/**
+ * Checks if previous sibling should be closed automatically.
+ */
+inline bool
+autoclose_prev_sibling(const std::string& tag_name,
+	const std::string& prev_sibling_name)
+{
+	auto it_siblings = no_end_tag_by_sibling.find(tag_name);
+	if (it_siblings == std::end(no_end_tag_by_sibling)) {
+		return false;
+	}
+
+	auto it = it_siblings->second.find(prev_sibling_name);
+	if (it == std::end(it_siblings->second)) {
+		return false;
+	}
+
+	return true;
+}
+
+
+inline bool
+autoclose_last_child(const std::string& tag_name)
+{
+	auto it = no_end_tag_by_child.find(tag_name);
+	if (it != std::end(no_end_tag_by_child)) {
+		return true;
+	}
+
+	return false;
+}
 
 
 const char_type*
@@ -311,25 +366,35 @@ parser::parse(const string_type& str_html)
 	auto on_tag_start = [&, this](const std::string& tag_name) {
 		auto node = node::create(node_element);
 		node->name(tag_name);
-		this->current_node_->append_child(node);
+
+		auto parent = this->current_node_->parent();
+		if (parent && autoclose_prev_sibling(tag_name,
+			this->current_node_->name())) {
+			parent->append_child(node);
+		}
+		else {
+			this->current_node_->append_child(node);
+		}
+
 		this->current_node_ = node;
 	};
 
 	auto on_closing_tag = [&, this](const std::string& tag_name) {
-		const string_type& expected_name =
-			this->current_node_->name();
+		if (tag_name != this->current_node_->name()
+			&& autoclose_last_child(this->current_node_->name())) {
+			this->current_node_ = this->current_node_->parent();
+		}
+
+		const string_type& expected_name = this->current_node_->name();
 		if (expected_name != tag_name) {
-			std::string err_msg = "Expected: '"
-				+ expected_name + "', found: '"
-				+ tag_name + "'";
-			throw parse_error(
-				status_end_element_mismatch,
-				str_html, s, err_msg);
+			std::string err_msg = "Expected: '" + expected_name
+				+ "', found: '" + tag_name + "'";
+			throw parse_error(status_end_element_mismatch, str_html,
+				s, err_msg);
 		}
 
 		if (this->current_node_->parent()) {
-			this->current_node_ =
-				this->current_node_->parent();
+			this->current_node_ = this->current_node_->parent();
 		}
 	};
 
