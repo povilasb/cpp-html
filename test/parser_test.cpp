@@ -284,7 +284,58 @@ TEST(parser, parse_element_with_empty_attribute)
 }
 
 
+TEST(parser, parse_optional_li_end_tag)
+{
+	html::string_type str_html{"<ul><li>item1</ul>"};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
+
+	auto ul = doc->first_child();
+	ASSERT_NE(nullptr, ul);
+
+	auto li = ul->first_child();
+	ASSERT_NE(nullptr, li);
+
+	auto text = li->first_child();
+	ASSERT_NE(nullptr, text);
+	ASSERT_EQ("item1", text->value());
+}
+
+
+TEST(parser, parse_multiple_optional_li_end_tags)
+{
+	html::string_type str_html{"<ul><li>item1<li>item2</ul>"};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
+
+	auto li1 = doc->first_child()->first_child();
+	ASSERT_NE(nullptr, li1);
+	ASSERT_EQ("item1", li1->child_value());
+
+	auto li2 = li1->next_sibling();
+	ASSERT_NE(nullptr, li2);
+	ASSERT_EQ("item2", li2->child_value());
+}
+
+
+TEST(parser, parse_closing_and_optional_li_end_tags)
+{
+	html::string_type str_html{"<ul><li>item1</li><li>item2</ul>"};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
+}
+
+
 TEST_F(Parse_file_test, craigslist_newyork_index)
 {
 	this->parse_file(TEST_FIXTURE_DIR"/craigslist_newyork_index.html");
+	auto div = this->doc->get_element_by_id("langlinks");
+	ASSERT_NE(nullptr, div);
+	ASSERT_EQ("DIV", div->name());
 }
