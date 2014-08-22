@@ -756,7 +756,7 @@ parse_error::format_error_msg(parse_status status, const std::string& html,
 		: str_html + html.size() - pos;
 	std::stringstream ss;
 	ss << parser::status_description(status)
-		<< " Line: " << line_nr << ", row: " << row_nr << ": '" <<
+		<< " Line: " << line_nr << ", column: " << row_nr << ": '" <<
 		std::string(pos, chars_to_print) << "...'. " << err_msg;
 	return ss.str();
 }
