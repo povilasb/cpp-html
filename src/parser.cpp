@@ -573,7 +573,8 @@ parser::parse(const string_type& str_html)
 				s = parse_exclamation(s - 1);
 			}
 			else {
-				THROW_ERROR(status_unrecognized_tag, s);
+				throw parse_error(status_unrecognized_tag,
+					str_html, s);
 			}
 		}
 		else {
