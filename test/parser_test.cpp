@@ -358,6 +358,20 @@ TEST(parser, parse_unquoted_attribute_value)
 }
 
 
+TEST(parser, parse_script)
+{
+	html::string_type str_html{"<script>var str=\"<\";</script>"};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
+
+	auto script = doc->first_child();
+	ASSERT_NE(nullptr, script);
+	ASSERT_EQ("var str=\"<\";", script->child_value());
+}
+
+
 TEST_F(Parse_file_test, craigslist_newyork_index)
 {
 	this->parse_file(TEST_FIXTURE_DIR"/craigslist_newyork_index.html");
