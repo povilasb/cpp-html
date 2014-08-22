@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstring>
 #include <stdexcept>
 #include <algorithm>
 #include <list>
@@ -346,7 +347,7 @@ parser::parse(const string_type& str_html)
 
 	const char_type* s = str_html.c_str();
 
-	auto on_tag_end = [&, this](bool check_void_elements) {
+	auto on_tag_end = [&](bool check_void_elements) {
 		// Changes current node to parent if it is void html element.
 		auto it = std::end(html_void_elements);
 		if (check_void_elements) {
@@ -363,7 +364,7 @@ parser::parse(const string_type& str_html)
 		}
 	};
 
-	auto on_tag_start = [&, this](const std::string& tag_name) {
+	auto on_tag_start = [&](const std::string& tag_name) {
 		auto node = node::create(node_element);
 		node->name(tag_name);
 
@@ -379,7 +380,7 @@ parser::parse(const string_type& str_html)
 		this->current_node_ = node;
 	};
 
-	auto on_closing_tag = [&, this](const std::string& tag_name) {
+	auto on_closing_tag = [&](const std::string& tag_name) {
 		if (tag_name != this->current_node_->name()
 			&& autoclose_last_child(this->current_node_->name())) {
 			this->current_node_ = this->current_node_->parent();
@@ -398,16 +399,58 @@ parser::parse(const string_type& str_html)
 		}
 	};
 
-	auto on_pcdata = [&, this](const std::string& pcdata) {
+	auto on_pcdata = [&](const std::string& pcdata) {
 		auto node = node::create(node_cdata);
 		node->value(pcdata);
 		this->current_node_->append_child(node);
 	};
 
-	auto on_attribute = [&, this](const std::string& attr_name,
+	auto on_attribute = [&](const std::string& attr_name,
 		const std::string& attr_val) {
 		auto attr = attribute::create(attr_name, attr_val);
 		this->current_node_->append_attribute(attr);
+	};
+
+	auto on_script = [&](const string_type& script_value) {
+		auto node = node::create(node_cdata);
+		node->value(script_value);
+		this->current_node_->append_child(node);
+	};
+
+	auto parse_pcdata = [&]() {
+		const char_type* pcdata_start = s;
+		while (!is_chartype(*s, ct_parse_pcdata)) {
+			++s;
+		}
+
+		size_t pcdata_len = (s - 1) - pcdata_start + 1;
+		string_type pcdata = string_type(pcdata_start,
+			pcdata_len);
+
+		on_pcdata(pcdata);
+	};
+
+	auto parse_script = [&]() {
+		const char_type* script_value_start = s;
+		const char_type* script_value_end = s;
+
+		while (*s != '\0') {
+			if (strncmp(s, "</script>", 10) == 0) {
+				script_value_end = s - 1;
+				s += 9;
+				break;
+			}
+			else {
+				++s;
+			}
+		}
+
+		size_t script_value_len = script_value_end - script_value_start
+			+ 1;
+		string_type script_value = string_type(script_value_start,
+			script_value_len);
+
+		on_script(script_value);
 	};
 
 	this->current_node_ = this->document_;
@@ -578,16 +621,12 @@ parser::parse(const string_type& str_html)
 			}
 		}
 		else {
-			const char_type* pcdata_start = s;
-			while (!is_chartype(*s, ct_parse_pcdata)) {
-				++s;
+			if (this->current_node_->name() == "SCRIPT") {
+				parse_script();
 			}
-
-			size_t pcdata_len = (s - 1) - pcdata_start + 1;
-			string_type pcdata = string_type(pcdata_start,
-				pcdata_len);
-
-			on_pcdata(pcdata);
+			else {
+				parse_pcdata();
+			}
 		}
 	}
 
