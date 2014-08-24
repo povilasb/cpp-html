@@ -125,6 +125,15 @@ autoclose_last_child(const std::string& tag_name)
 }
 
 
+inline bool
+is_void_element(const std::string& tag_name)
+{
+	auto it = std::find(std::begin(html_void_elements),
+		std::end(html_void_elements), tag_name);
+	return it != std::end(html_void_elements);
+}
+
+
 const char_type*
 parser::advance_doctype_primitive(const char_type* s)
 {
@@ -348,15 +357,9 @@ parser::parse(const string_type& str_html)
 	const char_type* s = str_html.c_str();
 
 	auto on_tag_end = [&](bool check_void_elements) {
-		// Changes current node to parent if it is void html element.
-		auto it = std::end(html_void_elements);
-		if (check_void_elements) {
-			it = std::find(std::begin(html_void_elements),
-				std::end(html_void_elements),
-				this->current_node_->name());
-		}
+		if (!check_void_elements
+			|| is_void_element(this->current_node_->name())) {
 
-		if (!check_void_elements || it != std::end(html_void_elements)) {
 			if (this->current_node_->parent()) {
 				this->current_node_ =
 					this->current_node_->parent();
