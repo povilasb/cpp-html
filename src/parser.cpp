@@ -105,11 +105,7 @@ autoclose_prev_sibling(const std::string& tag_name,
 	}
 
 	auto it = it_siblings->second.find(prev_sibling_name);
-	if (it == std::end(it_siblings->second)) {
-		return false;
-	}
-
-	return true;
+	return it != std::end(it_siblings->second);
 }
 
 
@@ -117,11 +113,7 @@ inline bool
 autoclose_last_child(const std::string& tag_name)
 {
 	auto it = no_end_tag_by_child.find(tag_name);
-	if (it != std::end(no_end_tag_by_child)) {
-		return true;
-	}
-
-	return false;
+	return it != std::end(no_end_tag_by_child);
 }
 
 
@@ -356,18 +348,15 @@ parser::parse(const string_type& str_html)
 
 	const char_type* s = str_html.c_str();
 
-	auto on_tag_end = [&](bool check_void_elements) {
-		if (!check_void_elements
-			|| is_void_element(this->current_node_->name())) {
-
-			if (this->current_node_->parent()) {
-				this->current_node_ =
-					this->current_node_->parent();
-			}
-		}
-	};
+	// Flag indicating if last parsed tag is void html element.
+	bool last_element_void = false;
 
 	auto on_tag_start = [&](const std::string& tag_name) {
+		if (last_element_void) {
+			this->current_node_ = this->current_node_->parent();
+			last_element_void = false;
+		}
+
 		auto node = node::create(node_element);
 		node->name(tag_name);
 
@@ -385,8 +374,11 @@ parser::parse(const string_type& str_html)
 
 	auto on_closing_tag = [&](const std::string& tag_name) {
 		if (tag_name != this->current_node_->name()
-			&& autoclose_last_child(this->current_node_->name())) {
+			&& (autoclose_last_child(this->current_node_->name())
+			|| last_element_void)) {
+
 			this->current_node_ = this->current_node_->parent();
+			last_element_void = false;
 		}
 
 		const string_type& expected_name = this->current_node_->name();
@@ -483,7 +475,7 @@ parser::parse(const string_type& str_html)
 
 				// End of tag.
 				if (*s == '>') {
-					on_tag_end(true);
+					last_element_void = is_void_element(this->current_node_->name());
 				}
 				else if (is_chartype(*s, ct_space)) {
 					while (true) {
@@ -556,7 +548,7 @@ parser::parse(const string_type& str_html)
 							++s;
 
 							if (*s == '>') {
-								on_tag_end(false);
+								last_element_void = true;
 								++s;
 								break;
 							}
@@ -566,7 +558,7 @@ parser::parse(const string_type& str_html)
 						}
 						// Tag end, also might be void element.
 						else if (*s == '>') {
-							on_tag_end(true);
+							last_element_void = is_void_element(this->current_node_->name());
 							break;
 						}
 						else {
@@ -581,7 +573,7 @@ parser::parse(const string_type& str_html)
 						throw parse_error(status_bad_start_element, str_html, s);
 					}
 
-					on_tag_end(false);
+					last_element_void = true;
 				}
 				else {
 					throw parse_error(status_bad_start_element, str_html, s);
