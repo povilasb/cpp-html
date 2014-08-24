@@ -372,6 +372,28 @@ TEST(parser, parse_script)
 }
 
 
+TEST(parser, parse_void_element_with_self_closing_tag)
+{
+	html::string_type str_html{"<head><base href=\"http://base.com/\">"
+		"</base></head>"};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
+}
+
+
+TEST(parser, parse_void_element_with_diffent_closing_tag)
+{
+	html::string_type str_html{"<head><base href=\"http://base.com/\">"
+		"</head>"};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
+}
+
+
 TEST_F(Parse_file_test, craigslist_newyork_index)
 {
 	this->parse_file(TEST_FIXTURE_DIR"/craigslist_newyork_index.html");
