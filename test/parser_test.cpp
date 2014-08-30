@@ -431,6 +431,21 @@ TEST(parser, parse_self_closing_tag_followed_by_pcdata)
 }
 
 
+TEST(parser, parse_script_with_end_tag_in_new_line)
+{
+	html::string_type str_html{"<html><script>\n"
+		"</script><div id=\"content\"></div></html>"};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
+
+	auto div = doc->get_element_by_id("content");
+	ASSERT_NE(nullptr, div);
+	ASSERT_EQ("DIV", div->name());
+}
+
+
 TEST_F(Parse_file_test, craigslist_newyork_index)
 {
 	this->parse_file(TEST_FIXTURE_DIR"/craigslist_newyork_index.html");
