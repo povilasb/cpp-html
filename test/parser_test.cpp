@@ -394,6 +394,43 @@ TEST(parser, parse_void_element_with_diffent_closing_tag)
 }
 
 
+TEST(parser,
+	parse_void_element_with_self_closing_tag_followed_by_sibling_and_newline)
+{
+	html::string_type str_html{"<html><head><base></base><link>\n</head>"
+		"</html>"};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
+}
+
+
+TEST(parser, parse_self_closing_tag_followed_by_pcdata)
+{
+	html::string_type str_html{"<html><body>pcdata1<br>pcdata2</body></html>"};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
+
+	auto body = doc->first_child()->first_child();
+	ASSERT_NE(nullptr, body);
+
+	auto child = body->first_child();
+	ASSERT_NE(nullptr, child);
+	ASSERT_EQ("pcdata1", child->value());
+
+	child = child->next_sibling();
+	ASSERT_NE(nullptr, child);
+	ASSERT_EQ("BR", child->name());
+
+	child = child->next_sibling();
+	ASSERT_NE(nullptr, child);
+	ASSERT_EQ("pcdata2", child->value());
+}
+
+
 TEST_F(Parse_file_test, craigslist_newyork_index)
 {
 	this->parse_file(TEST_FIXTURE_DIR"/craigslist_newyork_index.html");
