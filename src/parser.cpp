@@ -554,7 +554,6 @@ parser::parse(const string_type& str_html)
 
 							if (*s == '>') {
 								last_element_void = true;
-								++s;
 								break;
 							}
 							else {
