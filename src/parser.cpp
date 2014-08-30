@@ -391,6 +391,7 @@ parser::parse(const string_type& str_html)
 
 		if (this->current_node_->parent()) {
 			this->current_node_ = this->current_node_->parent();
+			last_element_void = false;
 		}
 	};
 
