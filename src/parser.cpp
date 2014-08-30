@@ -395,6 +395,11 @@ parser::parse(const string_type& str_html)
 	};
 
 	auto on_pcdata = [&](const std::string& pcdata) {
+		if (last_element_void) {
+			this->current_node_ = this->current_node_->parent();
+			last_element_void = false;
+		}
+
 		auto node = node::create(node_cdata);
 		node->value(pcdata);
 		this->current_node_->append_child(node);
