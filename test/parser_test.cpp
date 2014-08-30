@@ -446,6 +446,16 @@ TEST(parser, parse_script_with_end_tag_in_new_line)
 }
 
 
+TEST(parser, parse_void_element_with_whitespace_in_name)
+{
+	html::string_type str_html{"<h1><a><img /></a></h1>"};
+
+	html::parser parser;
+	auto doc = parser.parse(str_html);
+	ASSERT_NE(nullptr, doc);
+}
+
+
 TEST_F(Parse_file_test, craigslist_newyork_index)
 {
 	this->parse_file(TEST_FIXTURE_DIR"/craigslist_newyork_index.html");
