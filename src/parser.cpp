@@ -436,9 +436,8 @@ parser::parse(const string_type& str_html)
 		const char_type* script_value_end = s;
 
 		while (*s != '\0') {
-			if (strncmp(s, "</script>", 10) == 0) {
+			if (strncmp(s, "</script>", 9) == 0) {
 				script_value_end = s - 1;
-				s += 9;
 				break;
 			}
 			else {
