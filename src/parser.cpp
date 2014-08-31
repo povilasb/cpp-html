@@ -23,8 +23,8 @@ namespace cpphtml
 const unsigned char chartype_table[256] = {
 	55,  0,   0,   0,   0,   0,   0,   0,      0,   12,  12,  0,   0,   62,  0,   0,   // 0-15
 	0,   0,   0,   0,   0,   0,   0,   0,      0,   0,   0,   0,   0,   0,   0,   0,   // 16-31
-	8,   0,   6,   0,   0,   0,   6,   6,      0,   0,   0,   0,   0,   96,  64,  0,   // 32-47
-	64,  64,  64,  64,  64,  64,  64,  64,     64,  64,  192, 0,   1,   0,   48,  0,   // 48-63
+	10,   0,   4,   0,   0,   0,   4,   4,      0,   0,   0,   0,   0,   96,  64,  0,   // 32-47
+	64,  64,  64,  64,  64,  64,  64,  64,     64,  64,  192, 0,   1,   0,   50,  0,   // 48-63
 	0,   192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192, // 64-79
 	192, 192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 0,   0,   16,  0,   192, // 80-95
 	0,   192, 192, 192, 192, 192, 192, 192,    192, 192, 192, 192, 192, 192, 192, 192, // 96-111
@@ -510,31 +510,38 @@ parser::parse(const string_type& str_html)
 								++s;
 								SKIPWS();
 
-								char_type stop_symbol = 0;
+								char_type quote_symbol = 0;
 								if (*s == '"' || *s == '\'') {
-									stop_symbol = *s;
+									quote_symbol = *s;
 									++s;
-								}
-								else {
-									stop_symbol = ' ';
 								}
 
 								const char_type* attr_val_start = s;
-								while (*s && *s != stop_symbol) {
-									++s;
-								}
+								if (quote_symbol) {
+									while (*s && *s != quote_symbol) {
+										++s;
+									}
 
-								if (stop_symbol && *s != stop_symbol) {
-									throw parse_error(status_bad_attribute, str_html, s,
-										"Bad attribute value closing symbol.");
+									if (*s != quote_symbol) {
+										throw parse_error(status_bad_attribute, str_html, s,
+											"Bad attribute value closing symbol.");
+									}
+								}
+								else {
+									while (!is_chartype(*s, ct_parse_attr)) {
+										++s;
+									}
 								}
 
 								size_t attr_val_len = (s - 1) - attr_val_start + 1;
 								attr_val = string_type(attr_val_start, attr_val_len);
 
-								if (stop_symbol) {
+								if (quote_symbol) {
 									// Step over attribute value stop symbol.
 									++s;
+								}
+								else {
+									SKIPWS();
 								}
 							}
 							// Attribute has no value.

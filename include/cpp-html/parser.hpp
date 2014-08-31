@@ -16,7 +16,8 @@ enum chartype_t {
 	// TODO(povilas): readd & and \r symbols.
 	ct_parse_pcdata = 1,
 
-	// Parse until these symbols are found: \0, &, \r, ', "
+	// Parse unquoted attribute until these symbols are found:
+	//	\0, \r, \t, \n, >, space
 	ct_parse_attr = 2,
 	ct_parse_attr_ws = 4, // \0, &, \r, ', ", \n, tab
 	ct_space = 8, // \r, \n, space, tab
