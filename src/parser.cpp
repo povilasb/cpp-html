@@ -521,7 +521,8 @@ parser::parse(const string_type& str_html)
 								}
 
 								const char_type* attr_val_start = s;
-								while (!is_chartype(*s, static_cast<enum chartype_t>(parse_mode)) || *s == '&') {
+								while (!is_chartype(*s, static_cast<enum chartype_t>(parse_mode)) || *s == '&'
+									|| (*s && *s != quote_symbol)) {
 									++s;
 								}
 
