@@ -511,19 +511,16 @@ parser::parse(const string_type& str_html)
 								SKIPWS();
 
 								char_type stop_symbol = 0;
-								int parse_mode = ct_parse_attr;
 								if (*s == '"' || *s == '\'') {
 									stop_symbol = *s;
 									++s;
 								}
 								else {
-									parse_mode |= ct_space;
 									stop_symbol = ' ';
 								}
 
 								const char_type* attr_val_start = s;
-								while (!is_chartype(*s, static_cast<enum chartype_t>(parse_mode)) || *s == '&'
-									|| (*s && *s != stop_symbol)) {
+								while (*s && *s != stop_symbol) {
 									++s;
 								}
 
