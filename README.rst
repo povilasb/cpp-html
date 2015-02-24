@@ -56,3 +56,9 @@ Documentation
 -------------
 
 * doxygen: ``sudo apt-get install doxygen``.
+
+
+Development
+===========
+
+See coding conventions: http://style-guides.readthedocs.org/en/latest/.
