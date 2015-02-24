@@ -10,3 +10,4 @@ TODO
 - [+] Remove PUGIHTML_NO_STL ifdefs.
 - [ ] Implement tests: https://github.com/html5lib/html5lib-tests
 - [ ] Optional tag support.
+- [ ] Split tokenizer from parser.
