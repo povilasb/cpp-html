@@ -1,72 +1,60 @@
-BUILD_DIR ?= build
-BUILD_TYPE ?= Debug
-BUILD_TESTS ?= OFF
-CMAKE_DIR = $(CURDIR)
+build_type ?= Release
+build_type_lower = ${shell echo ${build_type} | tr "[:upper:]" "[:lower:]"}
 
-PROJECT_NAME = cpp-html
-OUTPUT_EXEC = $(PROJECT_NAME)
+build_dir ?= build/${build_type_lower}
+cmake_dir := $(CURDIR)
+
+build_tests ?= OFF
 
 
 all:
 	@echo "Usage:"
 	@echo "\tmake release"
 	@echo "\tmake debug"
-	@echo "\tmake test-release"
-	@echo "\tmake test-memleaks"
-	@echo "\tmake test-memleaks-debug"
+	@echo "\tmake docs"
+	@echo "\tmake run"
+	@echo "\tmake test"
+	@echo "\tmake clean"
 .PHONY: all
 
 
 build:
-	mkdir -p $(BUILD_DIR) ; cd $(BUILD_DIR) ; \
+	mkdir -p $(build_dir) && cd $(build_dir) && \
 		cmake \
-		-D CMAKE_BUILD_TYPE=$(BUILD_TYPE) \
-		-D CPPHTML_PROJECT_NAME=$(PROJECT_NAME) \
-		-D CPPHTML_ENABLE_TESTS=$(BUILD_TESTS) \
-		$(CMAKE_DIR) ; make
+		-D CMAKE_BUILD_TYPE=$(build_type) \
+		-D CPPHTML_ENABLE_TESTS=$(build_tests) \
+		$(cmake_dir) && make
 .PHONY: build
 
 
 release:
-	BUILD_TYPE=Release BUILD_DIR=build/release $(MAKE) build
+	build_type=Release $(MAKE) build
 .PHONY: release
 
 
 debug:
-	BUILD_TYPE=Debug BUILD_DIR=build/debug $(MAKE) build
+	build_type=Debug CXX=clang++ $(MAKE) build
 .PHONY: debug
 
 
-# Tests are build in the same directory so that we would not have to recompile
-# everything jus to run the tests.
-test-release:
-	BUILD_TYPE=Release BUILD_DIR=build/release BUILD_TESTS=ON \
-		$(MAKE) build
-	cd $(BUILD_DIR)/release ; make run-tests
-.PHONY: test-release
-
-
-test-debug:
-	BUILD_TYPE=Debug BUILD_DIR=build/debug BUILD_TESTS=ON \
-		$(MAKE) build
-	cd $(BUILD_DIR)/debug ; make run-tests
-.PHONY: test-release
-
-
-test-memleaks:
-	BUILD_TYPE=Release BUILD_DIR=build/release BUILD_TESTS=ON \
-		$(MAKE) build
-	cd $(BUILD_DIR)/release ; make run-memleak-tests
-.PHONY: test-memleaks
-
-
-test-memleaks-debug:
-	BUILD_TYPE=Debug BUILD_DIR=build/debug BUILD_TESTS=ON \
-		$(MAKE) debug
-	cd $(BUILD_DIR)/debug ; make run-memleak-tests
-.PHONY: test-memleaks-debug
+test:
+	build_tests=ON $(MAKE) build
+	make -C $(build_dir) run-tests
+.PHONY: test
 
 
 clean:
 	rm -rf build
 .PHONY: clean
+
+
+docs:
+	mkdir -p $(build_dir)
+	doxygen Doxyfile
+.PHONY: docs
+
+
+# Redirect all undefined targets to cmake.
+%:
+	make -C $(build_dir) $@
+.PHONY:
