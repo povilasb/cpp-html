@@ -1,9 +1,12 @@
 language: cpp
+
 compiler:
   - clang
+
 script:
-  - make test-release
+  - make test
   - make release
+
 branches:
   only:
     - master
