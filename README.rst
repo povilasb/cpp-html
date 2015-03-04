@@ -43,8 +43,8 @@ different compilers.
 Dependencies
 ============
 
-None.
-
+Build: None.
+Testing: gtest (see: https://code.google.com/p/googletest/ )
 
 Test
 ----
