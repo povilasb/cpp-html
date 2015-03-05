@@ -5,7 +5,10 @@ set(test_src_dir "${CMAKE_CURRENT_SOURCE_DIR}/src")
 file(GLOB_RECURSE test_src_files ${test_src_dir}/*_test.cpp)
 
 
-set(gmock_dir "${CMAKE_CURRENT_SOURCE_DIR}/lib/gmock")
+set(lib_dir "${CMAKE_CURRENT_SOURCE_DIR}/lib")
+include_directories(${lib_dir})
+
+set(gmock_dir "${lib_dir}/gmock")
 set(gtest_dir "${gmock_dir}/gtest")
 add_subdirectory("${gmock_dir}" "${CMAKE_CURRENT_BINARY_DIR}/lib/gmock")
 include_directories("${gtest_dir}/include")
