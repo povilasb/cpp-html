@@ -9,12 +9,12 @@ build_tests ?= OFF
 
 all:
 	@echo "Usage:"
-	@echo "\tmake release"
-	@echo "\tmake debug"
-	@echo "\tmake docs"
-	@echo "\tmake run"
-	@echo "\tmake test"
-	@echo "\tmake clean"
+	@echo -e "\tmake release"
+	@echo -e "\tmake debug"
+	@echo -e "\tmake docs"
+	@echo -e "\tmake run"
+	@echo -e "\tmake test"
+	@echo -e "\tmake clean"
 .PHONY: all
 
 
