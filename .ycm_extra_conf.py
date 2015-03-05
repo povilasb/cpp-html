@@ -8,6 +8,7 @@ flags = [
 	'-I', './src',
 	'-I', './include'
 	'-I', './test/lib/gtest/include',
+	'-I', './test/lib',
 ]
 
 
