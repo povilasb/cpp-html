@@ -4,17 +4,10 @@ import ycm_core
 # These are the compilation flags that will be used in case there's no
 # compilation database set (by default, one is not set).
 flags = [
-'-Wall',
-'-Wextra',
-'-Werror',
-'-std=c++11',
-'-pedantic',
-'-I',
-'./src',
-'-I',
-'./lib/gtest/include',
-'-I',
-'./include'
+	'-Wall', '-Wextra', '-Werror', '-std=c++11', '-pedantic',
+	'-I', './src',
+	'-I', './lib/gtest/include',
+	'-I', './include'
 ]
 
 
