@@ -6,8 +6,8 @@ import ycm_core
 flags = [
 	'-Wall', '-Wextra', '-Werror', '-std=c++11', '-pedantic',
 	'-I', './src',
-	'-I', './lib/gtest/include',
 	'-I', './include'
+	'-I', './test/lib/gtest/include',
 ]
 
 
