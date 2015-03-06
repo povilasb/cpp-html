@@ -36,16 +36,9 @@ struct token {
 
 class token_iterator {
 public:
-	token_iterator(const std::string& html) : html_(html),
-		current_token_{token_type::start_tag_open, ""}
-	{
-	}
+	token_iterator(const std::string& html);
 
-	token*
-	operator->()
-	{
-		return &this->current_token_;
-	}
+	token* operator->();
 
 private:
 	std::string html_;
