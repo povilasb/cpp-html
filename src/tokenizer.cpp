@@ -55,6 +55,14 @@ token_iterator::operator->()
 }
 
 
+token_iterator&
+token_iterator::operator++()
+{
+	this->current_token_ = this->next();
+	return *this;
+}
+
+
 bool
 token_iterator::has_next() const
 {
@@ -101,6 +109,19 @@ token_iterator::on_initial_state()
 
 
 token
+token_iterator::on_tag_open_state()
+{
+	token next_token{token_type::illegal, ""};
+
+	if (is_chartype(*this->it_html_, ct_start_symbol)) {
+		next_token = this->scan_string_token();
+	}
+
+	return next_token;
+}
+
+
+token
 token_iterator::next()
 {
 	token next_token{token_type::illegal, ""};
@@ -108,6 +129,10 @@ token_iterator::next()
 	switch (this->state_) {
 	case tokenizer_state::initial:
 		next_token = this->on_initial_state();
+		break;
+
+	case tokenizer_state::tag_open_state:
+		next_token = this->on_tag_open_state();
 		break;
 
 	default:

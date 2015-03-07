@@ -52,6 +52,8 @@ public:
 
 	token* operator->();
 
+	token_iterator& operator++();
+
 	bool has_next() const;
 
 	token next();
@@ -64,6 +66,7 @@ private:
 
 
 	token on_initial_state();
+	token on_tag_open_state();
 	token scan_string_token();
 };
 
