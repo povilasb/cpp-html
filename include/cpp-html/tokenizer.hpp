@@ -3,12 +3,15 @@
 
 #include <string>
 
+#include <cpp-html/cpp-html.hpp>
+
 
 namespace cpphtml
 {
 
 
 enum class token_type {
+	illegal,
 	// '<'
 	start_tag_open,
 	// '</'
@@ -30,22 +33,30 @@ enum class token_type {
 
 struct token {
 	token_type type;
-	std::string value;
+	string_type value;
 };
 
 
 class token_iterator {
 public:
+	typedef std::string::const_iterator const_char_iterator;
+
+
 	token_iterator(const std::string& html);
 
 	token* operator->();
 
+	bool has_next() const;
+
+	token next();
+
 private:
-	std::string html_;
+	const std::string html_;
+	const_char_iterator it_html_;
 	token current_token_;
 };
 
 
 } // cpphtml.
 
-#endif /* CPPHTML_TOKENIZER_HPP */
+#endif // CPPHTML_TOKENIZER_HPP
