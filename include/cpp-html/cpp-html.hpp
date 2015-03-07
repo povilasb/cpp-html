@@ -1,5 +1,5 @@
-#ifndef PUGIHTML_HPP
-#define PUGIHTML_HPP 1
+#ifndef CPPHTML_HPP
+#define CPPHTML_HPP
 
 #include <string>
 #include <memory>
@@ -24,5 +24,4 @@ typedef std::shared_ptr<document> document_type;
 
 } // cpp-html.
 
-#endif /* PUGIHTML_HPP */
-
+#endif // CPPHTML_HPP
