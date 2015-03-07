@@ -72,19 +72,13 @@ token_iterator::has_next() const
 token
 token_iterator::scan_string_token()
 {
-	token next_token{token_type::illegal, ""};
-
-	if (is_chartype(*this->it_html_, ct_start_symbol)) {
-		const_char_iterator string_start = this->it_html_;
-		while (is_chartype(*this->it_html_, ct_symbol)) {
-			++this->it_html_;
-		}
-
-		string_type token_value(string_start, this->it_html_);
-		next_token = token{token_type::string, token_value};
+	const_char_iterator string_start = this->it_html_;
+	while (is_chartype(*this->it_html_, ct_symbol)) {
+		++this->it_html_;
 	}
 
-	return next_token;
+	string_type token_value(string_start, this->it_html_);
+	return token{token_type::string, token_value};
 }
 
 
@@ -101,7 +95,9 @@ token_iterator::on_initial_state()
 		this->state_ = tokenizer_state::tag_open_state;
 	}
 	else if (is_chartype(*this->it_html_, ct_start_symbol)) {
-		next_token = this->scan_string_token();
+		if (is_chartype(*this->it_html_, ct_start_symbol)) {
+			next_token = this->scan_string_token();
+		}
 	}
 
 	return next_token;
