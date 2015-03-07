@@ -37,11 +37,13 @@ is_chartype(char_type ch, enum chartype_t char_type)
 	return chartype_table[static_cast<unsigned char>(ch)] & (char_type);
 }
 
+const char_type tag_open_char = '<';
+
 
 token_iterator::token_iterator(const std::string& html) : html_(html),
-	current_token_{token_type::illegal, ""}
+	it_html_(this->html_.cbegin()), current_token_{token_type::illegal, ""},
+	state_(tokenizer_state::initial)
 {
-	this->it_html_ = this->html_.cbegin();
 	this->current_token_ = this->next();
 }
 
@@ -61,11 +63,12 @@ token_iterator::has_next() const
 
 
 token
-token_iterator::next()
+token_iterator::on_initial_state()
 {
 	token next_token{token_type::illegal, ""};
+
 	// Check if the current character is the start tag character
-	if (*this->it_html_ == '<') {
+	if (*this->it_html_ == tag_open_char) {
 		++this->it_html_;
 		next_token = token{token_type::start_tag_open, ""};
 	}
@@ -77,6 +80,24 @@ token_iterator::next()
 
 		string_type token_value(string_start, this->it_html_);
 		next_token = token{token_type::string, token_value};
+	}
+
+	return next_token;
+}
+
+
+token
+token_iterator::next()
+{
+	token next_token{token_type::illegal, ""};
+
+	switch (this->state_) {
+	case tokenizer_state::initial:
+		next_token = this->on_initial_state();
+		break;
+
+	default:
+		break;
 	}
 
 	return next_token;

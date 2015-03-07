@@ -31,6 +31,11 @@ enum class token_type {
 };
 
 
+enum class tokenizer_state {
+	initial
+};
+
+
 struct token {
 	token_type type;
 	string_type value;
@@ -54,6 +59,10 @@ private:
 	const std::string html_;
 	const_char_iterator it_html_;
 	token current_token_;
+	tokenizer_state state_;
+
+
+	token on_initial_state();
 };
 
 
