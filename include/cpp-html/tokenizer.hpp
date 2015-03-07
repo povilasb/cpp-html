@@ -33,7 +33,7 @@ enum class token_type {
 
 enum class tokenizer_state {
 	initial,
-	tag_open_state,
+	tag_open,
 };
 
 

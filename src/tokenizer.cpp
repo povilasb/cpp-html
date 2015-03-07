@@ -92,7 +92,7 @@ token_iterator::on_initial_state()
 		++this->it_html_;
 		next_token = token{token_type::start_tag_open, ""};
 
-		this->state_ = tokenizer_state::tag_open_state;
+		this->state_ = tokenizer_state::tag_open;
 	}
 	else if (is_chartype(*this->it_html_, ct_start_symbol)) {
 		if (is_chartype(*this->it_html_, ct_start_symbol)) {
@@ -127,7 +127,7 @@ token_iterator::next()
 		next_token = this->on_initial_state();
 		break;
 
-	case tokenizer_state::tag_open_state:
+	case tokenizer_state::tag_open:
 		next_token = this->on_tag_open_state();
 		break;
 
