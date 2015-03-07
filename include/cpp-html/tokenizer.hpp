@@ -32,7 +32,8 @@ enum class token_type {
 
 
 enum class tokenizer_state {
-	initial
+	initial,
+	tag_open_state,
 };
 
 
@@ -63,6 +64,7 @@ private:
 
 
 	token on_initial_state();
+	token scan_string_token();
 };
 
 
