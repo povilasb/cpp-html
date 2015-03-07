@@ -42,7 +42,7 @@ const char_type tag_open_char = '<';
 
 token_iterator::token_iterator(const std::string& html) : html_(html),
 	it_html_(this->html_.cbegin()), current_token_{token_type::illegal, ""},
-	state_(tokenizer_state::initial)
+	state_(tokenizer_state::data)
 {
 	this->current_token_ = this->next();
 }
@@ -83,7 +83,7 @@ token_iterator::scan_string_token()
 
 
 token
-token_iterator::on_initial_state()
+token_iterator::on_data_state()
 {
 	token next_token{token_type::illegal, ""};
 
@@ -123,8 +123,8 @@ token_iterator::next()
 	token next_token{token_type::illegal, ""};
 
 	switch (this->state_) {
-	case tokenizer_state::initial:
-		next_token = this->on_initial_state();
+	case tokenizer_state::data:
+		next_token = this->on_data_state();
 		break;
 
 	case tokenizer_state::tag_open:
