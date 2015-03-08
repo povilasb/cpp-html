@@ -1,5 +1,5 @@
-#ifndef PUGIHTML_PARSER_HPP
-#define PUGIHTML_PARSER_HPP 1
+#ifndef CPPHTML_PARSER
+#define CPPHTML_PARSER
 
 #include <stdexcept>
 #include <memory>
@@ -287,4 +287,4 @@ private:
 
 } //cpp-html.
 
-#endif /* PUGIHTML_PARSER_HPP */
+#endif // CPPHTML_PARSER
