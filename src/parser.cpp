@@ -595,7 +595,6 @@ parser::parse(const string_type& str_html)
 				++s;
 			}
 
-
 			size_t tag_name_len = (s - 1) - tag_name_start
 				+ 1;
 			string_type tag_name = string_type(tag_name_start,
