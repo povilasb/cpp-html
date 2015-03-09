@@ -55,7 +55,6 @@ is_chartype(char_type ch, enum chartype_t char_type)
 
 // Parser utilities.
 // TODO(povilas): replace with inline functions or completely remove some of them.
-#define SKIPWS() { while (is_chartype(*s, ct_space)) ++s; }
 
 inline const char_type*
 skip_white_spaces(const char_type* str)
@@ -504,7 +503,7 @@ parser::parse(const string_type& str_html)
 						string_type attr_name = string_type(attr_name_start, attr_name_len);
 						str_toupper(attr_name);
 
-						SKIPWS();
+						s = skip_white_spaces(s);
 						if (*s == '\0') {
 							throw parse_error(status_bad_attribute, str_html, s);
 						}
@@ -513,7 +512,7 @@ parser::parse(const string_type& str_html)
 						// Attribute with value.
 						if (*s == '=') {
 							++s;
-							SKIPWS();
+							s = skip_white_spaces(s);
 
 							char_type quote_symbol = 0;
 							if (*s == '"' || *s == '\'') {
@@ -546,12 +545,12 @@ parser::parse(const string_type& str_html)
 								++s;
 							}
 							else {
-								SKIPWS();
+								s = skip_white_spaces(s);
 							}
 						}
 						// Attribute has no value.
 						else {
-							SKIPWS();
+							s = skip_white_spaces(s);
 							if (*s == '\0') {
 								throw parse_error(status_bad_attribute, str_html, s);
 							}
@@ -613,7 +612,7 @@ parser::parse(const string_type& str_html)
 
 			on_closing_tag(tag_name);
 
-			SKIPWS();
+			s = skip_white_spaces(s);
 			if (*s != '>') {
 				THROW_ERROR(status_bad_end_element, "");
 			}
