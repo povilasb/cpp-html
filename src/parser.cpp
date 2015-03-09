@@ -462,6 +462,74 @@ parser::parse(const string_type& str_html)
 		on_script(script_value);
 	};
 
+	auto on_attribute_name_state = [&]() {
+		const char_type* attr_name_start = s;
+
+		SCANWHILE(is_chartype(*s, ct_symbol));
+		if (*s == '\0') {
+			throw parse_error(status_bad_attribute, str_html, s);
+		}
+
+		size_t attr_name_len = (s - 1) - attr_name_start + 1;
+		string_type attr_name = string_type(attr_name_start, attr_name_len);
+		str_toupper(attr_name);
+
+		s = skip_white_spaces(s);
+		if (*s == '\0') {
+			throw parse_error(status_bad_attribute, str_html, s);
+		}
+
+		string_type attr_val;
+		// Attribute with value.
+		if (*s == '=') {
+			++s;
+			s = skip_white_spaces(s);
+
+			char_type quote_symbol = 0;
+			if (*s == '"' || *s == '\'') {
+				quote_symbol = *s;
+				++s;
+			}
+
+			const char_type* attr_val_start = s;
+			if (quote_symbol) {
+				while (*s && *s != quote_symbol) {
+					++s;
+				}
+
+				if (*s != quote_symbol) {
+					throw parse_error(status_bad_attribute, str_html, s,
+						"Bad attribute value closing symbol.");
+				}
+			}
+			else {
+				while (!is_chartype(*s, ct_parse_attr)) {
+					++s;
+				}
+			}
+
+			size_t attr_val_len = (s - 1) - attr_val_start + 1;
+			attr_val = string_type(attr_val_start, attr_val_len);
+
+			if (quote_symbol) {
+				// Step over attribute value stop symbol.
+				++s;
+			}
+			else {
+				s = skip_white_spaces(s);
+			}
+		}
+		// Attribute has no value.
+		else {
+			s = skip_white_spaces(s);
+			if (*s == '\0') {
+				throw parse_error(status_bad_attribute, str_html, s);
+			}
+		}
+
+		on_attribute(attr_name, attr_val);
+	};
+
 	auto on_tag_open_state = [&]() {
 		++s;
 
@@ -492,71 +560,7 @@ parser::parse(const string_type& str_html)
 
 					// Attribute start.
 					if (is_chartype(*s, ct_start_symbol)) {
-						const char_type* attr_name_start = s;
-
-						SCANWHILE(is_chartype(*s, ct_symbol));
-						if (*s == '\0') {
-							throw parse_error(status_bad_attribute, str_html, s);
-						}
-
-						size_t attr_name_len = (s - 1) - attr_name_start + 1;
-						string_type attr_name = string_type(attr_name_start, attr_name_len);
-						str_toupper(attr_name);
-
-						s = skip_white_spaces(s);
-						if (*s == '\0') {
-							throw parse_error(status_bad_attribute, str_html, s);
-						}
-
-						string_type attr_val;
-						// Attribute with value.
-						if (*s == '=') {
-							++s;
-							s = skip_white_spaces(s);
-
-							char_type quote_symbol = 0;
-							if (*s == '"' || *s == '\'') {
-								quote_symbol = *s;
-								++s;
-							}
-
-							const char_type* attr_val_start = s;
-							if (quote_symbol) {
-								while (*s && *s != quote_symbol) {
-									++s;
-								}
-
-								if (*s != quote_symbol) {
-									throw parse_error(status_bad_attribute, str_html, s,
-										"Bad attribute value closing symbol.");
-								}
-							}
-							else {
-								while (!is_chartype(*s, ct_parse_attr)) {
-									++s;
-								}
-							}
-
-							size_t attr_val_len = (s - 1) - attr_val_start + 1;
-							attr_val = string_type(attr_val_start, attr_val_len);
-
-							if (quote_symbol) {
-								// Step over attribute value stop symbol.
-								++s;
-							}
-							else {
-								s = skip_white_spaces(s);
-							}
-						}
-						// Attribute has no value.
-						else {
-							s = skip_white_spaces(s);
-							if (*s == '\0') {
-								throw parse_error(status_bad_attribute, str_html, s);
-							}
-						}
-
-						on_attribute(attr_name, attr_val);
+						on_attribute_name_state();
 					}
 					// Void element end.
 					else if (*s == '/') {
