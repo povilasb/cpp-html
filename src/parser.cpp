@@ -453,177 +453,181 @@ parser::parse(const string_type& str_html)
 		on_script(script_value);
 	};
 
+	auto on_tag_open_state = [&]() {
+		++s;
+
+		// Check if the current character is a tag start symbol.
+		if (is_chartype(*s, ct_start_symbol)) {
+			const char_type* tag_name_start = s;
+
+			// Scan while the current character is a symbol belonging
+			// to the set of symbols acceptable within a tag. In other
+			// words, scan until the termination symbol is discovered.
+			SCANWHILE(is_chartype(*s, ct_symbol));
+
+			size_t tag_name_len = (s - 1) - tag_name_start
+				+ 1;
+			string_type tag_name = string_type(
+				tag_name_start, tag_name_len);
+			str_toupper(tag_name);
+
+			on_tag_start(tag_name);
+
+			// End of tag.
+			if (*s == '>') {
+				last_element_void = is_void_element(this->current_node_->name());
+			}
+			else if (is_chartype(*s, ct_space)) {
+				while (true) {
+					SKIPWS();
+
+					// Attribute start.
+					if (is_chartype(*s, ct_start_symbol)) {
+						const char_type* attr_name_start = s;
+
+						SCANWHILE(is_chartype(*s, ct_symbol));
+						if (*s == '\0') {
+							throw parse_error(status_bad_attribute, str_html, s);
+						}
+
+						size_t attr_name_len = (s - 1) - attr_name_start + 1;
+						string_type attr_name = string_type(attr_name_start, attr_name_len);
+						str_toupper(attr_name);
+
+						SKIPWS();
+						if (*s == '\0') {
+							throw parse_error(status_bad_attribute, str_html, s);
+						}
+
+						string_type attr_val;
+						// Attribute with value.
+						if (*s == '=') {
+							++s;
+							SKIPWS();
+
+							char_type quote_symbol = 0;
+							if (*s == '"' || *s == '\'') {
+								quote_symbol = *s;
+								++s;
+							}
+
+							const char_type* attr_val_start = s;
+							if (quote_symbol) {
+								while (*s && *s != quote_symbol) {
+									++s;
+								}
+
+								if (*s != quote_symbol) {
+									throw parse_error(status_bad_attribute, str_html, s,
+										"Bad attribute value closing symbol.");
+								}
+							}
+							else {
+								while (!is_chartype(*s, ct_parse_attr)) {
+									++s;
+								}
+							}
+
+							size_t attr_val_len = (s - 1) - attr_val_start + 1;
+							attr_val = string_type(attr_val_start, attr_val_len);
+
+							if (quote_symbol) {
+								// Step over attribute value stop symbol.
+								++s;
+							}
+							else {
+								SKIPWS();
+							}
+						}
+						// Attribute has no value.
+						else {
+							SKIPWS();
+							if (*s == '\0') {
+								throw parse_error(status_bad_attribute, str_html, s);
+							}
+						}
+
+						on_attribute(attr_name, attr_val);
+					}
+					// Void element end.
+					else if (*s == '/') {
+						++s;
+
+						if (*s == '>') {
+							last_element_void = true;
+							break;
+						}
+						else {
+							throw parse_error(status_bad_start_element, str_html, s);
+						}
+					}
+					// Tag end, also might be void element.
+					else if (*s == '>') {
+						last_element_void = is_void_element(this->current_node_->name());
+						break;
+					}
+					else {
+						throw parse_error(status_bad_start_element, str_html, s);
+					}
+				} // while
+			}
+			// Void HTML element.
+			else if (*s == '/') {
+				++s;
+				if (*s != '>') {
+					throw parse_error(status_bad_start_element, str_html, s);
+				}
+
+				last_element_void = true;
+			}
+			else {
+				throw parse_error(status_bad_start_element, str_html, s);
+			}
+
+			++s;
+		}
+		// Closing tag, e.g. </hmtl>
+		else if (*s == '/') {
+			++s;
+
+			const char_type* tag_name_start = s;
+			while (is_chartype(*s, ct_symbol)) {
+				++s;
+			}
+
+
+			size_t tag_name_len = (s - 1) - tag_name_start
+				+ 1;
+			string_type tag_name = string_type(tag_name_start,
+				tag_name_len);
+			str_toupper(tag_name);
+
+			on_closing_tag(tag_name);
+
+			SKIPWS();
+			if (*s != '>') {
+				THROW_ERROR(status_bad_end_element, "");
+			}
+
+			++s;
+		}
+		// Comment: <!-- ...
+		else if (*s == '!') {
+			s = parse_exclamation(s - 1);
+		}
+		else {
+			throw parse_error(status_unrecognized_tag,
+				str_html, s);
+		}
+	};
+
 	this->current_node_ = this->document_;
 
 	// Parse while the current character is not '\0'.
 	while (*s != '\0') {
 		// Check if the current character is the start tag character
 		if (*s == '<') {
-			++s;
-
-			// Check if the current character is a tag start symbol.
-			if (is_chartype(*s, ct_start_symbol)) {
-				const char_type* tag_name_start = s;
-
-				// Scan while the current character is a symbol belonging
-				// to the set of symbols acceptable within a tag. In other
-				// words, scan until the termination symbol is discovered.
-				SCANWHILE(is_chartype(*s, ct_symbol));
-
-				size_t tag_name_len = (s - 1) - tag_name_start
-					+ 1;
-				string_type tag_name = string_type(
-					tag_name_start, tag_name_len);
-				str_toupper(tag_name);
-
-				on_tag_start(tag_name);
-
-				// End of tag.
-				if (*s == '>') {
-					last_element_void = is_void_element(this->current_node_->name());
-				}
-				else if (is_chartype(*s, ct_space)) {
-					while (true) {
-						SKIPWS();
-
-						// Attribute start.
-						if (is_chartype(*s, ct_start_symbol)) {
-							const char_type* attr_name_start = s;
-
-							SCANWHILE(is_chartype(*s, ct_symbol));
-							if (*s == '\0') {
-								throw parse_error(status_bad_attribute, str_html, s);
-							}
-
-							size_t attr_name_len = (s - 1) - attr_name_start + 1;
-							string_type attr_name = string_type(attr_name_start, attr_name_len);
-							str_toupper(attr_name);
-
-							SKIPWS();
-							if (*s == '\0') {
-								throw parse_error(status_bad_attribute, str_html, s);
-							}
-
-							string_type attr_val;
-							// Attribute with value.
-							if (*s == '=') {
-								++s;
-								SKIPWS();
-
-								char_type quote_symbol = 0;
-								if (*s == '"' || *s == '\'') {
-									quote_symbol = *s;
-									++s;
-								}
-
-								const char_type* attr_val_start = s;
-								if (quote_symbol) {
-									while (*s && *s != quote_symbol) {
-										++s;
-									}
-
-									if (*s != quote_symbol) {
-										throw parse_error(status_bad_attribute, str_html, s,
-											"Bad attribute value closing symbol.");
-									}
-								}
-								else {
-									while (!is_chartype(*s, ct_parse_attr)) {
-										++s;
-									}
-								}
-
-								size_t attr_val_len = (s - 1) - attr_val_start + 1;
-								attr_val = string_type(attr_val_start, attr_val_len);
-
-								if (quote_symbol) {
-									// Step over attribute value stop symbol.
-									++s;
-								}
-								else {
-									SKIPWS();
-								}
-							}
-							// Attribute has no value.
-							else {
-								SKIPWS();
-								if (*s == '\0') {
-									throw parse_error(status_bad_attribute, str_html, s);
-								}
-							}
-
-							on_attribute(attr_name, attr_val);
-						}
-						// Void element end.
-						else if (*s == '/') {
-							++s;
-
-							if (*s == '>') {
-								last_element_void = true;
-								break;
-							}
-							else {
-								throw parse_error(status_bad_start_element, str_html, s);
-							}
-						}
-						// Tag end, also might be void element.
-						else if (*s == '>') {
-							last_element_void = is_void_element(this->current_node_->name());
-							break;
-						}
-						else {
-							throw parse_error(status_bad_start_element, str_html, s);
-						}
-					} // while
-				}
-				// Void HTML element.
-				else if (*s == '/') {
-					++s;
-					if (*s != '>') {
-						throw parse_error(status_bad_start_element, str_html, s);
-					}
-
-					last_element_void = true;
-				}
-				else {
-					throw parse_error(status_bad_start_element, str_html, s);
-				}
-
-				++s;
-			}
-			// Closing tag, e.g. </hmtl>
-			else if (*s == '/') {
-				++s;
-
-				const char_type* tag_name_start = s;
-				while (is_chartype(*s, ct_symbol)) {
-					++s;
-				}
-
-
-				size_t tag_name_len = (s - 1) - tag_name_start
-					+ 1;
-				string_type tag_name = string_type(tag_name_start,
-					tag_name_len);
-				str_toupper(tag_name);
-
-				on_closing_tag(tag_name);
-
-				SKIPWS();
-				if (*s != '>') {
-					THROW_ERROR(status_bad_end_element, "");
-				}
-
-				++s;
-			}
-			// Comment: <!-- ...
-			else if (*s == '!') {
-				s = parse_exclamation(s - 1);
-			}
-			else {
-				throw parse_error(status_unrecognized_tag,
-					str_html, s);
-			}
+			on_tag_open_state();
 		}
 		else {
 			if (this->current_node_->name() == "SCRIPT") {
