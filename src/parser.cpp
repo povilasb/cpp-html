@@ -57,6 +57,16 @@ is_chartype(char_type ch, enum chartype_t char_type)
 // TODO(povilas): replace with inline functions or completely remove some of them.
 #define SKIPWS() { while (is_chartype(*s, ct_space)) ++s; }
 
+inline const char_type*
+skip_white_spaces(const char_type* str)
+{
+	while (is_chartype(*str, ct_space)) {
+		++str;
+	}
+
+	return str;
+}
+
 #define THROW_ERROR(err, m) (void)m, throw parse_error(err)
 
 #define SCANFOR(X)			{ while (*s != 0 && !(X)) ++s; }
@@ -479,7 +489,7 @@ parser::parse(const string_type& str_html)
 			}
 			else if (is_chartype(*s, ct_space)) {
 				while (true) {
-					SKIPWS();
+					s = skip_white_spaces(s);
 
 					// Attribute start.
 					if (is_chartype(*s, ct_start_symbol)) {
