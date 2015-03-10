@@ -530,6 +530,17 @@ parser::parse(const string_type& str_html)
 		on_attribute(attr_name, attr_val);
 	};
 
+	auto on_self_closing_start_tag_state = [&]() {
+		++s;
+
+		if (*s != '>') {
+			throw parse_error(status_bad_start_element, str_html, s);
+		}
+		else {
+			last_element_void = true;
+		}
+	};
+
 	auto on_tag_open_state = [&]() {
 		++s;
 
@@ -564,15 +575,8 @@ parser::parse(const string_type& str_html)
 					}
 					// Void element end.
 					else if (*s == '/') {
-						++s;
-
-						if (*s == '>') {
-							last_element_void = true;
-							break;
-						}
-						else {
-							throw parse_error(status_bad_start_element, str_html, s);
-						}
+						on_self_closing_start_tag_state();
+						break;
 					}
 					// Tag end, also might be void element.
 					else if (*s == '>') {
