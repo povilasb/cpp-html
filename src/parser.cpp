@@ -590,12 +590,7 @@ parser::parse(const string_type& str_html)
 			}
 			// Void HTML element.
 			else if (*s == '/') {
-				++s;
-				if (*s != '>') {
-					throw parse_error(status_bad_start_element, str_html, s);
-				}
-
-				last_element_void = true;
+				on_self_closing_start_tag_state();
 			}
 			else {
 				throw parse_error(status_bad_start_element, str_html, s);
