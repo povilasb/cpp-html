@@ -117,7 +117,6 @@ token_iterator::on_tag_open_state()
 		std::string tag_name;
 		tag_name = *this->it_html_;
 		this->current_token_ = token{token_type::start_tag, tag_name};
-
 	}
 
 	return token_emitted;
