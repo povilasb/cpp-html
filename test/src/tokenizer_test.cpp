@@ -60,4 +60,25 @@ SCENARIO("token iterator can be created from string", "[token_iterator]")
 			}
 		}
 	}
+
+	GIVEN("html tag with white spaces")
+	{
+		std::string str_html{"< div	>"};
+
+		WHEN("token iterator is constructed from string")
+		{
+			cpphtml::token_iterator it_token(str_html);
+
+			THEN("token iterator points to tag start token")
+			{
+				REQUIRE(it_token->type
+					== cpphtml::token_type::start_tag);
+			}
+
+			THEN("token value is tag name")
+			{
+				REQUIRE(it_token->value == "div");
+			}
+		}
+	}
 }
