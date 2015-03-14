@@ -39,6 +39,7 @@ is_chartype(char_type ch, enum chartype_t char_type)
 
 const char_type tag_open_char = '<';
 const char_type tag_close_char = '>';
+const char_type solidus_char = '/';
 
 
 token_iterator::token_iterator(const std::string& html) : html_(html),
@@ -120,8 +121,28 @@ token_iterator::on_tag_open_state()
 		tag_name = *this->it_html_;
 		this->current_token_ = token{token_type::start_tag, tag_name};
 	}
+	else if (*this->it_html_ == solidus_char) {
+		this->state_ = tokenizer_state::end_tag_open;
+	}
 
 	return token_emitted;
+}
+
+
+bool
+token_iterator::on_end_tag_open_state()
+{
+	++this->it_html_;
+
+	if (is_chartype(*this->it_html_, ct_start_symbol)) {
+		this->state_ = tokenizer_state::tag_name;
+
+		std::string tag_name;
+		tag_name = *this->it_html_;
+		this->current_token_ = token{token_type::end_tag, tag_name};
+	}
+
+	return false;
 }
 
 
@@ -158,6 +179,10 @@ token_iterator::next()
 
 		case tokenizer_state::tag_open:
 			token_emitted = this->on_tag_open_state();
+			break;
+
+		case tokenizer_state::end_tag_open:
+			token_emitted = this->on_end_tag_open_state();
 			break;
 
 		case tokenizer_state::tag_name:
