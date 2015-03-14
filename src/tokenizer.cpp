@@ -83,57 +83,82 @@ token_iterator::scan_string_token()
 }
 
 
-token
+bool
 token_iterator::on_data_state()
 {
-	token next_token{token_type::illegal, ""};
+	bool token_emitted = false;
 
 	// Check if the current character is the start tag character
 	if (*this->it_html_ == tag_open_char) {
-		++this->it_html_;
 		this->state_ = tokenizer_state::tag_open;
 	}
 	else if (is_chartype(*this->it_html_, ct_start_symbol)) {
-		if (is_chartype(*this->it_html_, ct_start_symbol)) {
-			next_token = this->scan_string_token();
-		}
+		this->state_ = tokenizer_state::tag_name;
+
+		std::string tag_name;
+		tag_name = *this->it_html_;
+		this->current_token_ = token{token_type::start_tag, tag_name};
 	}
 
-	return next_token;
+	return token_emitted;
 }
 
 
-token
+bool
 token_iterator::on_tag_open_state()
 {
-	token next_token{token_type::illegal, ""};
+	bool token_emitted = false;
 
 	++this->it_html_;
 
 	if (is_chartype(*this->it_html_, ct_start_symbol)) {
-		next_token = this->scan_string_token();
+		this->state_ = tokenizer_state::tag_name;
+
+		std::string tag_name;
+		tag_name = *this->it_html_;
+		this->current_token_ = token{token_type::start_tag, tag_name};
+
 	}
 
-	if (*this->it_html_ == tag_close_char) {
+	return token_emitted;
+}
+
+
+bool
+token_iterator::on_tag_name_state()
+{
+	bool token_emitted = false;
+
+	++this->it_html_;
+
+	while (is_chartype(*this->it_html_, ct_start_symbol)) {
+		this->current_token_.value += *this->it_html_;
+		++this->it_html_;
 	}
 
-	return next_token;
+	token_emitted = true;
+	this->state_ = tokenizer_state::data;
+
+	return token_emitted;
 }
 
 
 token
 token_iterator::next()
 {
-	token next_token{token_type::illegal, ""};
-
-	while (next_token.type == token_type::illegal) {
+	bool token_emitted = false;
+	while (!token_emitted) {
 		switch (this->state_) {
 		case tokenizer_state::data:
-			next_token = this->on_data_state();
+			token_emitted = this->on_data_state();
 			break;
 
 		case tokenizer_state::tag_open:
-			next_token = this->on_tag_open_state();
+			token_emitted = this->on_tag_open_state();
+			break;
+
+		case tokenizer_state::tag_name:
+			token_emitted = this->on_tag_name_state();
 			break;
 
 		default:
@@ -141,7 +166,7 @@ token_iterator::next()
 		}
 	}
 
-	return next_token;
+	return this->current_token_;
 }
 
 } // cpphtml.

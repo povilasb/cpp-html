@@ -25,6 +25,7 @@ enum class token_type {
 enum class tokenizer_state {
 	data,
 	tag_open,
+	tag_name,
 };
 
 
@@ -56,8 +57,9 @@ private:
 	tokenizer_state state_;
 
 
-	token on_data_state();
-	token on_tag_open_state();
+	bool on_data_state();
+	bool on_tag_open_state();
+	bool on_tag_name_state();
 	token scan_string_token();
 };
 
