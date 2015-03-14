@@ -38,6 +38,7 @@ is_chartype(char_type ch, enum chartype_t char_type)
 }
 
 const char_type tag_open_char = '<';
+const char_type tag_close_char = '>';
 
 
 token_iterator::token_iterator(const std::string& html) : html_(html),
@@ -90,8 +91,6 @@ token_iterator::on_data_state()
 	// Check if the current character is the start tag character
 	if (*this->it_html_ == tag_open_char) {
 		++this->it_html_;
-		next_token = token{token_type::start_tag_open, ""};
-
 		this->state_ = tokenizer_state::tag_open;
 	}
 	else if (is_chartype(*this->it_html_, ct_start_symbol)) {
@@ -109,8 +108,13 @@ token_iterator::on_tag_open_state()
 {
 	token next_token{token_type::illegal, ""};
 
+	++this->it_html_;
+
 	if (is_chartype(*this->it_html_, ct_start_symbol)) {
 		next_token = this->scan_string_token();
+	}
+
+	if (*this->it_html_ == tag_close_char) {
 	}
 
 	return next_token;
@@ -122,17 +126,19 @@ token_iterator::next()
 {
 	token next_token{token_type::illegal, ""};
 
-	switch (this->state_) {
-	case tokenizer_state::data:
-		next_token = this->on_data_state();
-		break;
+	while (next_token.type == token_type::illegal) {
+		switch (this->state_) {
+		case tokenizer_state::data:
+			next_token = this->on_data_state();
+			break;
 
-	case tokenizer_state::tag_open:
-		next_token = this->on_tag_open_state();
-		break;
+		case tokenizer_state::tag_open:
+			next_token = this->on_tag_open_state();
+			break;
 
-	default:
-		break;
+		default:
+			break;
+		}
 	}
 
 	return next_token;

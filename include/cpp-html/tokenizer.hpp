@@ -12,22 +12,13 @@ namespace cpphtml
 
 enum class token_type {
 	illegal,
-	// '<'
-	start_tag_open,
-	// '</'
-	end_tag_open,
-	// '<!'
-	exclamation_tag_open,
-	// -->
-	comment_close,
-	// '>'
-	tag_close,
+	doctype,
+	start_tag,
+	end_tag,
+	comment,
 	// Any textual data.
 	string,
-	// '='
-	attribute_assignment,
-	// String consisting only of whitespace symbols ' ', '\t', '\r', '\n'.
-	whitespace,
+	end_of_file
 };
 
 
