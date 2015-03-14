@@ -84,6 +84,20 @@ token_iterator::scan_string_token()
 }
 
 
+void
+token_iterator::create_tag_token_if_curr_char_is_letter(token_type type,
+	tokenizer_state new_state)
+{
+	if (is_chartype(*this->it_html_, ct_start_symbol)) {
+		this->state_ = new_state;
+
+		std::string tag_name;
+		tag_name = *this->it_html_;
+		this->current_token_ = token{type, tag_name};
+	}
+}
+
+
 bool
 token_iterator::on_data_state()
 {
@@ -95,12 +109,9 @@ token_iterator::on_data_state()
 	if (*this->it_html_ == tag_open_char) {
 		this->state_ = tokenizer_state::tag_open;
 	}
-	else if (is_chartype(*this->it_html_, ct_start_symbol)) {
-		this->state_ = tokenizer_state::tag_name;
-
-		std::string tag_name;
-		tag_name = *this->it_html_;
-		this->current_token_ = token{token_type::start_tag, tag_name};
+	else {
+		this->create_tag_token_if_curr_char_is_letter(
+			token_type::start_tag, tokenizer_state::tag_name);
 	}
 
 	return token_emitted;
@@ -114,15 +125,12 @@ token_iterator::on_tag_open_state()
 
 	++this->it_html_;
 
-	if (is_chartype(*this->it_html_, ct_start_symbol)) {
-		this->state_ = tokenizer_state::tag_name;
-
-		std::string tag_name;
-		tag_name = *this->it_html_;
-		this->current_token_ = token{token_type::start_tag, tag_name};
-	}
-	else if (*this->it_html_ == solidus_char) {
+	if (*this->it_html_ == solidus_char) {
 		this->state_ = tokenizer_state::end_tag_open;
+	}
+	else {
+		this->create_tag_token_if_curr_char_is_letter(
+			token_type::start_tag, tokenizer_state::tag_name);
 	}
 
 	return token_emitted;
@@ -134,13 +142,8 @@ token_iterator::on_end_tag_open_state()
 {
 	++this->it_html_;
 
-	if (is_chartype(*this->it_html_, ct_start_symbol)) {
-		this->state_ = tokenizer_state::tag_name;
-
-		std::string tag_name;
-		tag_name = *this->it_html_;
-		this->current_token_ = token{token_type::end_tag, tag_name};
-	}
+	this->create_tag_token_if_curr_char_is_letter(
+		token_type::end_tag, tokenizer_state::tag_name);
 
 	return false;
 }

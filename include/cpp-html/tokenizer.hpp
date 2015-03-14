@@ -63,6 +63,16 @@ private:
 	bool on_end_tag_open_state();
 	bool on_tag_name_state();
 	token scan_string_token();
+
+	/**
+	 * Creates new current token if current character is ASCII letter.
+	 * Sets new scanner state.
+	 *
+	 * @param type new token type.
+	 * @param new_state new tokenizer state.
+	 */
+	void create_tag_token_if_curr_char_is_letter(token_type type,
+		tokenizer_state new_state);
 };
 
 
