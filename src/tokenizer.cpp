@@ -42,7 +42,7 @@ const char_type tag_close_char = '>';
 
 
 token_iterator::token_iterator(const std::string& html) : html_(html),
-	it_html_(this->html_.cbegin()), current_token_{token_type::illegal, ""},
+	it_html_(this->html_.cbegin() - 1), current_token_{token_type::illegal, ""},
 	state_(tokenizer_state::data)
 {
 	this->current_token_ = this->next();
@@ -87,6 +87,8 @@ bool
 token_iterator::on_data_state()
 {
 	bool token_emitted = false;
+
+	++this->it_html_;
 
 	// Check if the current character is the start tag character
 	if (*this->it_html_ == tag_open_char) {
