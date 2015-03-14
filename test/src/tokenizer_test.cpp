@@ -16,7 +16,7 @@ SCENARIO("token iterator can be created from string", "[token_iterator]")
 		{
 			cpphtml::token_iterator it_token(str_html);
 
-			THEN("iterator points to string token")
+			THEN("iterator points to start tag token")
 			{
 				REQUIRE(it_token->type
 					== cpphtml::token_type::start_tag);
