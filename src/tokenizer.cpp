@@ -135,8 +135,10 @@ token_iterator::on_tag_name_state()
 		++this->it_html_;
 	}
 
-	token_emitted = true;
-	this->state_ = tokenizer_state::data;
+	if (*this->it_html_ == tag_close_char) {
+		token_emitted = true;
+		this->state_ = tokenizer_state::data;
+	}
 
 	return token_emitted;
 }
