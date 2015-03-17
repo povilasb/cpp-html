@@ -81,4 +81,19 @@ SCENARIO("token iterator can be created from string", "[token_iterator]")
 			}
 		}
 	}
+
+	GIVEN("html tag with attribute")
+	{
+		std::string str_html{"<div id=content>"};
+
+		WHEN("token iterator increased")
+		{
+			cpphtml::token_iterator it_token{str_html};
+			++it_token;
+
+			THEN("token iterator points to string token")
+			{
+			}
+		}
+	}
 }
