@@ -1,4 +1,7 @@
 #include <string>
+#include <functional>
+#include <map>
+#include <stdexcept>
 
 #include <cpp-html/tokenizer.hpp>
 #include <cpp-html/parser.hpp>
@@ -173,28 +176,24 @@ token_iterator::on_tag_name_state()
 token
 token_iterator::next()
 {
+	std::map<tokenizer_state, std::function<bool()> > state_handlers = {
+		{tokenizer_state::data,
+			std::bind(&token_iterator::on_data_state, this)},
+		{tokenizer_state::tag_open,
+			std::bind(&token_iterator::on_tag_open_state, this)},
+		{tokenizer_state::end_tag_open,
+			std::bind(&token_iterator::on_end_tag_open_state, this)},
+		{tokenizer_state::tag_name,
+			std::bind(&token_iterator::on_tag_name_state, this)},
+	};
+
 	bool token_emitted = false;
 	while (!token_emitted) {
-		switch (this->state_) {
-		case tokenizer_state::data:
-			token_emitted = this->on_data_state();
-			break;
-
-		case tokenizer_state::tag_open:
-			token_emitted = this->on_tag_open_state();
-			break;
-
-		case tokenizer_state::end_tag_open:
-			token_emitted = this->on_end_tag_open_state();
-			break;
-
-		case tokenizer_state::tag_name:
-			token_emitted = this->on_tag_name_state();
-			break;
-
-		default:
-			break;
+		if (state_handlers.find(this->state_) == state_handlers.end()) {
+			throw std::runtime_error{"Unknown state."};
 		}
+
+		token_emitted = state_handlers[this->state_]();
 	}
 
 	return this->current_token_;
