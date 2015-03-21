@@ -74,18 +74,6 @@ token_iterator::has_next() const
 	return this->it_html_ == this->html_.cend();
 }
 
-token
-token_iterator::scan_string_token()
-{
-	const_char_iterator string_start = this->it_html_;
-	while (is_chartype(*this->it_html_, ct_symbol)) {
-		++this->it_html_;
-	}
-
-	string_type token_value(string_start, this->it_html_);
-	return token{token_type::string, token_value};
-}
-
 
 void
 token_iterator::create_tag_token_if_curr_char_is_letter(token_type type,
