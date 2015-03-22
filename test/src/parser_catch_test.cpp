@@ -70,5 +70,15 @@ SCENARIO("cpphtml parser creates DOM document from html string", "[parser]")
 					->first_child()->value() == "paragraph1");
 			}
 		}
+
+		WHEN("td is last child element and is not closed")
+		{
+			auto doc = parser.parse("<table><td>column1</table>");
+
+			THEN("parser succeeds")
+			{
+				REQUIRE(doc);
+			}
+		}
 	}
 }
