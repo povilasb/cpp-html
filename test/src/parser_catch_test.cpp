@@ -101,5 +101,16 @@ SCENARIO("cpphtml parser creates DOM document from html string", "[parser]")
 				REQUIRE(doc);
 			}
 		}
+
+		WHEN("tr tag is last child element and not closed and td tag "
+			"is following.")
+		{
+			auto doc = parser.parse("<table><tr><td>col1</table>");
+
+			THEN("parsing succeeds")
+			{
+				REQUIRE(doc);
+			}
+		}
 	}
 }
