@@ -53,5 +53,22 @@ SCENARIO("cpphtml parser creates DOM document from html string", "[parser]")
 					cpphtml::parse_error);
 			}
 		}
+
+		WHEN("p tag is inside div which has no more children and p is "
+			"not closed")
+		{
+			auto doc = parser.parse("<div><p>paragraph1</div>");
+
+			THEN("parser succeeds")
+			{
+				REQUIRE(doc);
+			}
+
+			THEN("p element has a correct content")
+			{
+				REQUIRE(doc->first_child()->first_child()
+					->first_child()->value() == "paragraph1");
+			}
+		}
 	}
 }
