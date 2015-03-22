@@ -91,5 +91,15 @@ SCENARIO("cpphtml parser creates DOM document from html string", "[parser]")
 				REQUIRE(doc);
 			}
 		}
+
+		WHEN("td tag is followed by another td tag and is not closed")
+		{
+			auto doc = parser.parse("<table><td>col1<td>col1</table>");
+
+			THEN("parsing succeeds")
+			{
+				REQUIRE(doc);
+			}
+		}
 	}
 }

@@ -89,7 +89,8 @@ std::list<string_type> html_void_elements = {"AREA", "BASE", "BR",
 //		<li>item2
 //	</ul>
 std::unordered_map<string_type, std::set<string_type> > no_end_tag_by_sibling = {
-	{"LI", {"LI"}}
+	{"LI", {"LI"}},
+	{"TD", {"TD"}}
 };
 
 
