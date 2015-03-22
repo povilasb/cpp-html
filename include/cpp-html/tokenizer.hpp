@@ -35,12 +35,15 @@ enum class tokenizer_state {
 };
 
 
+typedef std::unordered_map<std::string, std::string> attribute_list_type;
+
+
 struct token {
 	token_type type;
 	string_type value;
 
 	bool has_attributes;
-	std::unordered_map<std::string, std::string> attributes;
+	attribute_list_type attributes;
 };
 
 

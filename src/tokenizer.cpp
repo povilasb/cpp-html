@@ -49,7 +49,7 @@ const char_type equals_sign_char = '=';
 
 token_iterator::token_iterator(const std::string& html) : html_(html),
 	it_html_(this->html_.cbegin() - 1),
-	current_token_{token_type::illegal, "", false, {}},
+	current_token_{token_type::illegal, "", false, attribute_list_type{}},
 	state_(tokenizer_state::data)
 {
 	this->current_token_ = this->next();
@@ -87,7 +87,8 @@ token_iterator::create_tag_token_if_curr_char_is_letter(token_type type,
 
 		std::string tag_name;
 		tag_name = *this->it_html_;
-		this->current_token_ = token{type, tag_name};
+		this->current_token_ = token{type, tag_name, false,
+			attribute_list_type{}};
 	}
 }
 
