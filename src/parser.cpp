@@ -122,8 +122,8 @@ autoclose_prev_sibling(const std::string& tag_name,
 inline bool
 autoclose_last_child(const std::string& tag_name)
 {
-	auto it = no_end_tag_by_child.find(tag_name);
-	return it != std::end(no_end_tag_by_child);
+	return no_end_tag_by_child.find(tag_name)
+		!= std::end(no_end_tag_by_child);
 }
 
 
