@@ -86,13 +86,21 @@ SCENARIO("token iterator can be created from string", "[token_iterator]")
 	{
 		std::string str_html{"<div id=content>"};
 
-		WHEN("token iterator increased")
+		WHEN("token iterator is constructed")
 		{
 			cpphtml::token_iterator it_token{str_html};
-			++it_token;
 
-			THEN("token iterator points to string token")
+			THEN("token iterator points to start tag token")
 			{
+				REQUIRE(it_token->type
+					== cpphtml::token_type::start_tag);
+			}
+
+			THEN("token has id attribute")
+			{
+				REQUIRE(it_token->has_attributes == true);
+				REQUIRE(it_token->attributes.find("id")
+					!= it_token->attributes.end());
 			}
 		}
 	}

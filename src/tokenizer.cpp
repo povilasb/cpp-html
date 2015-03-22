@@ -2,6 +2,7 @@
 #include <functional>
 #include <map>
 #include <stdexcept>
+#include <iostream>
 
 #include <cpp-html/tokenizer.hpp>
 #include <cpp-html/parser.hpp>
@@ -43,10 +44,12 @@ is_chartype(char_type ch, enum chartype_t char_type)
 const char_type tag_open_char = '<';
 const char_type tag_close_char = '>';
 const char_type solidus_char = '/';
+const char_type equals_sign_char = '=';
 
 
 token_iterator::token_iterator(const std::string& html) : html_(html),
-	it_html_(this->html_.cbegin() - 1), current_token_{token_type::illegal, ""},
+	it_html_(this->html_.cbegin() - 1),
+	current_token_{token_type::illegal, "", false, {}},
 	state_(tokenizer_state::data)
 {
 	this->current_token_ = this->next();
@@ -156,6 +159,95 @@ token_iterator::on_tag_name_state()
 		token_emitted = true;
 		this->state_ = tokenizer_state::data;
 	}
+	else if (is_chartype(*this->it_html_, ct_space)) {
+		this->state_ = tokenizer_state::before_attribute_name;
+	}
+
+	return token_emitted;
+}
+
+
+bool
+token_iterator::is_eof() const
+{
+	return this->it_html_ == this->html_.end();
+}
+
+
+bool
+token_iterator::on_before_attribute_name_state()
+{
+	++this->it_html_;
+
+	if (this->is_eof()) {
+		throw std::runtime_error("Unexpected EOF.");
+	}
+
+	while (is_chartype(*this->it_html_, ct_space)) {
+		++this->it_html_;
+	}
+
+	bool token_emitted = false;
+	if (*this->it_html_ == tag_close_char) {
+		this->state_ = tokenizer_state::data;
+		token_emitted = true;
+	}
+	else if (is_chartype(*this->it_html_, ct_start_symbol)) {
+		this->current_token_.has_attributes = true;
+		this->curr_attribute_name_ = *this->it_html_;
+
+		this->state_ = tokenizer_state::attribute_name;
+	}
+
+	return token_emitted;
+}
+
+
+bool
+token_iterator::on_attribute_name_state()
+{
+	++this->it_html_;
+
+	if (is_chartype(*this->it_html_, ct_start_symbol)) {
+		this->curr_attribute_name_ += *this->it_html_;
+	}
+	else if (*this->it_html_ == equals_sign_char) {
+		this->state_ = tokenizer_state::before_attribute_value;
+	}
+
+	return false;
+}
+
+
+bool
+token_iterator::on_before_attribute_value_state()
+{
+	++this->it_html_;
+
+	if (is_chartype(*this->it_html_, ct_start_symbol)) {
+		this->curr_attribute_value_ = *this->it_html_;
+		this->state_ = tokenizer_state::unquoted_attribute_value;
+	}
+
+	return false;
+}
+
+
+bool
+token_iterator::on_unquoted_attribute_value_state()
+{
+	++this->it_html_;
+
+	bool token_emitted = false;
+
+	if (is_chartype(*this->it_html_, ct_start_symbol)) {
+		this->curr_attribute_value_ += *this->it_html_;
+	}
+	else if (*this->it_html_ == tag_close_char) {
+		this->current_token_.attributes[this->curr_attribute_name_]
+			= this->curr_attribute_value_;
+		token_emitted = true;
+	}
 
 	return token_emitted;
 }
@@ -173,6 +265,14 @@ token_iterator::next()
 			std::bind(&token_iterator::on_end_tag_open_state, this)},
 		{tokenizer_state::tag_name,
 			std::bind(&token_iterator::on_tag_name_state, this)},
+		{tokenizer_state::before_attribute_name,
+			std::bind(&token_iterator::on_before_attribute_name_state, this)},
+		{tokenizer_state::attribute_name,
+			std::bind(&token_iterator::on_attribute_name_state, this)},
+		{tokenizer_state::before_attribute_value,
+			std::bind(&token_iterator::on_before_attribute_value_state, this)},
+		{tokenizer_state::unquoted_attribute_value,
+			std::bind(&token_iterator::on_unquoted_attribute_value_state, this)},
 	};
 
 	bool token_emitted = false;
