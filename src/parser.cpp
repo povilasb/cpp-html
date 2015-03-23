@@ -387,7 +387,14 @@ parser::parse(const string_type& str_html)
 			&& (autoclose_last_child(this->current_node_->name())
 			|| last_element_void)) {
 
-			this->current_node_ = this->current_node_->parent();
+			if (last_element_void) {
+				this->current_node_ = this->current_node_->parent();
+			}
+			else while (autoclose_last_child(
+				this->current_node_->name())) {
+				this->current_node_ = this->current_node_->parent();
+			}
+
 			last_element_void = false;
 		}
 
