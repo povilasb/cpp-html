@@ -240,6 +240,11 @@ public:
 	bool remove_child(const string_type& name);
 
 	/**
+	 * @return immutable list of child nodes.
+	 */
+	const std::list<std::shared_ptr<node> >& child_nodes() const;
+
+	/**
 	 * Find child node using predicate. Returns first child for which
 	 * predicate returned true.
 	 */

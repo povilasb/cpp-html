@@ -338,6 +338,13 @@ node::remove_child(const string_type& name)
 }
 
 
+const std::list<std::shared_ptr<node> >&
+node::child_nodes() const
+{
+	return this->children_;
+}
+
+
 std::shared_ptr<node>
 node::find_child_by_attribute(const string_type& tag,
 	const string_type& attr_name,
