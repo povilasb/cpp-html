@@ -109,7 +109,14 @@ SCENARIO("cpphtml parser creates DOM document from html string", "[parser]")
 
 			THEN("parsing succeeds")
 			{
-				REQUIRE(doc);
+				auto table = doc->first_child();
+				REQUIRE(table->name() == "TABLE");
+
+				auto tr = table->first_child();
+				REQUIRE(tr->name() == "TR");
+
+				auto td = tr->first_child();
+				REQUIRE(td->name() == "TD");
 			}
 		}
 
@@ -122,7 +129,7 @@ SCENARIO("cpphtml parser creates DOM document from html string", "[parser]")
 			THEN("table has two child elements")
 			{
 				auto table = doc->first_child();
-				// TODO(povilas): assert.
+				REQUIRE(table->child_nodes().size() == 2);
 			}
 		}
 	}
