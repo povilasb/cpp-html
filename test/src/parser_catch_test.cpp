@@ -112,5 +112,18 @@ SCENARIO("cpphtml parser creates DOM document from html string", "[parser]")
 				REQUIRE(doc);
 			}
 		}
+
+		WHEN("not closed tr tag is followed by not closed another tr"
+			"tag and both have child td tags")
+		{
+			auto doc = parser.parse("<table><tr><td>col1"
+				"<tr><td>col2</table>");
+
+			THEN("table has two child elements")
+			{
+				auto table = doc->first_child();
+				// TODO(povilas): assert.
+			}
+		}
 	}
 }
