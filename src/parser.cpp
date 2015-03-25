@@ -90,7 +90,8 @@ std::list<string_type> html_void_elements = {"AREA", "BASE", "BR",
 //	</ul>
 std::unordered_map<string_type, std::set<string_type> > no_end_tag_by_sibling = {
 	{"LI", {"LI"}},
-	{"TD", {"TD"}}
+	{"TD", {"TD"}},
+	{"TR", {"TR", "TD"}}
 };
 
 
@@ -370,15 +371,20 @@ parser::parse(const string_type& str_html)
 		auto node = node::create(node_element);
 		node->name(tag_name);
 
+		auto new_tag_parent = this->current_node_;
+
 		auto parent = this->current_node_->parent();
 		if (parent && autoclose_prev_sibling(tag_name,
 			this->current_node_->name())) {
-			parent->append_child(node);
-		}
-		else {
-			this->current_node_->append_child(node);
+			while (parent->parent() && autoclose_prev_sibling(tag_name,
+				parent->name())) {
+				parent = parent->parent();
+			}
+
+			new_tag_parent = parent;
 		}
 
+		new_tag_parent->append_child(node);
 		this->current_node_ = node;
 	};
 

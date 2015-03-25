@@ -120,7 +120,7 @@ SCENARIO("cpphtml parser creates DOM document from html string", "[parser]")
 			}
 		}
 
-		WHEN("not closed tr tag is followed by not closed another tr"
+		WHEN("not closed tr tag is followed by not closed another tr "
 			"tag and both have child td tags")
 		{
 			auto doc = parser.parse("<table><tr><td>col1"
