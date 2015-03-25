@@ -348,6 +348,29 @@ str_toupper(string_type& str)
 	}
 }
 
+
+std::shared_ptr<node>
+find_parent_node_for_new_tag(std::shared_ptr<node> current_node,
+	const string_type& new_tag_name)
+{
+	auto new_tag_parent = current_node;
+
+	auto parent = current_node->parent();
+	if (parent && autoclose_prev_sibling(new_tag_name,
+		current_node->name())) {
+
+		while (parent->parent() && autoclose_prev_sibling(new_tag_name,
+			parent->name())) {
+			parent = parent->parent();
+		}
+
+		new_tag_parent = parent;
+	}
+
+	return new_tag_parent;
+}
+
+
 std::shared_ptr<document>
 parser::parse(const string_type& str_html)
 {
@@ -371,20 +394,10 @@ parser::parse(const string_type& str_html)
 		auto node = node::create(node_element);
 		node->name(tag_name);
 
-		auto new_tag_parent = this->current_node_;
-
-		auto parent = this->current_node_->parent();
-		if (parent && autoclose_prev_sibling(tag_name,
-			this->current_node_->name())) {
-			while (parent->parent() && autoclose_prev_sibling(tag_name,
-				parent->name())) {
-				parent = parent->parent();
-			}
-
-			new_tag_parent = parent;
-		}
-
+		auto new_tag_parent = find_parent_node_for_new_tag(
+			this->current_node_, tag_name);
 		new_tag_parent->append_child(node);
+
 		this->current_node_ = node;
 	};
 
