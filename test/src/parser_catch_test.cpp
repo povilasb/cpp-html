@@ -132,5 +132,23 @@ SCENARIO("cpphtml parser creates DOM document from html string", "[parser]")
 				REQUIRE(table->child_nodes().size() == 2);
 			}
 		}
+
+		WHEN("not closed tbody tag has tr children")
+		{
+			auto doc = parser.parse("<table><tbody><tr><td>col1"
+				"<tr><td>col2</table>");
+
+			THEN("first child in table is tbody")
+			{
+				auto table = doc->first_child();
+				auto tbody = table->first_child();
+				REQUIRE(tbody->name() == "TBODY");
+
+				THEN("tbody has two children elements")
+				{
+					REQUIRE(tbody->child_nodes().size() == 2);
+				}
+			}
+		}
 	}
 }
