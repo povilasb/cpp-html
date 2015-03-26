@@ -246,5 +246,20 @@ SCENARIO("cpphtml parser creates DOM document from html string", "[parser]")
 				REQUIRE(dt->next_sibling()->name() == "DT");
 			}
 		}
+
+		WHEN("dt is not close and is followed by dd element")
+		{
+			auto doc = parser.parse("<dl><dt>term1<dd>desc1</dl>");
+
+			THEN("dt is closed automatially.")
+			{
+				auto dt = doc->first_child()->first_child();
+
+				REQUIRE(dt->name() == "DT");
+				REQUIRE(dt->first_child()->value()
+					== "term1");
+				REQUIRE(dt->next_sibling()->name() == "DD");
+			}
+		}
 	}
 }
