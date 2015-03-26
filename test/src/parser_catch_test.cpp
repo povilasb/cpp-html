@@ -150,5 +150,17 @@ SCENARIO("cpphtml parser creates DOM document from html string", "[parser]")
 				}
 			}
 		}
+
+		WHEN("thead has no closing tag and it's last child element")
+		{
+			auto doc = parser.parse("<table><thead></table>");
+
+			THEN("thead is closed automatically")
+			{
+				auto table = doc->first_child();
+
+				REQUIRE(table->first_child()->name() == "THEAD");
+			}
+		}
 	}
 }
