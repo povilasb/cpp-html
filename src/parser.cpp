@@ -94,7 +94,8 @@ std::unordered_map<string_type, std::set<string_type> > no_end_tag_by_sibling = 
 	{"TR", {"TR", "TD"}},
 	{"TH", {"TH"}},
 	{"TBODY", {"THEAD"}},
-	{"DD", {"DD"}}
+	{"DD", {"DD"}},
+	{"DT", {"DT"}}
 };
 
 
