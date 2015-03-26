@@ -215,5 +215,21 @@ SCENARIO("cpphtml parser creates DOM document from html string", "[parser]")
 					== "description1");
 			}
 		}
+
+		WHEN("dd is not closed and it is followed by another dd tag")
+		{
+			auto doc = parser.parse("<dl><dd>description1"
+				"<dd>description2</dd></dl>");
+
+			THEN("dd is closed automatically")
+			{
+				auto dd = doc->first_child()->first_child();
+
+				REQUIRE(dd->name() == "DD");
+				REQUIRE(dd->first_child()->value()
+					== "description1");
+				REQUIRE(dd->next_sibling()->name() == "DD");
+			}
+		}
 	}
 }
