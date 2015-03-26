@@ -202,5 +202,18 @@ SCENARIO("cpphtml parser creates DOM document from html string", "[parser]")
 			}
 		}
 
+		WHEN("dd is not closed and is the last child element")
+		{
+			auto doc = parser.parse("<dl><dd>description1</dl>");
+
+			THEN("dd is closed automaticallly")
+			{
+				auto dd = doc->first_child()->first_child();
+
+				REQUIRE(dd->name() == "DD");
+				REQUIRE(dd->first_child()->value()
+					== "description1");
+			}
+		}
 	}
 }
