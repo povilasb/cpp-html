@@ -162,5 +162,19 @@ SCENARIO("cpphtml parser creates DOM document from html string", "[parser]")
 				REQUIRE(table->first_child()->name() == "THEAD");
 			}
 		}
+
+		WHEN("thead has no closing tag and it's sibling is tbody")
+		{
+			auto doc = parser.parse("<table><thead><tbody></table>");
+
+			THEN("thead is closed automatically")
+			{
+				auto table = doc->first_child();
+				auto thead = table->first_child();
+
+				REQUIRE(thead->name() == "THEAD");
+				REQUIRE(thead->child_nodes().size() == 0);
+			}
+		}
 	}
 }

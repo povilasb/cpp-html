@@ -91,7 +91,8 @@ std::list<string_type> html_void_elements = {"AREA", "BASE", "BR",
 std::unordered_map<string_type, std::set<string_type> > no_end_tag_by_sibling = {
 	{"LI", {"LI"}},
 	{"TD", {"TD"}},
-	{"TR", {"TR", "TD"}}
+	{"TR", {"TR", "TD"}},
+	{"TBODY", {"THEAD"}}
 };
 
 
