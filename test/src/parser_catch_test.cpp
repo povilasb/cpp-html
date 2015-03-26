@@ -176,5 +176,31 @@ SCENARIO("cpphtml parser creates DOM document from html string", "[parser]")
 				REQUIRE(thead->child_nodes().size() == 0);
 			}
 		}
+
+		WHEN("th is not closed and followed by another th tag")
+		{
+			auto doc = parser.parse("<table><tr><th>header1<th>"
+				"header2</table>");
+
+			THEN("th is closed automatically")
+			{
+				auto table = doc->first_child();
+				auto tr = table->first_child();
+				auto th1 = tr->first_child();
+
+				REQUIRE(th1->name() == "TH");
+				REQUIRE(th1->first_child()->value() == "header1");
+
+				THEN("th has a sibling, another th tag")
+				{
+					auto th2 = th1->next_sibling();
+
+					REQUIRE(th2->name() == "TH");
+					REQUIRE(th2->first_child()->value()
+						== "header2");
+				}
+			}
+		}
+
 	}
 }

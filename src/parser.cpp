@@ -92,6 +92,7 @@ std::unordered_map<string_type, std::set<string_type> > no_end_tag_by_sibling = 
 	{"LI", {"LI"}},
 	{"TD", {"TD"}},
 	{"TR", {"TR", "TD"}},
+	{"TH", {"TH"}},
 	{"TBODY", {"THEAD"}}
 };
 
@@ -102,7 +103,7 @@ std::unordered_map<string_type, std::set<string_type> > no_end_tag_by_sibling = 
 //		<li>item1
 //	</ul>
 std::set<string_type> no_end_tag_by_child = {"LI", "P", "TD", "TR", "TBODY",
-	"THEAD"};
+	"THEAD", "TH"};
 
 
 /**
