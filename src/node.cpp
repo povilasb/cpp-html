@@ -93,6 +93,32 @@ node::value(const string_type& value)
 
 }
 
+class text_aggregator : public node_walker {
+public:
+	std::string text;
+
+	bool
+	for_each(std::shared_ptr<node> node)
+	{
+		text += node->value();
+		return true;
+	}
+};
+
+
+string_type
+node::text_content() const
+{
+	if (this->children_.size() == 0) {
+		return "";
+	}
+
+	text_aggregator text_walker;
+	(const_cast<node*>(this))->traverse(text_walker);
+
+	return text_walker.text;
+}
+
 
 std::shared_ptr<attribute>
 node::first_attribute() const

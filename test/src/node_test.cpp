@@ -382,3 +382,45 @@ TEST(node, get_path)
 
 	ASSERT_EQ("div/p/input", input->path());
 }
+
+
+TEST(node_text_content, returns_whole_child_when_there_is_only_text_child_node)
+{
+	auto div = html::node::create(html::node_element);
+	div->name("div");
+	auto text = html::node::create(html::node_pcdata);
+	text->value("content");
+	div->append_child(text);
+
+	ASSERT_EQ(div->text_content(), std::string("content"));
+}
+
+
+TEST(node_text_content, returns_empty_string_when_node_has_no_child_elements)
+{
+	auto div = html::node::create(html::node_element);
+	div->name("div");
+
+	ASSERT_EQ(div->text_content(), std::string(""));
+}
+
+
+TEST(node_text_content,
+	returns_all_text_children_combined_when_there_is_child_hierarchy)
+{
+	auto div = html::node::create(html::node_element);
+	div->name("div");
+
+	auto text = html::node::create(html::node_pcdata);
+	text->value("content1");
+	div->append_child(text);
+
+	auto p = html::node::create(html::node_element);
+	p->name("p");
+	auto text2 = html::node::create(html::node_pcdata);
+	text2->value("content2");
+	p->append_child(text2);
+	div->append_child(p);
+
+	ASSERT_EQ(std::string("content1content2"), div->text_content());
+}

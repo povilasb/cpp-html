@@ -79,6 +79,12 @@ public:
 	 */
 	void value(const string_type& value);
 
+	/**
+	 * @return the textual content of the specified node, and all its
+	 *	descendants.
+	 */
+	string_type text_content() const;
+
 
 	// Attribute related methods.
 
