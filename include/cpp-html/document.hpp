@@ -33,6 +33,12 @@ public:
 	 */
 	std::shared_ptr<node> get_element_by_id(const string_type& id) const;
 
+	/**
+	 * @return a list of alls elements with the specified tag name.
+	 */
+	std::vector<std::shared_ptr<node> > get_elements_by_tag_name(
+		const string_type& tag_name) const;
+
 private:
 	/**
 	 * Builds an empty document. It's html node with type node_document.

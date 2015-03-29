@@ -64,4 +64,37 @@ document::get_element_by_id(const string_type& id) const
 	});
 }
 
+
+class tags_walker : public node_walker {
+public:
+	std::vector<std::shared_ptr<node> > tag_elements;
+
+
+	tags_walker(const string_type& tag_name) : tag_name_(tag_name)
+	{
+	}
+
+	bool
+	for_each(std::shared_ptr<node> node) override
+	{
+		if (node->name() == this->tag_name_) {
+			this->tag_elements.push_back(node);
+		}
+
+		return true;
+	}
+
+private:
+	const string_type tag_name_;
+};
+
+std::vector<std::shared_ptr<node> >
+document::get_elements_by_tag_name(const string_type& tag_name) const
+{
+	tags_walker html_walker(tag_name);
+	const_cast<document*>(this)->traverse(html_walker);
+
+	return html_walker.tag_elements;
+}
+
 } // cpp-html.
