@@ -4,6 +4,7 @@
 #include <memory>
 #include <sstream>
 #include <stdexcept>
+#include <functional>
 
 #include <cpp-html/node.hpp>
 #include <cpp-html/attribute.hpp>
@@ -538,6 +539,30 @@ bool
 node_walker::end(std::shared_ptr<node>)
 {
 	return true;
+}
+
+
+class for_each_walker : public node_walker {
+public:
+	for_each_walker(std::function<bool (std::shared_ptr<node>)> for_each)
+		: for_each_(for_each)
+	{
+	}
+
+	virtual bool
+	for_each(std::shared_ptr<node> node) override
+	{
+		return this->for_each_(node);
+	}
+
+private:
+	std::function<bool (std::shared_ptr<node>)> for_each_;
+};
+
+std::shared_ptr<node_walker>
+make_node_walker(std::function<bool (std::shared_ptr<node>)> for_each)
+{
+	return std::make_shared<for_each_walker>(for_each);
 }
 
 

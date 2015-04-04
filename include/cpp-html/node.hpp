@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iterator>
 #include <memory>
+#include <functional>
 
 #include <cpp-html/cpp-html.hpp>
 #include <cpp-html/config.hpp>
@@ -422,6 +423,14 @@ protected:
 private:
 	int depth_;
 };
+
+
+/**
+ * Makes node_walker object which implements only for_each method from the
+ * specified function object.
+ */
+std::shared_ptr<node_walker> make_node_walker(
+	std::function<bool (std::shared_ptr<node>)> for_each);
 
 
 }
