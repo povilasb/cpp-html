@@ -94,18 +94,6 @@ node::value(const string_type& value)
 
 }
 
-class text_aggregator : public node_walker {
-public:
-	std::string text;
-
-	bool
-	for_each(std::shared_ptr<node> node)
-	{
-		text += node->value();
-		return true;
-	}
-};
-
 
 string_type
 node::text_content() const
@@ -114,10 +102,14 @@ node::text_content() const
 		return "";
 	}
 
-	text_aggregator text_walker;
-	(const_cast<node*>(this))->traverse(text_walker);
+	std::string text;
+	auto tree_walker = make_node_walker([&](std::shared_ptr<node> node){
+		text += node->value();
+		return true;
+	});
+	(const_cast<node*>(this))->traverse(*tree_walker);
 
-	return text_walker.text;
+	return text;
 }
 
 
