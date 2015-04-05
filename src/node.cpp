@@ -519,24 +519,28 @@ make_tabs(size_t tab_count)
 
 
 inline string_type
-make_start_tag_name(std::size_t indentation, string_type tag_name)
+make_tag_name(std::size_t indentation, string_type tag_name,
+	string_type tag_prefix)
 {
 	if (tag_name == "") {
 		return "";
 	}
 
-	return  make_tabs(indentation) + '<' + tag_name + ">\n";
+	return  make_tabs(indentation) + tag_prefix + tag_name + ">\n";
+}
+
+
+inline string_type
+make_start_tag_name(std::size_t indentation, string_type tag_name)
+{
+	return make_tag_name(indentation, tag_name, "<");
 }
 
 
 inline string_type
 make_end_tag_name(std::size_t indentation, string_type tag_name)
 {
-	if (tag_name == "") {
-		return "";
-	}
-
-	return  make_tabs(indentation) + "</" + tag_name + ">\n";
+	return make_tag_name(indentation, tag_name, "</");
 }
 
 
