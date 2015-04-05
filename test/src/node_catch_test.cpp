@@ -12,11 +12,15 @@ namespace cpphtml
 
 SCENARIO("node tree walker can be created")
 {
-	GIVEN("lambda function with node parameter")
+	GIVEN("tree traverse lambda function")
 	{
-		std::string last_node;
-		auto on_each_node = [&](std::shared_ptr<node> node, std::size_t) {
+		string_type last_node;
+		std::size_t last_depth = 0;
+
+		auto on_each_node = [&](std::shared_ptr<node> node,
+			std::size_t depth) {
 			last_node = node->name();
+			last_depth = depth;
 			return true;
 		};
 
