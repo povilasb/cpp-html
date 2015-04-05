@@ -1,6 +1,8 @@
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
 
+#include <cstddef>
+
 #include <cpp-html/node.hpp>
 #include <cpp-html/document.hpp>
 
@@ -13,7 +15,7 @@ SCENARIO("node tree walker can be created")
 	GIVEN("lambda function with node parameter")
 	{
 		std::string last_node;
-		auto on_each_node = [&](std::shared_ptr<node> node) {
+		auto on_each_node = [&](std::shared_ptr<node> node, std::size_t) {
 			last_node = node->name();
 			return true;
 		};

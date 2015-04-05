@@ -103,7 +103,9 @@ node::text_content() const
 	}
 
 	std::string text;
-	auto tree_walker = make_node_walker([&](std::shared_ptr<node> node){
+	auto tree_walker = make_node_walker([&](std::shared_ptr<node> node,
+		std::size_t) {
+
 		text += node->value();
 		return true;
 	});
@@ -508,7 +510,11 @@ node::to_string() const
 {
 	string_type str_html;
 
-	auto tree_walker = make_node_walker([&](std::shared_ptr<node> node) {
+	auto tree_walker = make_node_walker([&](std::shared_ptr<node> node,
+		std::size_t traverse_depth) {
+
+		(void)traverse_depth;
+
 		str_html += '<' + node->name() + ">\n</" + node->name() + '>';
 		return true;
 	});
@@ -551,7 +557,7 @@ node_walker::end(std::shared_ptr<node>)
 
 class for_each_walker : public node_walker {
 public:
-	for_each_walker(std::function<bool (std::shared_ptr<node>)> for_each)
+	for_each_walker(node_walker_callback for_each)
 		: for_each_(for_each)
 	{
 	}
@@ -559,18 +565,20 @@ public:
 	virtual bool
 	for_each(std::shared_ptr<node> node) override
 	{
-		return this->for_each_(node);
+		return this->for_each_(node, this->depth());
 	}
 
 private:
-	std::function<bool (std::shared_ptr<node>)> for_each_;
+	node_walker_callback for_each_;
 };
 
 std::shared_ptr<node_walker>
-make_node_walker(std::function<bool (std::shared_ptr<node>)> for_each)
+make_node_walker(node_walker_callback for_each)
 {
 	return std::make_shared<for_each_walker>(for_each);
 }
+
+
 
 
 } // cpp-html.

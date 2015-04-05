@@ -6,6 +6,7 @@
 #include <iterator>
 #include <memory>
 #include <functional>
+#include <cstddef>
 
 #include <cpp-html/cpp-html.hpp>
 #include <cpp-html/config.hpp>
@@ -431,12 +432,14 @@ private:
 };
 
 
+typedef std::function<bool (std::shared_ptr<node>, std::size_t)>
+	node_walker_callback;
+
 /**
  * Makes node_walker object which implements only for_each method from the
  * specified function object.
  */
-std::shared_ptr<node_walker> make_node_walker(
-	std::function<bool (std::shared_ptr<node>)> for_each);
+std::shared_ptr<node_walker> make_node_walker(node_walker_callback for_each);
 
 
 }
