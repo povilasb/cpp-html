@@ -7,7 +7,7 @@ flags = [
 	'-Wall', '-Wextra', '-Werror', '-std=c++11', '-pedantic',
 	'-I', './src',
 	'-I', './include',
-	'-I', './test/lib/gtest/include',
+	'-I', './test/lib/gmock/gtest/include',
 	'-I', './test/lib',
 ]
 
