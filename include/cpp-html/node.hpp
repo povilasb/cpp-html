@@ -359,6 +359,12 @@ public:
 	attribute_iterator attributes_begin();
 	attribute_iterator attributes_end();
 
+	/**
+	 * Converts DOM tree back to html string format starting from the
+	 * children of current node.
+	 */
+	string_type to_string() const;
+
 protected:
 	/**
 	 * Creates node with the specified type.

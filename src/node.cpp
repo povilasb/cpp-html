@@ -503,6 +503,21 @@ node::attributes_end()
 }
 
 
+string_type
+node::to_string() const
+{
+	string_type str_html;
+
+	auto tree_walker = make_node_walker([&](std::shared_ptr<node> node) {
+		str_html += '<' + node->name() + ">\n</" + node->name() + '>';
+		return true;
+	});
+	(const_cast<node*>(this))->traverse(*tree_walker);
+
+	return str_html;
+}
+
+
 node_walker::node_walker(): depth_(0)
 {
 }
