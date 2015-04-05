@@ -10,7 +10,7 @@ namespace cpphtml
 
 SCENARIO("node tree walker can be created")
 {
-	GIVEN("lamba function with node parameter")
+	GIVEN("lambda function with node parameter")
 	{
 		std::string last_node;
 		auto on_each_node = [&](std::shared_ptr<node> node) {
@@ -22,7 +22,7 @@ SCENARIO("node tree walker can be created")
 		{
 			auto walker = make_node_walker(on_each_node);
 
-			THEN("lamda function is called from walker.for_each()")
+			THEN("lambda function is called from walker.for_each()")
 			{
 				auto div = node::create(node_element);
 				div->name("div");
