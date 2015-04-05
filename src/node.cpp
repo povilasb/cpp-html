@@ -578,7 +578,4 @@ make_node_walker(node_walker_callback for_each)
 	return std::make_shared<for_each_walker>(for_each);
 }
 
-
-
-
 } // cpp-html.
