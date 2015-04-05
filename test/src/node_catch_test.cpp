@@ -44,21 +44,38 @@ SCENARIO("node tree walker can be created")
 
 SCENARIO("node tree can be translated to string")
 {
-	auto doc = document::create();
-
 	GIVEN("document with single child node")
 	{
 		auto div = node::create(node_element);
 		div->name("div");
-		doc->append_child(div);
 
 		WHEN("to_string is called on a document object")
 		{
-			string_type str_tree = doc->to_string();
+			string_type str_tree = div->to_string();
 
 			THEN("tree html string is child node start and end tags.")
 			{
-				REQUIRE(str_tree == "<div>\n</div>");
+				REQUIRE(str_tree == "<div>\n</div>\n");
+			}
+		}
+	}
+
+	GIVEN("document with two level depth tree")
+	{
+		auto div = node::create(node_element);
+		div->name("div");
+
+		auto p = node::create(node_element);
+		p->name("p");
+		div->append_child(p);
+
+		WHEN("document is translated to html string")
+		{
+			string_type str_tree = div->to_string();
+
+			THEN("tree html string is one child nested in another")
+			{
+				REQUIRE(str_tree == std::string("<div>\n\t<p>\n\t</p>\n</div>\n"));
 			}
 		}
 	}

@@ -505,22 +505,51 @@ node::attributes_end()
 }
 
 
-string_type
-node::to_string() const
+inline string_type
+make_tabs(size_t tab_count)
 {
-	string_type str_html;
+	string_type tabs;
 
-	auto tree_walker = make_node_walker([&](std::shared_ptr<node> node,
-		std::size_t traverse_depth) {
+	for (size_t i = 1; i <= tab_count; ++i) {
+		tabs += '\t';
+	}
 
-		(void)traverse_depth;
+	return tabs;
+}
 
-		str_html += '<' + node->name() + ">\n</" + node->name() + '>';
-		return true;
-	});
-	(const_cast<node*>(this))->traverse(*tree_walker);
 
-	return str_html;
+inline string_type
+make_start_tag_name(std::size_t indentation, string_type tag_name)
+{
+	if (tag_name == "") {
+		return "";
+	}
+
+	return  make_tabs(indentation) + '<' + tag_name + ">\n";
+}
+
+
+inline string_type
+make_end_tag_name(std::size_t indentation, string_type tag_name)
+{
+	if (tag_name == "") {
+		return "";
+	}
+
+	return  make_tabs(indentation) + "</" + tag_name + ">\n";
+}
+
+
+string_type
+node::to_string(std::size_t indentation) const
+{
+	string_type str_html = make_start_tag_name(indentation, this->name());
+
+	for (auto node : this->children_) {
+		str_html += node->to_string(indentation + 1);
+	}
+
+	return str_html + make_end_tag_name(indentation, this->name());
 }
 
 

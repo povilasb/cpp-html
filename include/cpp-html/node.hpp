@@ -364,7 +364,7 @@ public:
 	 * Converts DOM tree back to html string format starting from the
 	 * children of current node.
 	 */
-	string_type to_string() const;
+	string_type to_string(std::size_t indentation = 0) const;
 
 protected:
 	/**
