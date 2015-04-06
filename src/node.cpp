@@ -477,6 +477,28 @@ node::traverse(node_walker& walker)
 }
 
 
+bool
+node::traverse(std::function<bool (std::shared_ptr<node>)> predicate,
+	std::size_t depth)
+{
+	if (depth > 0) {
+		bool proceed = predicate(this->shared_from_this());
+		if (!proceed) {
+			return false;
+		}
+	}
+
+	for (auto child : this->children_) {
+		bool proceed = child->traverse(predicate, depth + 1);
+		if (!proceed) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
 node::iterator
 node::begin()
 {

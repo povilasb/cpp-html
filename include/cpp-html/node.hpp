@@ -348,6 +348,17 @@ public:
 	bool traverse(node_walker& walker);
 
 	/**
+	 * Traverses node tree applying the specified predicate for each
+	 * node.
+	 *
+	 * @param depth traversing depth.
+	 * @return true if whole tree was traversed, false if traversing was
+	 *	terminated.
+	 */
+	bool traverse(std::function<bool (std::shared_ptr<node>)> predicate,
+		std::size_t depth = 0);
+
+	/**
 	 * @return node children begin iterator pointing to the first child
 	 *	or end() iterator if this node has no children nodes.
 	 */

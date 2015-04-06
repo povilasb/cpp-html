@@ -82,4 +82,58 @@ SCENARIO("node tree can be translated to string")
 
 }
 
+std::shared_ptr<node>
+make_html_element(string_type tag_name)
+{
+	std::shared_ptr<node> element = node::create(node_element);
+	element->name(tag_name);
+	return element;
+}
+
+
+SCENARIO("node tree can be traversed with the std::function")
+{
+	GIVEN("node tree with 3 elements")
+	{
+		auto doc = make_html_element("");
+
+		auto div = make_html_element("div");
+		doc->append_child(div);
+
+		auto p = make_html_element("p");
+		div->append_child(p);
+
+		auto input = make_html_element("input");
+		div->append_child(input);
+
+		WHEN("tree is traversed with lambda function that always returns true")
+		{
+			std::size_t nodes_visited = 0;
+			doc->traverse([&](std::shared_ptr<node>) {
+				++nodes_visited;
+				return true;
+			});
+
+			THEN("visited node count is 3")
+			{
+				REQUIRE(nodes_visited == 3);
+			}
+		}
+
+		WHEN("traverse function returns false when finds tag 'P'")
+		{
+			std::size_t nodes_visited = 0;
+			doc->traverse([&](std::shared_ptr<node> node) {
+				++nodes_visited;
+				return node->name() != "p";
+			});
+
+			THEN("2 nodes are visited")
+			{
+				REQUIRE(nodes_visited == 2);
+			}
+		}
+	}
+}
+
 } // cpphtml.
