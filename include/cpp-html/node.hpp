@@ -342,6 +342,8 @@ public:
 
 	/**
 	 * Recursively traverse subtree with node_walker.
+	 *
+	 * @return same as walker.end() return value.
 	 */
 	bool traverse(node_walker& walker);
 
