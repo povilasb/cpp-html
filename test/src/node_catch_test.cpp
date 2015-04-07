@@ -2,6 +2,8 @@
 #include <catch.hpp>
 
 #include <cstddef>
+#include <memory>
+#include <list>
 
 #include <cpp-html/node.hpp>
 #include <cpp-html/document.hpp>
@@ -79,8 +81,8 @@ SCENARIO("node tree can be translated to string")
 			}
 		}
 	}
-
 }
+
 
 std::shared_ptr<node>
 make_html_element(string_type tag_name)
@@ -132,6 +134,34 @@ SCENARIO("node tree can be traversed with the std::function")
 			{
 				REQUIRE(nodes_visited == 2);
 			}
+		}
+	}
+}
+
+
+SCENARIO("multiple nodes can be found by predicate")
+{
+	GIVEN("node tree with hierarchy depth 2")
+	{
+		auto doc = make_html_element("");
+		auto div = make_html_element("div");
+		doc->append_child(div);
+
+		auto p = make_html_element("p");
+		div->append_child(p);
+
+		auto input = make_html_element("input");
+		div->append_child(input);
+
+		auto p2 = make_html_element("p");
+		div->append_child(p2);
+
+		WHEN("node list is searched by predicate matching nodes by name")
+		{
+			std::list<std::shared_ptr<node> > p_tags =
+				div->find_nodes([](std::shared_ptr<node> node) {
+				return node->name() == "p";
+			});
 		}
 	}
 }

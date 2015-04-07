@@ -302,6 +302,12 @@ public:
 	}
 
 	/**
+	 * Finds all nodes satisfying the specified predicate.
+	 */
+	std::list<std::shared_ptr<node> > find_nodes(
+		std::function<bool (std::shared_ptr<node>)> predicate) const;
+
+	/**
 	 * Find child node by attribute name/value. Checks only the specified
 	 * tag nodes.
 	 * Checks only child nodes. Does not traverse deeper levels.

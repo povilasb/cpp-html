@@ -366,6 +366,24 @@ node::child_nodes() const
 }
 
 
+std::list<std::shared_ptr<node> >
+node::find_nodes(std::function<bool (std::shared_ptr<node>)> predicate) const
+{
+	std::list<std::shared_ptr<node> > found_nodes;
+
+	const_cast<node*>(this)->traverse([&](std::shared_ptr<node> node) {
+		if (predicate(node)) {
+			found_nodes.push_back(node);
+		}
+
+		bool keep_traversing = true;
+		return keep_traversing;
+	});
+
+	return found_nodes;
+}
+
+
 std::shared_ptr<node>
 node::find_child_by_attribute(const string_type& tag,
 	const string_type& attr_name,
